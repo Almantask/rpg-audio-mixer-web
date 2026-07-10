@@ -1,4 +1,4 @@
-@iter2
+@iter2 @iter11
 Feature: Campaign management
 
   As a Game Master
@@ -6,11 +6,11 @@ Feature: Campaign management
   So that I can organize my story arcs
 
   Background:
-    Given the app is launched to the Campaigns screen
+    Given the app is launched to the Active Campaigns screen
 
   Scenario: Create my first campaign
     Given I have no campaigns
-    And I see a Large Material 3 icon with a prompt
+    And I see a centred empty-state illustration with a prompt
     When I tap "Scribe New Tale"
     And I enter "Chronicles of Aether" as the name
     And I save the campaign
@@ -20,13 +20,12 @@ Feature: Campaign management
   Scenario: Resume a campaign updates its play order
     Given I have a campaign named "Old Tale" with last played date "Yesterday"
     And I have a campaign named "New Tale" with last played date "Today"
-    When I tap "RESUME" on the "Old Tale" card
-    And I navigate back to the Campaigns list
+    When I tap "Resume" on the "Old Tale" card
+    And I navigate back to the Active Campaigns screen
     Then "Old Tale" should be at the top of the list
 
   Scenario: Delete a campaign via swipe (Soft-Delete)
     Given I have a campaign named "The Cursed Ring"
     When I swipe right on "The Cursed Ring"
     Then the campaign list should be empty
-    And the campaign "The Cursed Ring" should be marked as "isDeleted" in the database
-    And I should be able to find "The Cursed Ring" in the "Trash" screen
+    And I should be able to find "The Cursed Ring" in the "Vault of Echoes" screen

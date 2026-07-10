@@ -1,4 +1,4 @@
-@iter9
+@iter9 @iter11
 Feature: Screen transitions
 
   As a GM
@@ -7,24 +7,24 @@ Feature: Screen transitions
 
   @iter9
   Scenario: Hierarchical navigation uses Container Transform
-    Given I am on the Campaigns screen
+    Given I am on the Active Campaigns screen
     When I tap on a campaign card to open its Sessions list
     Then the campaign card expands smoothly to fill the screen background
-    And the top and bottom navigation bars remain fixed
+    And the top bar and sidebar remain fixed
 
   @iter9
   Scenario: Lateral navigation uses Shared X-Axis slide
-    Given I am on the Home tab
-    When I tap the Campaigns tab in the bottom bar
-    Then the Home screen fades and slides out horizontally
-    And the Campaigns screen fades and slides in horizontally from the right
+    Given I am on the Current Session dashboard
+    When I tap "Ambience Presets" in the sidebar
+    Then the Current Session content fades and slides out horizontally
+    And the Ambience Presets screen fades and slides in horizontally
 
   @iter9
   Scenario: Drill-down navigation uses Shared Z-Axis
     Given I am on any main screen
-    When I tap the settings gear to open the Credits
+    When I tap the settings gear to open Arcane Settings
     Then the outgoing screen fades out and scales up slightly
-    And the Credits screen fades in and scales up from slightly smaller
+    And the Arcane Settings screen fades in and scales up from slightly smaller
 
   @iter9
   Scenario: Transitions are fast and do not block interaction
@@ -35,12 +35,10 @@ Feature: Screen transitions
   Scenario: The mini player uses Shared Y-Axis animation on entrance
     Given no mini player is visible
     When I tap preview on an FX track
-    Then the mini player slides up smoothly from the bottom navigation bar
+    Then the mini player slides up smoothly from the bottom of the main content area
 
   @iter9
   Scenario: The mini player uses Shared Y-Axis animation on exit
     Given the mini player is visible
     When I tap the close button or navigate away
     Then the mini player slides down smoothly to disappear
-
-

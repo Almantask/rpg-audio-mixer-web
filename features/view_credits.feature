@@ -1,43 +1,60 @@
-Feature: View Credits
+@iter0 @iter8 @iter11
+Feature: View Arcane Settings
 
   As a GM
-  I want to tap the gear icon to reach the Credits screen
-  So that I can find support links, the app version, and contributor information.
+  I want to reach Arcane Settings from the gear icon or sidebar
+  So that I can find support links, recovery tools, community portals, and app information.
 
   @iter0
   Scenario: The gear icon is visible on every screen
-    Given I am on the Home screen
+    Given I am on the Current Session dashboard
     Then I see the gear icon in the top bar
 
   @iter0
-  Scenario: Tapping the gear icon from any screen navigates to Credits
-    Given I am on the Campaigns screen
+  Scenario: Tapping the gear icon from any screen navigates to Arcane Settings
+    Given I am on the Active Campaigns screen
     When I tap the gear icon
-    Then I see the "Behind the Screen" heading on the Credits screen
-
-  @iter8
-  Scenario: The Credits screen contains a link to the Vault of Echoes
-    When I open the Credits screen
-    Then I see the "VAULT OF ECHOES" button
-
-  @iter8
-  Scenario: Tapping VAULT OF ECHOES opens the Trash screen
-    Given I am on the Credits screen
-    When I tap "VAULT OF ECHOES"
-    Then I am navigated to the "Vault of Echoes" (Trash) screen
+    Then I see the "Behind the Screen" heading on the Arcane Settings screen
 
   @iter0
-  Scenario: The Credits screen shows the app version
-    When I open the Credits screen
+  Scenario: Arcane Settings is reachable from the sidebar
+    When I tap "Arcane Settings" in the sidebar
+    Then I see the "Behind the Screen" heading
+
+  @iter8
+  Scenario: The Necromancy Protocol card links to the Vault of Echoes
+    When I open the Arcane Settings screen
+    Then I see the "Necromancy Protocol" card
+    When I tap "Restore Recent Deletes"
+    Then I am navigated to the "Vault of Echoes" screen
+
+  @iter8
+  Scenario: The Vault is also reachable directly from the sidebar
+    When I tap "Vault" in the sidebar
+    Then I am navigated to the "Vault of Echoes" screen
+
+  @iter0
+  Scenario: The Arcane Settings screen shows the app version
+    When I open the Arcane Settings screen
     Then I see the app version number
 
   @iter0
-  Scenario: The Credits screen shows a documentation link
-    When I open the Credits screen
-    Then I see the documentation link
+  Scenario: The Arcane Settings screen shows community portal links
+    When I open the Arcane Settings screen
+    Then I see a link to the Discord community
+    And I see a link to support email
+    And I see a link to the GitHub repository
+    And I see a link to patch notes
 
   @iter0
-  Scenario: Tapping the back arrow from Credits returns to the previous screen
-    Given I navigated to Credits from the Scenes screen
-    When I tap the back arrow
-    Then I am back on the Scenes screen
+  Scenario: The Arcane Settings screen shows legal links
+    When I open the Arcane Settings screen
+    Then I see a link to the Terms of Service
+    And I see a link to the Privacy Policy
+    And I see a link to Attributions
+
+  @iter0
+  Scenario: Tapping the back control from Arcane Settings returns to the previous screen
+    Given I navigated to Arcane Settings from Ambience Presets
+    When I tap the back control
+    Then I am back on the Ambience Presets screen

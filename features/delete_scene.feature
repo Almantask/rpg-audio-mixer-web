@@ -1,23 +1,23 @@
-@iter3
+@iter3 @iter11
 Feature: Delete scene
 
   As a GM
   I want to delete scenes I no longer need
-  So that I can keep my scene list organized.
+  So that I can keep Ambience Presets organized.
 
-  Scenario: Swiping a scene moves it to the Trash
+  Scenario: Swiping a scene moves it to the Vault
     Given I have created a scene named "Old Scene"
     When I swipe right on the "Old Scene" card
-    Then "Old Scene" is moved to the Trash
-    And I do not see "Old Scene" in my scenes list
+    Then "Old Scene" is moved to the Vault of Echoes
+    And I do not see "Old Scene" in Ambience Presets
 
   Scenario: Deleted scene is removed from the list but others remain
     Given I have created scenes named
       | Scene A |
       | Scene B |
     When I swipe right on the "Scene A" card
-    Then "Scene A" is moved to the Trash
-    And I still see "Scene B" in my scenes list
+    Then "Scene A" is moved to the Vault of Echoes
+    And I still see "Scene B" in Ambience Presets
 
   Scenario: Deleting a scene does not affect other scenes
     Given I have created scenes named

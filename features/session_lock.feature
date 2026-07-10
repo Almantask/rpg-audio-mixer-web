@@ -1,4 +1,4 @@
-@iter10
+@iter10 @iter11
 Feature: Session Lock
 
   As a GM
@@ -17,14 +17,16 @@ Feature: Session Lock
     And dragging soundboard effects to reorder should be disabled
     And dragging soundboard effects to the flames to delete should be disabled
     And the "Add New Soundscape" button should be disabled or hidden
+    And navigating to a different scene should be blocked
     But I can still drag the Master Atmosphere slider
     And I can still drag the MIX sliders
     And I can still tap the play/pause and d20 buttons
 
-  Scenario: Unlocking the session restores destructive gestures
+  Scenario: Unlocking the session restores destructive gestures and scene switching
     Given the session is locked
     When I tap the "Lock" icon to unlock
     Then the "Lock" icon should appear in an "Unlocked" state
     And dragging category cards by their handle to reorder should be enabled
     And swiping right on a category card to remove it should be enabled
     And the "Add New Soundscape" button should be visible and enabled
+    And navigating to a different scene should be allowed

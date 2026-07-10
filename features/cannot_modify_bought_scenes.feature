@@ -1,4 +1,4 @@
-@iter3
+@iter3 @iter11
 Feature: All scenes are user-owned and fully editable
 
   As a GM
@@ -10,12 +10,12 @@ Feature: All scenes are user-owned and fully editable
 
   Scenario: Add button is always shown in a scene's soundboard
     Given I have a scene named "Epic Battle"
-    When I open the Soundboard tab of "Epic Battle"
-    Then I see the "Add New Effect" button
+    When I open the One-Shots & SFX tab of "Epic Battle"
+    Then I see the "Add Sound" button
 
-  Scenario: Add button is always shown in a scene's soundscapes tab
+  Scenario: Add button is always shown in a scene's atmospheres tab
     Given I have a scene named "Epic Battle"
-    When I open the Soundscapes tab of "Epic Battle"
+    When I open the Atmospheres tab of "Epic Battle"
     Then I see the "Add New Soundscape" button
 
   Scenario: Removing a soundscape category from a scene is always permitted
@@ -28,8 +28,7 @@ Feature: All scenes are user-owned and fully editable
     When I remove "Battle Horn" from the soundboard
     Then "Battle Horn" is no longer in the "Epic Battle" scene
 
-  Scenario: All scenes in the scenes list appear the same (no purchased distinction)
+  Scenario: All scenes in Ambience Presets appear the same (no purchased distinction)
     Given I have scenes "Forest Path", "Dungeon Entrance", and "Tavern"
-    When I view the Scenes list
+    When I view the Ambience Presets list
     Then all scenes have the same visual appearance without any ownership badge
-

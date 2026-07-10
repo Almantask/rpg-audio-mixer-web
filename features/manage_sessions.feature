@@ -1,4 +1,4 @@
-@iter2
+@iter2 @iter11
 Feature: Manage sessions
 
   As a GM
@@ -16,7 +16,7 @@ Feature: Manage sessions
   Scenario: Sessions list is empty when a campaign has no sessions
     Given I have a campaign "Empty Campaign" with no sessions
     When I open "Empty Campaign"
-    Then I see a Large Material 3 icon with a prompt
+    Then I see a centred empty-state illustration with a prompt
     And I see an "Add New Session" button
 
   Scenario: Multiple sessions appear in the sessions list
@@ -32,11 +32,11 @@ Feature: Manage sessions
     When I view the sessions list
     Then "Session 2" appears above "Session 1"
 
-  Scenario: Session cover art can be set from the device photo library
+  Scenario: Session cover art can be set from an image upload
     Given I am creating a session "Session 2 – Castle Ravenloft"
     When I tap the cover art area
-    And I select a photo from the device's photo library
-    Then the selected photo is shown as the session's cover art
+    And I select an image from the browser upload dialog
+    Then the selected image is shown as the session's cover art
 
   Scenario: Tapping a session opens its scene list
     Given I have a campaign with a session "Session 1 – The Dark Arrival"

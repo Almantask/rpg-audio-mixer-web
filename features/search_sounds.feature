@@ -1,24 +1,25 @@
-@iter8
+@iter8 @iter11
 Feature: Search sounds
 
   As a GM
   I want to search and filter sounds and ambiences
   So that I can quickly find the audio I need for my game.
 
-  Scenario: Filter sounds by category
-    Given there are sounds available in multiple categories
+  Scenario: Filter sounds by category using the sidebar filter panel
+    Given I am on the Sound Effects screen
+    And there are sounds available in multiple categories
       | sound        | category |
       | sword_clash  | combat   |
       | fire_crackle | nature   |
       | arrow_shot   | combat   |
-    When I filter sounds by category "combat"
+    When I filter sounds by category "combat" in the sidebar filter panel
     Then I see only sounds in category "combat"
       | sword_clash | arrow_shot |
 
   Scenario: Filter sounds by name
     Given there are sounds available
       | sword_clash | fire_crackle | sword_slash |
-    When I search sounds by name "sword"
+    When I search sounds by name "sword" in the sidebar search field
     Then I see only sounds matching "sword"
       | sword_clash | sword_slash |
 
@@ -61,3 +62,9 @@ Feature: Search sounds
     When I filter sounds by scene "dungeon"
     Then I see only sounds in scene "dungeon"
       | sword_clash | arrow_shot |
+
+  Scenario: Filtered empty state offers a clear-filters action
+    Given I am on the Sound Effects screen
+    When I search for "nonexistent_sound_xyz"
+    Then I see "No incantations match your filters"
+    And I see a clear-filters action

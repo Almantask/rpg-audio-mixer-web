@@ -1,44 +1,56 @@
-@iter7
-@core
-Feature: Home screen
+@iter7 @iter11 @core
+Feature: Current Session dashboard
 
   As a GM
-  I want to see my active campaign, last scene, and top tracks on the Home screen
-  So that I can jump back into my game quickly without navigating.
+  I want to see my active campaign, recent scenes, and top atmospheres on the Current Session dashboard
+  So that I can jump back into my game quickly without deep navigation.
 
-  Scenario: Home screen shows the most recently played campaign
+  Scenario: Current Session shows the most recently played campaign
     Given I have played "Curse of Strahd" most recently
-    When I open the Home screen
+    When I open the Current Session dashboard
     Then I see "Curse of Strahd" as the active campaign
 
-  Scenario: ENTER DOMAIN navigates to the active campaign's sessions
+  Scenario: Enter Domain navigates to the active campaign's sessions
     Given "Curse of Strahd" is the active campaign
-    When I tap "ENTER DOMAIN"
+    When I tap "Enter Domain"
     Then I see the sessions list for "Curse of Strahd"
 
-  Scenario: Resume Journey shows the last opened scene
-    Given the last opened scene in the active campaign was "The Foyer"
-    When I open the Home screen
-    Then I see "The Foyer" in the Resume Journey card
+  Scenario: Resume Journey shows recently opened scenes
+    Given the active campaign has recently opened scenes "The Foyer" and "Sunken Temple"
+    When I open the Current Session dashboard
+    Then I see "The Foyer" in the Resume Journey section
+    And I see "Sunken Temple" in the Resume Journey section
 
-  Scenario: ENTER opens the scene from the Resume Journey card
-    Given "The Foyer" is shown in the Resume Journey card
-    When I tap "ENTER" in the Resume Journey card
+  Scenario: Tapping a Resume Journey card opens the scene with playback
+    Given "The Foyer" is shown in the Resume Journey section
+    When I tap the play button on "The Foyer" in Resume Journey
     Then I see the Active Scene screen for "The Foyer"
     And playback begins with a 2-3s fade-in using Cubic mapping
 
-  Scenario: Top Atmosphere shows the all-time most played loopable track
-    Given "Tavern Warmth" is the most played loopable track globally
-    When I open the Home screen
-    Then I see "Tavern Warmth" in the Top Atmosphere card
+  Scenario: Top Atmospheres shows the globally most played loopable tracks
+    Given "Ominous Fog", "Dripping Cave", and "Tavern Hearth" are the top three most played loopable tracks globally
+    When I open the Current Session dashboard
+    Then I see "Ominous Fog" in the Top Atmospheres list
+    And I see "Dripping Cave" in the Top Atmospheres list
+    And I see "Tavern Hearth" in the Top Atmospheres list
 
-  Scenario: Legendary Action shows the all-time most played FX track
-    Given "Thunder Crack" is the most played FX globally
-    When I open the Home screen
-    Then I see "Thunder Crack" in the Legendary Action card
+  Scenario: Tapping play on a Top Atmospheres row previews that track inline
+    Given "Ominous Fog" is shown in the Top Atmospheres list
+    When I tap the play button on the "Ominous Fog" row
+    Then "Ominous Fog" begins playing as an inline preview
 
-  Scenario: Home screen shows an empty state when no campaigns exist
+  Scenario: Current Session shows an empty state when no campaigns exist
     Given I have no campaigns
-    When I open the Home screen
-    Then the active campaign area shows a prompt to create a campaign
-    And the Resume Journey card is not shown
+    When I open the Current Session dashboard
+    Then the active campaign area shows a prompt to create or open a campaign
+    And the Resume Journey section is not shown
+
+  Scenario: Resume Journey shows a placeholder when no scenes have been played yet
+    Given I have a campaign but have not opened any scenes
+    When I open the Current Session dashboard
+    Then the Resume Journey section shows a placeholder prompting me to open a scene
+
+  Scenario: Top Atmospheres shows a placeholder when no tracks have been played yet
+    Given no loopable tracks have been played yet
+    When I open the Current Session dashboard
+    Then the Top Atmospheres section shows "No atmospheres played yet"

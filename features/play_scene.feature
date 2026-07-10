@@ -1,5 +1,4 @@
-@iter7
-@core
+@iter7 @core @iter11
 Feature: Play scene
 
   As a GM
@@ -20,14 +19,14 @@ Feature: Play scene
 
   Scenario: Switching from one scene to another crossfades the audio
     Given "Tavern" is the current playing scene
-    When I navigate back to the scenes list
+    When I navigate back to Ambience Presets
     And I tap the play button on the "Forest" scene card
     Then the "Tavern" audio fades out while the "Forest" audio fades in simultaneously
     And there should be no dip in perceived volume during the crossfade
 
   Scenario: Opening a scene without the play button does not stop the currently playing scene
     Given "Tavern" is the current playing scene
-    When I navigate back to the scenes list
+    When I navigate back to Ambience Presets
     And I tap the "Forest" scene card (not the play button)
     Then I see the Active Scene screen for "Forest"
     And "Forest" audio is not playing

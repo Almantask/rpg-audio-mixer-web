@@ -1,18 +1,17 @@
-@iter5
+@iter5 @iter11
 Feature: Add FX to soundboard
 
   As a GM
   I want to add sound effects to the active scene's soundboard
   So that I can trigger one-shot effects relevant to the current scene.
 
-  # Design: The selection view is a full screen showing all FX library tracks.
-  # Each row has a + button — tapping it instantly adds the effect, no confirm step.
+  # Design: The selection view shows all FX library tracks with instant + add.
   # Effects already in the scene's soundboard show an indicator icon instead of +.
 
   Scenario: Tapping Add New Effect opens the FX selection screen
-    Given I am on the Active Scene — Soundboard tab
-    When I tap "Add New Effect"
-    Then I see the FX selection screen with a back arrow
+    Given I am on the Active Scene — One-Shots & SFX tab
+    When I tap "Add Sound"
+    Then I see the FX selection screen with a back link
 
   Scenario: Each FX row shows a + button
     Given the FX selection screen is open
@@ -50,36 +49,17 @@ Feature: Add FX to soundboard
 
   Scenario: Tapping back returns to the Active Scene with all added effects present
     Given I have added "Thunder Crack" and "Wolf Howl" from the FX selection screen
-    When I tap the back arrow
-    Then I see the Active Scene — Soundboard tab
+    When I tap the back link
+    Then I see the Active Scene — One-Shots & SFX tab
     And both "Thunder Crack" and "Wolf Howl" appear as buttons in the soundboard grid
 
-  Scenario: The IMPORT NEW button opens the device file picker with Scoped Storage permission granted on Android 13+
-    Given I am on Android 13 or higher
-    And the app has been granted "READ_MEDIA_AUDIO" permission
-    And the FX selection screen is open
+  Scenario: The Import New button opens the browser file picker
+    Given the FX selection screen is open
     When I tap "Import New" in the footer card
-    Then the device's native audio file picker opens
-
-  Scenario: Tapping IMPORT NEW fails when Scoped Storage permission is denied on Android 13+
-    Given I am on Android 13 or higher
-    And the app has been denied "READ_MEDIA_AUDIO" permission
-    And the FX selection screen is open
-    When I tap "Import New" in the footer card
-    Then I see a permission request dialog for audio access
-    And if I deny the permission, I see a message explaining why the permission is needed for imports
-
-  Scenario: The IMPORT NEW button opens the device file picker on legacy Android versions
-    Given I am on Android 12 or lower
-    And the app has been granted "READ_EXTERNAL_STORAGE" permission
-    And the FX selection screen is open
-    When I tap "Import New" in the footer card
-    Then the device's native audio file picker opens
+    Then the browser file picker opens for audio files only
 
   Scenario: A file imported via Import New appears in the FX library and selection list
-    Given the device file picker is open from the FX selection screen
-    And the app has been granted necessary storage permissions
+    Given the browser file picker is open from the FX selection screen
     When I select "cannon_fire.mp3"
     Then "cannon_fire.mp3" appears in the FX selection list
     And it can be added to the scene with a + tap
-

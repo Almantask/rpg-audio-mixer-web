@@ -1,14 +1,25 @@
-@iter6
+@iter6 @iter11
 Feature: Loop soundscape categories
 
   As a GM
   I want to play a track from a category pool in a loop
   So that I can have background ambience without having to select a specific track.
 
-  Scenario: Playing a soundscape category starts looping a track from that category
+  Scenario: Playing a soundscape category starts looping a random track from that category
     Given a scene has the category "Weather" with tracks "Light Rain" and "Drizzle"
     When I tap play on the "Weather" category
     Then a track from "Weather" starts looping
+
+  Scenario: Play resumes a paused track instead of picking a new random track
+    Given the "Weather" category was playing "Light Rain" and is now paused
+    When I tap play on the "Weather" category
+    Then "Light Rain" resumes looping
+    And no new random track is selected
+
+  Scenario: Play picks a random track when no track is loaded in the category
+    Given the "Weather" category has tracks but none is currently loaded or paused
+    When I tap play on the "Weather" category
+    Then a random track from the current intensity pool starts looping
 
   Scenario: The playing category card shows a playing state
     Given a scene has the category "Interior"
@@ -32,5 +43,3 @@ Feature: Loop soundscape categories
     And "Weather" has tracks "Storm" at level II and "Drizzle" at level I
     When I tap play on "Weather"
     Then a track from intensity level II plays (not from level I)
-
-

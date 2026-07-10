@@ -1,12 +1,11 @@
-@iter6
-@core
+@iter6 @core @iter11
 Feature: Soundboard playback
 
   As a GM
   I want each sound button to play its own sound
   So that I can quickly trigger different effects.
 
-  Scenario: Tapping a sound button plays that sound instantly
+  Scenario: Tapping a sound button plays that sound instantly via the Web Audio buffer pool
     When I tap the "whip" sound button
     Then the "whip" sound plays with near-instant (low latency) response
 

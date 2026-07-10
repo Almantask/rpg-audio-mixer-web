@@ -1,57 +1,57 @@
-@iter3 @core
+@iter3 @core @iter11
 Feature: Build your own scene
 
   As a GM
   I want to build my own scene of sounds
   So that I can create a custom audio atmosphere for my game.
 
-  Scenario: New scene has soundscapes and soundboard tabs
+  Scenario: New scene has Atmospheres and One-Shots tabs
     When I create a new scene
-    Then I see a "Soundscapes" tab
-    And I see a "Soundboard" tab
+    Then I see an "Atmospheres" tab
+    And I see a "One-Shots & SFX" tab
 
-  Scenario: Soundboard tab starts empty
+  Scenario: One-Shots tab starts empty
     Given I have created a new scene
-    When I open the "Soundboard" tab
+    When I open the "One-Shots & SFX" tab
     Then the soundboard has no effects
 
-  Scenario: Soundboard tab shows an add button when empty
+  Scenario: One-Shots tab shows an add button when empty
     Given I have created a new scene
-    When I open the "Soundboard" tab
-    Then I see an "Add New Effect" button
+    When I open the "One-Shots & SFX" tab
+    Then I see an "Add Sound" button
 
   Scenario: Add button always appears at the end of the soundboard
     Given I have created a new scene
-    And I have opened the "Soundboard" tab
+    And I have opened the "One-Shots & SFX" tab
     When I add 3 effects to the soundboard
     Then the add button is the last item in the soundboard grid
 
-  Scenario: Soundscapes tab starts empty
+  Scenario: Atmospheres tab starts empty
     Given I have created a new scene
-    When I open the "Soundscapes" tab
+    When I open the "Atmospheres" tab
     Then the scene has no soundscape categories
 
-  Scenario: Soundscapes tab shows an add button when empty
+  Scenario: Atmospheres tab shows an add button when empty
     Given I have created a new scene
-    When I open the "Soundscapes" tab
+    When I open the "Atmospheres" tab
     Then I see an "Add New Soundscape" button
 
-  Scenario: Add button always appears at the end of the soundscapes list
+  Scenario: Add button always appears at the end of the atmospheres list
     Given I have created a new scene
-    And I have opened the "Soundscapes" tab
+    And I have opened the "Atmospheres" tab
     When I add 3 soundscape categories to the scene
     Then the add button appears after the last category card
 
   Scenario: A soundscape category can be removed from the scene
     Given I have created a new scene
-    And I have opened the "Soundscapes" tab
+    And I have opened the "Atmospheres" tab
     And I have added the "Weather" soundscape category
     When I swipe right on the "Weather" category card
-    Then the Soundscapes tab has no categories
+    Then the Atmospheres tab has no categories
 
   Scenario: An effect can be removed from the soundboard
     Given I have created a new scene
-    And I have opened the "Soundboard" tab
+    And I have opened the "One-Shots & SFX" tab
     And I have added the "Thunder Crack" effect
     When I hold the "Thunder Crack" button and drag it to the flames overlay at the bottom screen
     Then the soundboard has no effects
@@ -60,4 +60,3 @@ Feature: Build your own scene
     Given I have created a new scene
     When I create another new scene
     Then I have 2 scenes
-

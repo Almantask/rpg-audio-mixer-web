@@ -1,4 +1,4 @@
-@iter10
+@iter10 @iter11
 Feature: Master controls
 
   As a GM
@@ -10,8 +10,8 @@ Feature: Master controls
     And the "Battle" scene is playing
     And I have triggered "Scream" from the soundboard
 
-  Scenario: Global Master Stop silences all audio instantly
-    When I tap the "Global Master Stop (Panic Button)"
+  Scenario: Stop All silences all audio instantly
+    When I tap "Stop All"
     Then the "Combat" soundscape should fade out and stop
     And the "Fire" soundscape should fade out and stop
     And the "Scream" sound effect should stop immediately
@@ -33,8 +33,8 @@ Feature: Master controls
     Then the "Master Intensity Switcher" level should remain at its previous value
     And the "Master Intensity Switcher" "Intensity Level III" button should be greyed out
 
-  Scenario: Global Master Stop resets play/pause buttons
+  Scenario: Stop All resets play/pause buttons
     Given the "Battle" scene is playing
-    When I tap the "Global Master Stop (Panic Button)"
+    When I tap "Stop All"
     Then the "Combat" play button should show ▶
     And the "Fire" play button should show ▶
