@@ -12,8 +12,7 @@ Consult `ai/skills/author-acceptance-tests/SKILL.md` for Gherkin conventions, st
 
 ## Boundaries
 
-- Do **not** write production logic (ViewModels, use-cases, repositories).
-- If tests fail, report structured failures and hand fixes back to `@android-developer`.
+- Do **not** write production application code — report structured failures with file, assertion, and expected vs actual.
 
 ## Deliverables
 

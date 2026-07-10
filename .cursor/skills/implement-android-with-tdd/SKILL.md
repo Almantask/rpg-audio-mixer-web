@@ -1,6 +1,6 @@
 ---
 name: implement-android-with-tdd
-description: 'Implement Android/Kotlin features with strict TDD (Red → Green → Refactor). Use when: writing unit tests and production code, designing ViewModels, repositories, use-cases, Hilt DI, Room entities/DAOs, Compose screens, coroutines/Flow, or debugging build/runtime issues. Defer acceptance tests to the qa-tester agent.'
+description: 'Implement Android/Kotlin features with strict TDD (Red → Green → Refactor). Use when: writing unit tests and production code, designing ViewModels, repositories, use-cases, Hilt DI, Room entities/DAOs, Compose screens, coroutines/Flow, or debugging build/runtime issues.'
 context: fork
 ---
 
@@ -69,7 +69,7 @@ fun `emits loading then success when repository returns data`() = runTest {
 
 ### 2. Acceptance / feature tests — `src/androidTest/`
 
-**DEFER TO QA:** You do *not* write acceptance tests or Cucumber step definitions. The `qa-tester` is responsible for this layer. You only write the production code to make their tests pass. If you are asked to write an acceptance test, refuse and invoke the `qa-tester`.
+**Acceptance tests are outside this skill.** You do not write acceptance tests or Cucumber step definitions. Write production code to satisfy acceptance criteria. If asked to write an acceptance test, refuse — that belongs in `author-acceptance-tests`.
 
 However, you must be aware of the infrastructure philosophy used by QA so you write compatible production code:
 
@@ -121,7 +121,7 @@ Follow this sequence every time:
 
 1. **Understand requirements** — state the behaviour in one sentence.
 2. **See if any code for the job already exists** - if so - reuse it. If not, create new code with a failing test first.
-3. **Work in parallel with QA** — Do not write `.feature` files yourself (defer to `qa-tester`), but do not block waiting for them. Begin implementing the domain logic and UI immediately based on the PO's initial requirements while QA builds the test suite.
+3. **Work in parallel on acceptance specs** — Do not write `.feature` files yourself, but do not block waiting for them. Begin implementing domain logic and UI from requirements while acceptance specs are drafted elsewhere.
 4. **Write failing unit test(s)** — smallest unit that drives the first slice.
 5. **Implement production code (Green)** — minimum code to pass tests. For unit tests - always run all.
 6. **Refactor** — names, duplication, structure; tests still green.

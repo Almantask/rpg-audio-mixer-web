@@ -106,34 +106,31 @@ The available roles are located in:
 #### Orchestrating via Gemini (IDE Extension)
 
 **The Preferred Way (Automated Workflow)**
-Do not manually direct agents unless absolutely necessary. Instead, use the built-in orchestration workflows by utilizing the Gemini CLI slash commands.
+Use orchestration **skills** via slash commands — they delegate to specialist subagents; specialists do not reference each other.
 
-**1. Feature Delivery Workflow**
+| Skill | Command | Purpose |
+|---|---|---|
+| `plan-feature` | `/plan-feature` | Requirements → design → Gherkin → iteration plans |
+| `refine-feature` | `/refine-feature` | Update existing specs, designs, and plans |
+| `new-feature` | `/new-feature` | Implementation → validation → review → documentation |
+
+**1. New Feature Delivery (`/new-feature`)**
 Executes the 5-phase sequence: Implementation → Validation → Review Council → Fixes → Historian.
-> `/feature-delivery Implement the new Master Volume slider defined in our project plan`
+> `/new-feature Implement the new Master Volume slider defined in our project plan`
 
-- Phase 1 & 2: `@qa-tester` `@android-developer` implement the feature and update tests.
-- Phase 3: `@android-reviewer` `@qa-reviewer` `@audio-specialist` `@product-owner` review the code and provide final sign-off.
-- Phase 4: `@qa-tester` `@android-developer` fix issues found in phase 3.
-- Phase 5: `@project-historian` update the project learnings if any.
+Consult `ai/skills/new-feature/SKILL.md` for phase details and subagent delegation.
 
-**2. Feature Planning Workflow**
-Moves a feature from high-level request to a detailed, extensive implementation plan with full technical and behavioral alignment.
-> `/planning-refinement-orchestrator Plan a new feature: Master Volume slider`
+**2. Plan Feature (`/plan-feature`)**
+Moves a feature from high-level request to a detailed implementation plan with full technical and behavioral alignment.
+> `/plan-feature Plan a new feature: Master Volume slider`
 
-- Phase 1 & 2: `@product-owner` prioritizes value, and `@product-designer` creates UI/UX specs.
-- Phase 3: `@qa-tester`, `@qa-reviewer`, and `@principal-qa` define and review behavioral specs (Gherkin).
-- Phase 4: `@android-developer`, `@audio-specialist`, `@android-reviewer`, and `@principal-engineer` define technical strategy.
-- Phase 5 & 6: Human feedback loop and baseline finalization by `@project-historian`.
+Consult `ai/skills/plan-feature/SKILL.md` for phase details and subagent delegation.
 
-**3. Feature Refinement Workflow**
+**3. Refine Feature (`/refine-feature`)**
 Refines existing specs, designs, and implementation plans.
-> `/planning-refinement-orchestrator Refine the Master Volume slider UI to include a mute toggle`
+> `/refine-feature Refine the Master Volume slider UI to include a mute toggle`
 
-- Phase 1 & 2: `@product-owner` evaluates priority, and `@product-designer` updates UI/UX specs.
-- Phase 3: `@qa-tester`, `@qa-reviewer`, and `@principal-qa` update behavioral specs.
-- Phase 4: `@android-developer`, `@android-reviewer`, and `@principal-engineer` update the implementation plan.
-- Phase 5 & 6: Human feedback loop and history update by `@project-historian`.
+Consult `ai/skills/refine-feature/SKILL.md` for phase details and subagent delegation.
 
 ---
 

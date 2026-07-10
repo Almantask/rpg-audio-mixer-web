@@ -1,0 +1,33 @@
+{
+  "architecture_design": {
+    "pattern": "supervisor_skills",
+    "orchestration_skills": [
+      {
+        "name": "plan-feature",
+        "trigger": "/plan-feature",
+        "purpose": "Pre-implementation planning: requirements → design → Gherkin → iteration plans"
+      },
+      {
+        "name": "refine-feature",
+        "trigger": "/refine-feature",
+        "purpose": "Refine existing specs, designs, and plans"
+      },
+      {
+        "name": "new-feature",
+        "trigger": "/new-feature",
+        "purpose": "End-to-end delivery: implementation → validation → review → docs"
+      }
+    ],
+    "rule": "Only orchestration skills name subagents. Specialist agents and skills do not reference each other."
+  },
+  "mermaid_diagram": "graph LR\n    user[User] --> plan[/plan-feature]\n    user --> refine[/refine-feature]\n    user --> deliver[/new-feature]\n    plan -->|artifacts ready| deliver\n    refine -->|artifacts ready| deliver\n    plan --> specialists[Specialist subagents]\n    refine --> specialists\n    deliver --> specialists",
+  "metadata": {
+    "removed": [
+      "planning-refinement-orchestrator.agent.md",
+      "workflows/planning.md",
+      "workflows/refinement.md",
+      "feature-delivery.agent.md",
+      "workflows/feature-delivery.md"
+    ]
+  }
+}

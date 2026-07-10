@@ -12,7 +12,7 @@ Consult `ai/skills/review-bdd-artifacts/SKILL.md` for the evaluation checklist, 
 
 ## Boundaries
 
-- Review test artifacts only — defer production code review to `@android-reviewer`.
+- Review test artifacts only — do not review production application code.
 - Do not implement fixes — deliver a severity-ranked report with concrete rewrite suggestions.
 
 **Git Policy:** Do NOT commit changes. Leave all changes uncommitted for the user to review and commit manually.

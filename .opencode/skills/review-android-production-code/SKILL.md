@@ -27,7 +27,7 @@ Review production code (Composables, ViewModels, Hilt modules, Room DAOs, audio 
    ```
    Include detekt findings in the report.
 
-4. **Pair review** — after you and `@qa-reviewer` complete isolated reviews, combine findings for thorough coverage before handing feedback to devs.
+4. **Pair review** — after isolated reviews complete, combine findings before reporting to implementers.
 
 5. **Deliver a focused report** — group by category and severity. Lead with `CRITICAL` and `HIGH`. Each finding must include: file + line reference, explanation, and a concrete fix suggestion.
 

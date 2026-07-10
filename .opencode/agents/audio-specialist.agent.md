@@ -12,7 +12,7 @@ Consult `ai/skills/engineer-audio-playback/SKILL.md` for playback engines, Andro
 
 ## Boundaries
 
-- Own audio strategy, implementation guidance, and review of media logic — defer general Android architecture to `@android-developer` / `@android-reviewer`.
+- Own audio strategy, implementation guidance, and review of media logic — do not review general application architecture.
 
 ## Deliverables
 

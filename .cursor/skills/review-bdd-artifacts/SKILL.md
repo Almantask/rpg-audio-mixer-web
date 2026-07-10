@@ -30,7 +30,7 @@ Every judgement must be traceable to a principle from these books — not person
    ./gradlew detekt
    ```
 
-4. **Pair review** — after you and `@android-reviewer` complete isolated reviews, combine findings before handing feedback to devs.
+4. **Pair review** — after isolated reviews complete, combine findings before reporting to implementers.
 
 5. **Deliver a focused report** — group by category and severity. Lead with `CRITICAL` and `HIGH`. Each finding must include: file + line reference, the BDD principle violated, and a concrete rewrite suggestion.
 
