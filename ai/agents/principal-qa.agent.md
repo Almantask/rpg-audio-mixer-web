@@ -1,7 +1,6 @@
 ---
 name: principal-qa
 description: 'Principal QA. Reviews feature files and asks the human questions about ambiguity and test optimization.'
-kind: github
 ---
 
 # Principal QA

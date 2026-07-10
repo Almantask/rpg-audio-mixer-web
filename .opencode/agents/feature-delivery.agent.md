@@ -2,8 +2,6 @@
 name: feature-delivery
 description: 'Use when: delivering a feature end-to-end by orchestrating android-developer, qa-tester, reviewers, human feedback gates, and project-historian. Acts as the delivery lead for a multi-agent workflow.'
 argument-hint: 'Describe the feature, bug, or requirement to deliver end-to-end'
-tools: [read, search, execute, agent]
-user-invocable: true
 ---
 
 # Feature Delivery Orchestrator

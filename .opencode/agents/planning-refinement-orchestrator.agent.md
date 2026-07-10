@@ -2,8 +2,6 @@
 name: planning-refinement-orchestrator
 description: 'Senior Strategy Orchestrator. Manages the Planning and Refinement workflows, coordinating PO, UX, QA, and Principal agents.'
 argument-hint: 'Describe the feature to plan or refine end-to-end'
-tools: [read, search, execute, agent]
-user-invocable: true
 ---
 
 # Planning & Refinement Orchestrator

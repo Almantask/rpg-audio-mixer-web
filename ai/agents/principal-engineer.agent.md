@@ -1,7 +1,6 @@
 ---
 name: principal-engineer
 description: 'Principal Engineer. Reviews implementation plans and asks the human strategic technical questions.'
-kind: github
 ---
 
 # Principal Engineer
