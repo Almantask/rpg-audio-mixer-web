@@ -1,11 +1,11 @@
 @iter0
-Feature: Bottom navigation
+Feature: Navigation
 
   As a GM
-  I want to use the bottom navigation bar to switch between the main sections of the app
+  I want to use the navigation bar to switch between the main sections of the app
   So that I can move quickly between Home, Campaigns, Scenes, and Library.
 
-  Scenario: The bottom navigation bar has four tabs
+  Scenario: The navigation bar has four tabs
     When I open the app
     Then I see four tabs: HOME, CAMPAIGNS, SCENES, and LIBRARY
 
@@ -33,5 +33,4 @@ Feature: Bottom navigation
     Given I am on the SCENES tab
     Then the SCENES tab icon appears highlighted in gold
     And the other three tabs appear inactive
-
 

@@ -26,6 +26,7 @@ Feature: Screen transitions
     Then the outgoing screen fades out and scales up slightly
     And the Credits screen fades in and scales up from slightly smaller
 
+  @iter9
   Scenario: Transitions are fast and do not block interaction
     When a screen transition occurs
     Then the incoming screen becomes interactive within a short time

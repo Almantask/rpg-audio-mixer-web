@@ -1,6 +1,6 @@
 ---
 name: review-feature-requirements
-description: Reviews Gherkin feature files as product requirements—checking completeness, clarity, scope fit, gaps, simplification options, and expansion opportunities. Use when reviewing `.feature` acceptance criteria before implementation; when the user wants product-owner, designer, or audio-specialist perspectives on requirements; or when principal agents audit scenario coverage and intent.
+description: Reviews Gherkin feature files as product requirements—checking completeness, clarity, scope fit, gaps, simplification options, and expansion opportunities. Use when reviewing .feature acceptance criteria before implementation; when the user wants product-owner, designer, or audio-specialist perspectives on requirements; or when principal agents audit scenario coverage and intent.
 ---
 
 # Review Feature Requirements
