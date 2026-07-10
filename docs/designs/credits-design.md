@@ -17,7 +17,7 @@ The Arcane Settings screen (titled "Behind the Screen") provides app info, suppo
 
 ## App Shell
 
-Shared FE layout with left sidebar ("The Tome"). See `home-design.md` for full shell spec.
+Shared FE layout for **Arcanum Audio** (left sidebar navigation). See `home-design.md` for full shell spec.
 
 - **Sidebar footer:** "ALCHEMIST PROFILE" section with avatar icon
 - **FE sidebar navigation only (no tab bar)**
@@ -49,7 +49,7 @@ Shared FE layout with left sidebar ("The Tome"). See `home-design.md` for full s
 │  📄 Patch Notes & Lore                                               │
 │                                                                      │
 │  "In the spaces between silence, we craft the echoes…"               │
-│  © 2024 THE ALCHEMIST'S CONSOLE. V 2.4.1.                            │
+│  © 2024 Arcanum Audio. V 2.4.1.                            │
 └──────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -100,7 +100,7 @@ Text links below Community Portals:
 
 ### Footer
 - Italic serif quote: *"In the spaces between silence, we craft the echoes of worlds yet unseen."*
-- Copyright: **© 2024 THE ALCHEMIST'S CONSOLE. V 2.4.1.**
+- Copyright: **© 2024 Arcanum Audio. V 2.4.1.**
 
 ---
 

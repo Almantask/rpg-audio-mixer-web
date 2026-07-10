@@ -17,7 +17,7 @@ The Soundboard tab sits alongside the Soundscapes tab within an Active Scene. It
 
 ## App Shell
 
-Shared FE layout with left sidebar ("The Tome"). See `home-design.md` for full shell spec.
+Shared FE layout for **Arcanum Audio** (left sidebar navigation). See `home-design.md` for full shell spec.
 
 - **Sidebar footer:** user profile — avatar, display name (e.g. "Master Alchemist"), campaign context (e.g. "Campaign: Curse of Strahd")
 - **FE sidebar navigation only (no tab bar)**

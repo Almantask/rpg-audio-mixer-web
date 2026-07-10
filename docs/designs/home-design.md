@@ -21,25 +21,24 @@ All screens share the FE web layout:
 
 ```
 ┌──────────────────────────────────────────────────────────────────────┐
-│ [☰]              Alchemist's Console                    [⚙️]        │
+│ [☰]                 Arcanum Audio                        [⚙️]        │
 ├───┬──────────────────────────────────────────────────────────────────┤
-│ T │  ┌────────────────────────────────────────────────────────────┐  │
-│ h │  │  Hero banner — Active Campaign                             │  │
-│ e │  └────────────────────────────────────────────────────────────┘  │
-│   │  ┌──────────────────────┐  ┌─────────────────────────────────┐  │
-│ T │  │  Resume Journey      │  │  Top Atmospheres                │  │
-│ o │  └──────────────────────┘  └─────────────────────────────────┘  │
-│ m │                                                                  │
-│ e │                                                                  │
+│   │  ┌────────────────────────────────────────────────────────────┐  │
+│ N │  │  Hero banner — Active Campaign                             │  │
+│ a │  └────────────────────────────────────────────────────────────┘  │
+│ v │  ┌──────────────────────┐  ┌─────────────────────────────────┐  │
+│   │  │  Resume Journey      │  │  Top Atmospheres                │  │
+│   │  └──────────────────────┘  └─────────────────────────────────┘  │
+│   │                                                                  │
 └───┴──────────────────────────────────────────────────────────────────┘
 ```
 
 ### Top Bar (`NavigationMenu` region)
 - **Hamburger menu** (left) — toggles sidebar collapse on narrow viewports
-- **"Alchemist's Console"** — centred, italic gold serif (`Cinzel` / `Playfair`)
+- **"Arcanum Audio"** — centred app name, italic gold serif (`Cinzel` / `Playfair`)
 - **⚙️ Settings gear** (right) — navigates to Arcane Settings
 
-### Left Sidebar — "The Tome" (`Sidebar`)
+### Left Sidebar (`Sidebar`)
 | Item | Icon | Route |
 |---|---|---|
 | **Current Session** *(active)* | Theater / book | `/` |

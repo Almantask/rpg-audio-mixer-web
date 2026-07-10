@@ -17,7 +17,7 @@ Lists the scenes associated with a specific session within a campaign. Because s
 
 ## App Shell
 
-Shared FE layout with left sidebar ("The Tome"). See `home-design.md` for full shell spec.
+Shared FE layout for **Arcanum Audio** (left sidebar navigation). See `home-design.md` for full shell spec.
 
 - **FE sidebar navigation only (no tab bar)**
 - Scene card visual language aligns with Ambience Presets (`scenes-list-design.md`) but scoped to session-linked scenes

@@ -5,9 +5,10 @@ Feature: Navigation
   I want to use the sidebar to switch between the main sections of the app
   So that I can move quickly between Current Session, Sound Library, Global Mixer, Ambience Presets, and Vault.
 
-  Scenario: The sidebar shows the primary navigation items
+  Scenario: The app shell shows Arcanum Audio and primary navigation
     When I open the app
-    Then I see the sidebar "The Tome" with items:
+    Then I see "Arcanum Audio" in the top bar
+    And I see the sidebar with items:
       | Current Session  |
       | Sound Library    |
       | Global Mixer     |

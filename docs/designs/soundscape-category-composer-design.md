@@ -17,7 +17,7 @@ The Category Composer (Global Mixer) is where the GM orchestrates elemental audi
 
 ## App Shell
 
-Shared FE layout with left sidebar ("The Tome"). See `home-design.md` for full shell spec.
+Shared FE layout for **Arcanum Audio** (left sidebar navigation). See `home-design.md` for full shell spec.
 
 - **FE sidebar navigation only (no tab bar)**
 - Main content area may use a lighter off-white panel (`#F5F5F0`) contrasting the dark sidebar

@@ -16,7 +16,7 @@ The Vault of Echoes holds all soft-deleted items across the platform before perm
 
 ## App Shell
 
-Shared FE layout with left sidebar ("The Tome"). See `home-design.md` for full shell spec.
+Shared FE layout for **Arcanum Audio** (left sidebar navigation). See `home-design.md` for full shell spec.
 
 - **Sidebar:** SYSTEM section visible with **Vault** active (gold bar + tint)
 - **FE sidebar navigation only (no tab bar)**

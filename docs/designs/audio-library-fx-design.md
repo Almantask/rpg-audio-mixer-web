@@ -17,7 +17,7 @@ The Sound Effects view is the global catalogue of all one-shot FX tracks within 
 
 ## App Shell
 
-Shared FE layout with left sidebar ("The Tome"). See `home-design.md` for full shell spec.
+Shared FE layout for **Arcanum Audio** (left sidebar navigation). See `home-design.md` for full shell spec.
 
 ### Sidebar Filter Panel (bottom of sidebar)
 Filters are anchored in the sidebar footer area, not the main content header:

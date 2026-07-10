@@ -21,7 +21,7 @@ The same screen layout is reused for both contexts:
 
 ## App Shell
 
-Shared FE layout with left sidebar ("The Tome"). See `home-design.md` for full shell spec.
+Shared FE layout for **Arcanum Audio** (left sidebar navigation). See `home-design.md` for full shell spec.
 
 - **FE sidebar navigation only (no tab bar)**
 - May render as a full-page view or `Sheet` / `Dialog` overlay within the main content area while sidebar remains visible

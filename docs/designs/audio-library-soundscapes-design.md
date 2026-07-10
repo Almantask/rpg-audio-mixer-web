@@ -19,7 +19,7 @@ Sound Effects are accessed as a sub-view within Sound Library (see `audio-librar
 
 ## App Shell
 
-Shared FE layout with left sidebar ("The Tome"). See `home-design.md` for full shell spec.
+Shared FE layout for **Arcanum Audio** (left sidebar navigation). See `home-design.md` for full shell spec.
 
 - **Sidebar footer:** user profile — avatar, name (e.g. "Grand Alchemist"), studio/campaign context
 - **FE sidebar navigation only (no tab bar)**

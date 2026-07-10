@@ -17,9 +17,9 @@ Displays every scene ever created, regardless of which campaign or session it be
 
 ## App Shell
 
-Shared FE layout with left sidebar ("The Tome"). See `home-design.md` for full shell spec.
+Shared FE layout for **Arcanum Audio** (left sidebar navigation). See `home-design.md` for full shell spec.
 
-- **Top bar:** hamburger · "Alchemist's Console" · ⚙️
+- **Top bar:** hamburger · "Arcanum Audio" · ⚙️
 - **Sidebar:** Ambience Presets active (gold bar + tint)
 - **FE sidebar navigation only (no tab bar)**
 

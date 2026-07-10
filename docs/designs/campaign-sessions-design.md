@@ -17,7 +17,7 @@ Lists all play sessions belonging to a single campaign. The GM navigates here to
 
 ## App Shell
 
-Shared FE layout with left sidebar ("The Tome"). See `home-design.md` for full shell spec.
+Shared FE layout for **Arcanum Audio** (left sidebar navigation). See `home-design.md` for full shell spec.
 
 - **FE sidebar navigation only (no tab bar)**
 - Breadcrumb or inline back link replaces former bottom-tab "Campaigns" entry
