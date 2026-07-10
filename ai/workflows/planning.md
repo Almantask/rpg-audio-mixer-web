@@ -27,4 +27,4 @@ description: Plan a new web feature from requirements to designs, Gherkin specs,
 
 `@principal-engineer` · `@principal-po` · `@principal-qa` → `/feedback/`
 
-## Phase 6–8: Human gate, post-feedback fixes (`@fe-developer`), baseline (`@project-historian`)
+## Phase 6–7: Human gate, post-feedback fixes (`@fe-developer`)

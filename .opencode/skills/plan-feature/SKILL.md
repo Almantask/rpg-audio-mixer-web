@@ -61,10 +61,6 @@ Stop and notify the human when `/feedback/` has open questions. Do not advance u
 
 Launch `fe-developer` (+ `audio-specialist` if applicable) to update plans and linked artifacts per `/feedback/` decisions.
 
-## Phase 8 — Baseline
-
-Launch `project-historian` (`document-learnings`) to finalize `plans/summary.md` and capture strategic rationale.
-
 ## Reporting
 
 - Short phase-oriented progress updates.

@@ -1,6 +1,6 @@
 ---
 name: feature-delivery
-description: 'Deliver a web feature end-to-end by orchestrating fe-developer, qa-tester, reviewers, human feedback gates, and project-historian.'
+description: 'Deliver a web feature end-to-end by orchestrating fe-developer, qa-tester, reviewers, and human feedback gates.'
 argument-hint: 'Describe the feature, bug, or requirement to deliver end-to-end'
 tools: [read, search, execute, agent]
 user-invocable: true

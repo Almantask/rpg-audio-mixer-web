@@ -112,10 +112,10 @@ Use orchestration **skills** via slash commands — they delegate to specialist 
 |---|---|---|
 | `plan-feature` | `/plan-feature` | Requirements → design → Gherkin → iteration plans |
 | `refine-feature` | `/refine-feature` | Update existing specs, designs, and plans |
-| `new-feature` | `/new-feature` | Implementation → validation → review → documentation |
+| `new-feature` | `/new-feature` | Implementation → validation → review → fixes |
 
 **1. New Feature Delivery (`/new-feature`)**
-Executes the 5-phase sequence: Implementation → Validation → Review Council → Fixes → Historian.
+Executes the 4-phase sequence: Implementation → Validation → Review Council → Fixes.
 > `/new-feature Implement the new Master Volume slider defined in our project plan`
 
 Consult `ai/skills/new-feature/SKILL.md` for phase details and subagent delegation.

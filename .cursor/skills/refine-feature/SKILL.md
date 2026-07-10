@@ -55,10 +55,6 @@ Stop and notify the human when `/feedback/` has open questions. Do not advance u
 
 Launch `fe-developer` (+ `audio-specialist` if applicable) to align designs, `.feature` files, and plans with `/feedback/` decisions.
 
-## Phase 8 — History
-
-Launch `project-historian` (`document-learnings`) to capture what changed and why.
-
 ## Reporting
 
 - Short phase-oriented progress updates.

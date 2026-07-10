@@ -19,4 +19,4 @@ description: Refine existing web feature specs, designs, and plans.
 - **Then parallel:** `@fe-reviewer` · `@principal-engineer` · `@audio-specialist` *(if audio)*
 - CI blocked → `@devops-engineer`
 
-## Phase 5–8: Principal review, human gate, fixes (`@fe-developer`), history (`@project-historian`)
+## Phase 5–7: Principal review, human gate, fixes (`@fe-developer`)

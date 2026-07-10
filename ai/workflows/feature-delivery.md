@@ -1,5 +1,5 @@
 ---
-description: End-to-end feature delivery for the Arcanum Audio web app — implementation, validation, review, fixes, documentation.
+description: End-to-end feature delivery for the Arcanum Audio web app — implementation, validation, review, and fixes.
 ---
 
 # Feature Delivery Workflow
@@ -32,7 +32,3 @@ Both `@qa-tester` and `@fe-developer` work in parallel:
 ## Phase 4: Post-Review Fixes
 
 `@fe-developer` + `@qa-tester` address feedback; incorporate `/feedback/` decisions; rerun Phase 2 and affected reviews.
-
-## Phase 5: Documentation
-
-`@project-historian` updates `docs/Learnings.md` and related guides.

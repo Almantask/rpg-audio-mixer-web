@@ -1,6 +1,6 @@
 ---
 name: new-feature
-description: 'Deliver a feature end-to-end — implementation, validation, review council, fixes, and documentation. Use when: user says /new-feature, requests full feature delivery, or wants the complete pipeline for a bug or requirement.'
+description: 'Deliver a feature end-to-end — implementation, validation, review council, and fixes. Use when: user says /new-feature, requests full feature delivery, or wants the complete pipeline for a bug or requirement.'
 ---
 
 # New Feature Delivery
@@ -50,10 +50,6 @@ Blocking issues → Phase 4.
 ## Phase 4 — Post-Review Fixes
 
 Launch `fe-developer` and `qa-tester` to resolve all reviewer findings and `/feedback/` decisions. Return to Phase 2, then rerun affected review batches.
-
-## Phase 5 — Documentation
-
-Launch `project-historian` (`document-learnings`) to update `docs/Learnings.md` and related docs.
 
 ## Reporting
 
