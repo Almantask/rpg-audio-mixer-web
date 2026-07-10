@@ -1,93 +1,88 @@
-# Add FX or Soundscape to Scene — Screen Design
+﻿# Add FX or Soundscape to Scene — Screen Design
 
 **Design References:**
 - [`docs/designs/Add-Fx-Or-Soundscape-ToScene.html`](../../docs/designs/Add-Fx-Or-Soundscape-ToScene.html)
 - [`docs/designs/Add-Fx-Or-Soundscape-ToScene.png`](../../docs/designs/Add-Fx-Or-Soundscape-ToScene.png)
+- **New source of truth:** FE sidebar layout (Jul 2026 redesign)
 
 ---
 
 ## Purpose
 
-A full-screen selection view that appears when the GM taps **ADD NEW SOUNDSCAPE** (from the Active Scene — Soundscapes tab) or **ADD NEW EFFECT** (from the Active Scene — Soundboard tab). It lets the GM browse their entire library and add items to the active scene one tap at a time.
+A selection view that appears when the GM clicks **Add Sound** / **Invoke New Layer** (from Active Scene) or adds items from the library context. It lets the GM browse their entire library and add items to the active scene one click at a time.
 
 The same screen layout is reused for both contexts:
-- **Soundscape variant** — title "Imported Soundscapes", lists Soundscape Categories
+- **Soundscape variant** — lists Soundscape Categories
 - **FX variant** — lists FX tracks from the Sound Effects library
+
+**Sidebar nav item:** Current Session (active when launched from Active Scene) or Sound Library (when launched from library context)
 
 ---
 
-## Layout
+## App Shell
+
+Shared FE layout with left sidebar ("The Tome"). See `home-design.md` for full shell spec.
+
+- **FE sidebar navigation only (no tab bar)**
+- May render as a full-page view or `Sheet` / `Dialog` overlay within the main content area while sidebar remains visible
+
+---
+
+## Layout — Main Content
 
 ```
-┌─────────────────────────────────────┐
-│  ←  Arcanum Audio              [⚙️]  │
-├─────────────────────────────────────┤
-│  Imported Soundscapes               │
-│  Browse your collection of ancient  │
-│  echoes and ethereal resonances…    │
-│                                     │
-│  ┌───────────────────────────────┐  │
-│  │ [img]  Weather           [+]  │  │
-│  │        12 TRACKS  PLAYED 84×  │  │
-│  └───────────────────────────────┘  │
-│  ┌───────────────────────────────┐  │
-│  │ [img]  Interior          [+]  │  │
-│  │        8 TRACKS   PLAYED 142× │  │
-│  └───────────────────────────────┘  │
-│  ┌── already in scene ───────────┐  │
-│  │ [img]  Combat            [⚡] │  │
-│  │        24 TRACKS  PLAYED 310× │  │
-│  └───────────────────────────────┘  │
-│  ┌───────────────────────────────┐  │
-│  │ [img]  Monsters          [+]  │  │
-│  │        15 TRACKS  PLAYED 67×  │  │
-│  └───────────────────────────────┘  │
-│  …                                  │
-│                                     │
-│  ┌── Footer card ────────────────┐  │
-│  │  Need a custom resonance?     │  │
-│  │  Summon a new soundscape…     │  │
-│  │  [    IMPORT NEW    ]         │  │
-│  └───────────────────────────────┘  │
-├─────────────────────────────────────┤
-│  🏰 HOME  📖 CAMPAIGNS  🖼 SCENES  🎵 LIBRARY │
-└─────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────────┐
+│  ← Back to Active Scene                                              │
+│  Imported Soundscapes                                                │
+│  Browse your collection of ancient echoes and ethereal resonances…   │
+│                                                                      │
+│  ┌───────────────────────────────┐  ┌───────────────────────────────┐│
+│  │ [img]  Weather           [+]  │  │ [img]  Interior          [+]  ││
+│  │        12 TRACKS  PLAYED 84×  │  │        8 TRACKS  PLAYED 142× ││
+│  └───────────────────────────────┘  └───────────────────────────────┘│
+│  ┌── already in scene ───────────┐  ┌───────────────────────────────┐│
+│  │ [img]  Combat            [⚡] │  │ [img]  Monsters          [+]  ││
+│  │        24 TRACKS PLAYED 310×  │  │        15 TRACKS PLAYED 67×  ││
+│  └───────────────────────────────┘  └───────────────────────────────┘│
+│                                                                      │
+│  ┌─ Footer card ─────────────────────────────────────────────────┐   │
+│  │  Need a custom resonance?                                     │   │
+│  │  Summon a new soundscape category from your scrolls.            │   │
+│  │  [    Import New    ]                                           │   │
+│  └────────────────────────────────────────────────────────────────┘   │
+└──────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
 ## Components
 
-### Top Bar
-- Back arrow → returns to the Active Scene screen that launched this view
-- App logo / wordmark centred
-- ⚙️ gear icon top-right
+### Back Link
+- **← Back to Active Scene** — returns to the tab that launched this view (Atmospheres or Soundboard)
 
 ### Screen Heading
-- Large serif title: **"Imported Soundscapes"** (or equivalent for FX variant)
-- Subtitle in small text: flavour copy describing the library
+- Large serif title: **"Imported Soundscapes"** (or FX equivalent)
+- Subtitle: flavour copy describing the library
 
-### Category / Track Row (repeating)
+### Category / Track Row (`Card` — repeating)
+
 | Element | Description |
 |---|---|
 | Thumbnail | Category art or track artwork |
 | Name | Category or FX name in gold italic serif |
 | Track count | "N TRACKS" |
 | Play count | "PLAYED N TIMES" |
-| **+ button** | Tapping instantly adds this item to the active scene; no confirm step required |
-| **Already-added indicator** | When the item is already in the scene, the + button is replaced by a distinct icon (e.g. lightning bolt ⚡) marking it as active/in-use — it is **not** tappable again |
+| **+ button** | Clicking instantly adds item to active scene; no confirm step |
+| **Already-added indicator** | Replaces + with distinct icon (e.g. ⚡) — not clickable again |
 
-> **Empty categories are hidden.** Soundscape Categories that contain **zero tracks** (no tracks at any intensity level) are excluded from this list entirely. They do not appear as rows — only categories with at least one track are shown.
+> **Empty categories are hidden.** Categories with **zero tracks** at all intensity levels are excluded from the list.
 
-### Footer Card
+### Footer Card (`Card`)
 - Flavour headline: *"Need a custom resonance?"*
 - Subtitle: *"Summon a new soundscape category from your scrolls."*
-- **IMPORT NEW** button:
-  - In the Soundscape variant → opens the device's native file picker; on file selection, creates a new soundscape and navigates to the Soundscape Category Composer
-  - In the FX variant → opens the device file picker; on file selection, adds the imported track to the FX library and back to this list
-
-### Bottom Navigation Bar
-- 🎵 LIBRARY tab is highlighted (this screen flows from the Library's category system)
+- **Import New** `Button`:
+  - Soundscape variant → browser file picker → new soundscape → Category Composer
+  - FX variant → browser file picker → adds track to FX library
 
 ---
 
@@ -95,30 +90,28 @@ The same screen layout is reused for both contexts:
 
 | Interaction | Result |
 |---|---|
-| Tap **+** on a row | Immediately adds that item to the active scene; + changes to the already-added indicator |
-| Tap already-added indicator | No action — item is already in the scene |
-| Tap **IMPORT NEW** | Opens device file picker (audio files only) |
-| Tap back arrow | Returns to Active Scene (Soundscapes or Soundboard tab, depending on which launched this view) |
-| Tap ⚙️ | Navigate to Credits screen |
+| Click **+** on a row | Immediately adds item to active scene; + changes to already-added indicator |
+| Click already-added indicator | No action |
+| Click **Import New** | Opens browser file picker (audio files only) |
+| Click back link | Returns to Active Scene (Atmospheres or Soundboard tab) |
+| Click ⚙️ | Navigate to Arcane Settings |
+| Click sidebar item | Navigate away (may prompt if unsaved additions pending) |
 
-### Single-tap add (no confirm)
-There is no explicit "Done" or "Confirm" button. Each **+** tap is instant and non-destructive — the GM can add however many items they want, then tap back to return to the scene.
-
-### Already-in-scene indicator
-Categories or FX tracks that have already been added to the current scene show a distinct visual indicator in place of the + button. This prevents duplicate additions and provides clear feedback about what is already active.
+### Single-click add (no confirm)
+No explicit "Done" button. Each **+** click is instant. GM navigates back when finished.
 
 ---
 
 ## States
 
 ### Normal
-Full list of all library items (excluding empty categories — those with zero tracks) with + buttons. Already-added items show the indicator icon.
+Full list with + buttons. Already-added items show indicator icon.
 
 ### All items already added
-All rows show the indicator, no + buttons. Footer card still available for import.
+All rows show indicator; footer Import New still available.
 
-### Empty library (or all categories empty)
-No rows shown. Footer card with **IMPORT NEW** as the primary CTA. This state also applies when all existing categories have zero tracks.
+### Empty library
+No rows; footer card with Import New as primary CTA.
 
 ---
 
@@ -126,7 +119,8 @@ No rows shown. Footer card with **IMPORT NEW** as the primary CTA. This state al
 
 | Destination | Trigger |
 |---|---|
-| Active Scene — Soundscapes tab | Back arrow (launched from Soundscapes) |
-| Active Scene — Soundboard tab | Back arrow (launched from Soundboard) |
-| Device file picker (OS overlay) | IMPORT NEW button |
-| Credits | ⚙️ gear icon |
+| Active Scene — Atmospheres tab | Back link (launched from Atmospheres) |
+| Active Scene — Soundboard tab | Back link (launched from Soundboard) |
+| Category Composer | Import New (soundscape variant) |
+| Browser file picker | Import New button |
+| Arcane Settings | ⚙️ gear or sidebar |

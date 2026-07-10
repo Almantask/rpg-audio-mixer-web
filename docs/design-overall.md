@@ -7,8 +7,8 @@
 ## 1. Branding & Theme
 
 - App name: **Arcanum Audio**
-- Theme: dark only
-- Colour palette: black backgrounds, gold/amber typography and accents, purple/pink/gold gradient sliders
+- Theme: to be determined
+- Colour palette: to be determined
 
 ---
 

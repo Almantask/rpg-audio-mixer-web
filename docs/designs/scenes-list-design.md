@@ -1,8 +1,9 @@
-# Scenes List (Global) — Screen Design
+﻿# Ambience Presets (Atmospheric Scenes) — Screen Design
 
 **Design References:**
 - [`docs/designs/ScenesList.html`](../../docs/designs/ScenesList.html)
 - [`docs/designs/ScenesList.png`](../../docs/designs/ScenesList.png)
+- **New source of truth:** FE sidebar layout screenshots (Jul 2026 redesign)
 
 ---
 
@@ -10,68 +11,60 @@
 
 Displays every scene ever created, regardless of which campaign or session it belongs to. Scenes are global and reusable — editing a scene here updates it everywhere it is used.
 
-This screen is reached via the **🖼 SCENES** bottom navigation tab.
+**Sidebar nav item:** Ambience Presets (active on this screen)
 
 ---
 
-## Layout
+## App Shell
+
+Shared FE layout with left sidebar ("The Tome"). See `home-design.md` for full shell spec.
+
+- **Top bar:** hamburger · "Alchemist's Console" · ⚙️
+- **Sidebar:** Ambience Presets active (gold bar + tint)
+- **FE sidebar navigation only (no tab bar)**
+
+---
+
+## Layout — Main Content
 
 ```
-┌─────────────────────────────────────┐
-│  Scenes                        [⚙️]  │
-├─────────────────────────────────────┤
-│  Global Scenes                      │
-│  ALL REALMS & ENCOUNTERS            │
-│  [🔍 Filter scenes by name or tag...]│
-├─────────────────────────────────────┤
-│  ┌─────────────────────────────┐    │
-│  │ [Cover Art Background]      │    │
-│  │                        [▶]  │    │
-│  │                        [Clone]│  │
-│  │  Scene name                 │    │
-│  │  [Tag] [Tag]                │    │
-│  └─────────────────────────────┘    │
-│  ┌─────────────────────────────┐    │
-│  │ [Cover Art Background]      │    │
-│  │                        [▶]  │    │
-│  │                        [Clone]│  │
-│  │  Scene name                 │    │
-│  │  [Tag] [Tag]                │    │
-│  └─────────────────────────────┘    │
-│  …                                  │
-│                                     │
-│  [ + ADD NEW SCENE ]                │
-├─────────────────────────────────────┤
-│  🏰 HOME  📖 CAMPAIGNS  🖼 SCENES  🎵 LIBRARY │
-└─────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────────┐
+│  Atmospheric Scenes                          [ Import Scene ]        │
+│  Curate and manage your immersive environments.                      │
+│                                                                      │
+│  ┌──────────────┐ ┌──────────────┐ ┌──────────────┐                 │
+│  │ COMBAT INTENSE│ │ SOCIAL COZY  │ │ EXPLOR EERIE │                 │
+│  │          [⋮] │ │          [⋮] │ │          [⋮] │                 │
+│  │ Dragon's Lair│ │ Bustling     │ │ Whispering   │                 │
+│  │ Deep rumbles…│ │ Tavern       │ │ Woods        │                 │
+│  │ 4 SC  12 FX  │ │ 3 SC  24 FX  │ │ 5 SC  8 FX   │                 │
+│  │ [▶]   14.2MB │ │ [▶]   8.5MB  │ │ [▶]   11.1MB │                 │
+│  └──────────────┘ └──────────────┘ └──────────────┘                 │
+└──────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
 ## Components
 
-### Top Bar
-- Screen title "Scenes"
-- ⚙️ gear icon top-right
+### Page Header
+- **Title:** "Atmospheric Scenes" — large gold serif
+- **Subtitle:** "Curate and manage your immersive environments."
+- **Import Scene** — gold outline `Button` (top right) → opens scene creation / import flow
 
-### Scene Card (repeating)
-- Scene name in gold typography
-- Optional tags displayed as chips below the name
-- Number of soundscape categories
-- **▶ Play button**: Navigates to the Active Scene screen and **starts playback** (2–3 s fade-in).
-- **Clone button** (content_copy): Creates an exact duplicate of the scene with the name "Copy of [Scene Name]".
-- The card itself (body) is tappable separately from action buttons.
+### Scene Card (`Card` — repeating, horizontal grid)
+- Background cover art with dark gradient overlay
+- **Category tags** — `Badge` chips (e.g. COMBAT, COZY, EXPLORATION, EERIE) in top-left
+- **Three-dot menu** (`DropdownMenu`) — top-right: edit, clone, delete
+- Scene title — white/gold serif
+- Description snippet — truncated body text
+- Stats row: soundscape count + effect count (e.g. "4 Soundscapes · 12 Effects")
+- **Play button** — circular gold `Button`; filled when active/playing
+- File size label — bottom-right (e.g. "14.2 MB")
 
 ### Empty State
 - Centred illustration (parchment / scroll)
-- **Add New Scene** button
-
-### Add New Scene Button
-- Persistent **+ ADD NEW SCENE** at the bottom of the list (or FAB)
-- Opens scene creation flow: name, optional description, optional tags
-
-### Bottom Navigation Bar
-- 🖼 SCENES tab is active
+- **Import Scene** as primary CTA
 
 ---
 
@@ -79,29 +72,30 @@ This screen is reached via the **🖼 SCENES** bottom navigation tab.
 
 | Interaction | Result |
 |---|---|
-| Tap scene card (body) | Navigate to Active Scene screen — **no playback starts** |
-| Tap **▶** on scene card | Navigate to Active Scene screen — **playback starts** (2–3 s fade-in) |
-| Tap **Clone** icon | Creates a duplicate scene in the list. |
-| Swipe right on card | Instantly moves scene to temporarily unavailable (permanently deleted after 7 days) |
-| Tap **+ ADD NEW SCENE** | Open new scene creation |
-| Tap ⚙️ | Navigate to Credits screen |
+| Click scene card (body) | Navigate to Active Scene screen — **no playback starts** |
+| Click **▶** on scene card | Navigate to Active Scene screen — **playback starts** (2–3 s fade-in) |
+| Click **⋮** menu → Clone | Creates duplicate scene named "Copy of [Scene Name]" |
+| Click **⋮** menu → Delete | Soft-deletes scene → Vault of Echoes |
+| Click delete on card | Instantly moves scene to Vault (permanently deleted after 7 days) |
+| Click **Import Scene** | Open new scene creation |
+| Click ⚙️ | Navigate to Arcane Settings |
 
 ### Scene Tags
 - User adds tags from a predefined list (e.g. Tavern, Forest, Combat, City…) plus custom free-text tags
-- Tags appear as small chips on the card for quick scanning
+- Tags appear as `Badge` chips on the card for quick scanning
 
 ---
 
 ## States
 
-### Populated list
-All created scenes. No grouping, no filters.
+### Populated grid
+All created scenes in a horizontal scroll/grid layout.
 
 ### Empty state
-Illustration + "Add New Scene" button.
+Illustration + Import Scene button.
 
 ### Creating a scene
-Form: name input (required), description (optional), tags picker (optional — fixed list + custom).
+`Dialog` or dedicated form: name input (required), description (optional), tags picker (optional).
 
 ---
 
@@ -109,10 +103,8 @@ Form: name input (required), description (optional), tags picker (optional — f
 
 | Destination | Trigger |
 |---|---|
-| Active Scene (view only) | Tap scene card body |
-| Active Scene (with playback) | Tap ▶ on card |
-| New scene creation | + ADD NEW SCENE |
-| Credits | ⚙️ gear icon |
-| Home tab | 🏰 bottom nav |
-| Campaigns tab | 📖 bottom nav |
-| Library tab | 🎵 bottom nav |
+| Active Scene (view only) | Click scene card body |
+| Active Scene (with playback) | Click ▶ on card |
+| New scene creation | Import Scene button |
+| Arcane Settings | ⚙️ gear or sidebar |
+| Current Session | Sidebar |

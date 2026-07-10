@@ -1,80 +1,106 @@
-# Credits ("Behind the Screen") — Screen Design
+﻿# Arcane Settings ("Behind the Screen") — Screen Design
 
 **Design References:**
 - [`docs/designs/Credits.html`](../../docs/designs/Credits.html)
 - [`docs/designs/Credits.png`](../../docs/designs/Credits.png)
+- **New source of truth:** FE sidebar layout screenshots (Jul 2026 redesign)
 
 ---
 
 ## Purpose
 
-The Credits screen provides info about the app, its creators, and external links. It doubles as the only "Settings"-adjacent screen in the app. Reached by tapping the ⚙️ gear icon on any screen.
+The Arcane Settings screen (titled "Behind the Screen") provides app info, support links, recovery tools, and community portals. Reached via the ⚙️ gear icon (top bar) or the **Arcane Settings** sidebar item.
+
+**Sidebar nav item:** Arcane Settings (active on this screen)
 
 ---
 
-## Layout
+## App Shell
+
+Shared FE layout with left sidebar ("The Tome"). See `home-design.md` for full shell spec.
+
+- **Sidebar footer:** "ALCHEMIST PROFILE" section with avatar icon
+- **FE sidebar navigation only (no tab bar)**
+
+---
+
+## Layout — Main Content
 
 ```
-┌─────────────────────────────────────┐
-│  ← ARCANUM AUDIO               [⚙️]  │
-├─────────────────────────────────────┤
-│  Behind the Screen                  │
-│  The scribes and sorcerers...       │
-│                                     │
-│  [ 🗑️ VAULT OF ECHOES ]              │
-│  ┌───────────────────────────────┐  │
-│  │ Arcanum Audio is a labor of...│  │
-│  └───────────────────────────────┘  │
-│                                     │
-│  [Author Card]     [Version Card]   │
-│                                     │
-│  ─── CONNECT WITH THE GUILD ─────   │
-│  📄  Tome of Knowledge (Docs)       │
-│  💬  The Discord Tavern             │
-│  ✉️   Summon via Email               │
-│                                     │
-│  "The music is the magic..."        │
-│  © 2024 Arcanum Systems             │
-├─────────────────────────────────────┤
-│  🏰 HOME  📖 CAMPAIGNS  🖼 SCENES  🎵 LIBRARY │
-└─────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────────┐
+│  Behind the Screen                                                   │
+│  The artifacts, incantations, and minds that forged this vessel…       │
+│                                                                      │
+│  ┌─ Necromancy Protocol (red gradient card) ──────────────────────┐  │
+│  │ 📕 Did you accidentally banish a crucial soundscape…?          │  │
+│  │                    [ Restore Recent Deletes ↺ ]                │  │
+│  └────────────────────────────────────────────────────────────────┘  │
+│                                                                      │
+│  Fuel the Forge ─────────────────────────────────────────────────    │
+│  ┌─ Elixir of Wakefulness ─┐  ┌─ Leave a Mark ──────────────────┐   │
+│  │ ☕ Keep the midnight oil… │  │ ⭐ A kind word in the town…     │   │
+│  │ [Buy the Devs a Potion ☕]│  │ [Inscribe a Review 📜]         │   │
+│  └──────────────────────────┘  └─────────────────────────────────┘   │
+│                                                                      │
+│  Community Portals          Legal                                  │
+│  💬 Discord Tavern          Terms of the Pact (TOS)                  │
+│  📧 Raven Carrier           Veil of Privacy Policy                   │
+│  </> GitHub Repository      Attributions & Runes                     │
+│  📄 Patch Notes & Lore                                               │
+│                                                                      │
+│  "In the spaces between silence, we craft the echoes…"               │
+│  © 2024 THE ALCHEMIST'S CONSOLE. V 2.4.1.                            │
+└──────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
 ## Components
 
-### Top Bar
-- Back arrow → returns to whichever screen the user came from
-- Screen title "Behind the Screen"
-- ⚙️ gear icon (present but navigates to self — no-op or scrolls to top)
+### Page Header
+- **Title:** "Behind the Screen" — large white serif
+- **Subtitle:** "The artifacts, incantations, and minds that forged this vessel. Support the dark arts of development."
 
-### App Identity & Header
-- Screen title "Behind the Screen" and descriptive subtitle.
+### Necromancy Protocol (`Card` — red gradient)
+- Icon: red book with clock symbol
+- **Title:** "Necromancy Protocol" — reddish-gold serif
+- **Description:** Explains recovery of recently purged spells and atmospheres from local grimoire
+- **Restore Recent Deletes** — dark red outline `Button` with ↺ icon → navigates to Vault of Echoes or triggers inline restore flow
 
-### Support Section (Bento Highlight)
-- **VAULT OF ECHOES**
-  - Navigates to the Trash screen to restore soft-deleted categories or scenes. Replaces the former 'RESTORE RECENT DELETES' button.
-- A card expressing gratitude to the users ("labor of passion").
+### Fuel the Forge Section
+Section heading with horizontal rule extension.
 
-### Author & App Info Grid
-- **Author Card**: Shows the Lead Developer ("The Arch-Mage").
-- **Version Card**: Shows the current version and codename ("Chronicle").
+#### Elixir of Wakefulness (`Card`)
+- Gold coffee cup icon in circle
+- Body copy about supporting server costs and new sound libraries
+- **Buy the Devs a Potion** — gold `Button` (primary) with coffee icon → external tip/donation URL
 
-### Links Section
-Each link is a tappable row that opens the relevant URL or email in the appropriate OS handler:
+#### Leave a Mark (`Card`)
+- Blue star icon in circle
+- Body copy encouraging product reviews
+- **Inscribe a Review** — secondary dark `Button` with scroll/quill icon → external review URL
 
-| Link | Behaviour |
+### Community Portals (`Card`)
+Clickable link rows with external-link arrow:
+
+| Link | Icon |
 |---|---|
-| Tome of Knowledge (Docs) | Opens docs URL in browser |
-| The Discord Tavern | Opens Discord invite link in browser or Discord app |
-| Summon via Email | Opens email client with pre-filled address |
+| The Discord Tavern | Blue chat bubble |
+| Raven Carrier (Support) | @ / envelope |
+| GitHub Repository | Code brackets |
+| Patch Notes & Lore | Document |
+
+Each opens the relevant URL in the browser or new browser tab.
+
+### Legal Links
+Text links below Community Portals:
+- Terms of the Pact (TOS)
+- Veil of Privacy Policy
+- Attributions & Runes
 
 ### Footer
-- Stylised quote and copyright text.
-
-### Bottom Navigation Bar
-- The tab that was previously active remains active (Credits is a modal-style overlay in the navigation hierarchy, not a new tab)
+- Italic serif quote: *"In the spaces between silence, we craft the echoes of worlds yet unseen."*
+- Copyright: **© 2024 THE ALCHEMIST'S CONSOLE. V 2.4.1.**
 
 ---
 
@@ -82,12 +108,13 @@ Each link is a tappable row that opens the relevant URL or email in the appropri
 
 | Interaction | Result |
 |---|---|
-| Tap back arrow | Return to previous screen |
-| Tap VAULT OF ECHOES | Navigate to Trash screen |
-| Tap Documentation link | Open in device browser |
-| Tap Discord link | Open Discord (app or browser) |
-| Tap email link | Open device email client |
-| Tap bottom nav tab | Switch to that section (back stack cleared to tab root) |
+| Click **Restore Recent Deletes** | Navigate to Vault of Echoes |
+| Click **Buy the Devs a Potion** | Open tip/donation URL in browser |
+| Click **Inscribe a Review** | Open external review URL |
+| Click community portal row | Open URL in in a new browser tab |
+| Click legal link | Open respective policy page |
+| Click ⚙️ (top bar) | No-op or scroll to top (already on settings) |
+| Click sidebar item | Navigate to that section |
 
 ---
 
@@ -102,7 +129,7 @@ Full content visible. No loading or empty states needed.
 
 | Destination | Trigger |
 |---|---|
-| Previous screen | Back arrow |
-| Trash screen | VAULT OF ECHOES |
-| External browser | Documentation or Discord link |
-| Email client | Contact/email link |
+| Vault of Echoes | Restore Recent Deletes / sidebar → Vault |
+| External browser | Community portals, legal links, support URLs |
+| Current Session | Sidebar |
+| Any primary section | Sidebar navigation |

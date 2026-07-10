@@ -1,88 +1,98 @@
-# Audio Library — Sound Effects Tab — Screen Design
+﻿# Sound Effects — Screen Design
 
 **Design References:**
 - [`docs/designs/AudioLibrary-FX.html`](../../docs/designs/AudioLibrary-FX.html)
 - [`docs/designs/AudioLibrary-FX.png`](../../docs/designs/AudioLibrary-FX.png)
+- **New source of truth:** FE sidebar layout screenshots (Jul 2026 redesign)
 
 ---
 
 ## Purpose
 
-The Sound Effects tab of the Audio Library is the global catalogue of all one-shot FX tracks. The GM can import new audio files from the device, search and filter through their collection, and preview tracks via the global playback controller. 
+The Sound Effects view is the global catalogue of all one-shot FX tracks within the Sound Library. The GM can import new audio files, search and filter the collection, preview tracks via the persistent bottom player, and add tracks to scenes or playlists.
 
-This screen is reached via the **🎵 LIBRARY** bottom nav tab (Sound Effects tab).
+**Sidebar nav item:** Sound Library (active — FX is a sub-view of Sound Library)
 
 ---
 
-## Layout
+## App Shell
+
+Shared FE layout with left sidebar ("The Tome"). See `home-design.md` for full shell spec.
+
+### Sidebar Filter Panel (bottom of sidebar)
+Filters are anchored in the sidebar footer area, not the main content header:
+
+| Control | Component | Description |
+|---|---|---|
+| Search | `Input` | Placeholder: "Search Incantations…" with magnifying glass |
+| FX Types | `Select` | Dropdown — e.g. "All Types" |
+| Base Intensity | `Slider` | Horizontal slider with speaker icons at each end |
+| Sort Order | `Select` | Dropdown — e.g. "Recently Added" |
+
+- **FE sidebar navigation only (no tab bar)**
+
+---
+
+## Layout — Main Content + Player
 
 ```
-┌─────────────────────────────────────┐
-│  ✨ ARCANUM AUDIO              [⚙️]  │
-├─────────────────────────────────────┤
-│  Sound Effects                      │
-│  ACTION & ENVIRONMENTAL FX          │
-├─────────────────────────────────────┤
-│  [ Import FX ] [ Buy More ] [ Free ]│
-├─────────────────────────────────────┤
-│  [Soundscapes]  |  [Sound Effects]  │  
-│  [ Search... 🔍 ] [ Filter ] [ Vol ] │
-│  [ Sort By     ]                    │
-├─────────────────────────────────────┤
-│  ┌───────────────────────────────┐  │
-│  │ [🖼 + ▶] FX Name        00:03 │  │
-│  │           Tags         [---O] │  │
-│  │                        [ ⋮ ]  │  │
-│  └───────────────────────────────┘  │
-│  …                                  │
-├─────────────────────────────────────┤
-│  ┌─ Playback Controller ───────┐    │
-│  │ [EQ] Title   [|◀] [▶] [▶|] [Vol] │    
-│  └─────────────────────────────┘    │
-│  🏰 HOME 📖 SESSIONS 🖼 SCENES 🎵 LIB│
-└─────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────────┐
+│  Sound Effects                                                       │
+│  Browse, import, and manage your arcane audio assets.                │
+│  [ Import FX ]  [ Buy More ]  [ Free Tracks ]                        │
+│                                                                      │
+│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐                │
+│  │ [thumb]  │ │ [thumb]  │ │ ●PLAYING │ │ [thumb]  │                │
+│  │ Thunder  │ │ Sword    │ │ Rune Act │ │ Goblin   │                │
+│  │ 0:04     │ │ 0:02     │ │ 0:03     │ │ 0:01     │                │
+│  │ IMPACT   │ │ COMBAT   │ │ UI MAGIC │ │ CREATURE │                │
+│  │ ═◉══ [+] │ │ ═◉══ [+] │ │ ═◉══ [✓] │ │ ═◉══ [+] │                │
+│  └──────────┘ └──────────┘ └──────────┘ └──────────┘                │
+├──────────────────────────────────────────────────────────────────────┤
+│  [thumb] Rune Activation  UI·Magic  │◀  ⏸  ▶│ ═══◉════ 0:03/8:08  🔊│
+└──────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
 ## Components
 
-### Top App Bar
-- App identity text ("ARCANUM AUDIO") with styling
-- ⚙️ Settings icon top-right
+### Page Header
+- **Title:** "Sound Effects" — large gold serif
+- **Subtitle:** "Browse, import, and manage your arcane audio assets."
 
-### Header
-- Title "Sound Effects"
-- Subtitle "Action & Environmental FX"
+### Action Buttons (top right)
+- **Import FX** — outline `Button` with upload icon → browser file picker
+- **Buy More** — gold `Button` with cart icon → storefront
+- **Free Tracks** — outline `Button` with external-link icon → demo download
 
-### Action Buttons
-- **Import FX:** Opens device file picker to upload audio.
+### FX Card (`Card` — grid, repeating)
 
-### Tabs & Filters
-- **Tabs:** Soundscapes | **Sound Effects** (active).
-- **Search Bar:** Text input for filtering tracks by name.
-- **Filters Dropdowns:** 
-  - Type (e.g. Combat, Magic, Nature, Creature)
-  - Volume (e.g. Subtle, Loud, Piercing)
-- **Sort By:** Dropdown for sorting tracks.
-
-### Track List Item (Card)
 | Element | Description |
 |---|---|
-| **Thumbnail & Play** | Square image thumbnail. Hovering reveals a **▶** play button overlay to preview the track. |
-| **FX Name & Tags** | Title and category chips (e.g. Combat, Impact). |
-| **Duration** | Track length in mm:ss format. |
-| **Volume Slider** | Individual slider for the track's default playback output. Uses **Cubic ($x^3$) mapping** for natural progression. |
-| **⋮ Menu** | "More options" dropdown to edit or remove the track. |
+| Thumbnail | Square artwork or icon |
+| Title + duration | e.g. "Thunder Strike" · 0:04 |
+| Tags | `Badge` chips (IMPACT, WEATHER, UI, MAGIC, etc.) |
+| Volume `Slider` | Per-track default output. **Cubic ($x^3$) mapping** |
+| Add / check button | **+** to add to playlist/scene; **✓** when already added |
 
-### Global Playback Controller
-- Consistently anchored floating glass card at the bottom of the screen.
-- **State indicators:** Shows "Last Effect Played" and its title.
-- **Controls:** Skip previous, Play/Pause, Skip next.
-- **Master Volume:** A slider for global sound effects volume. Uses **Cubic ($x^3$) mapping**.
+**PLAYING overlay (active card):**
+- Gold border highlight
+- Dimmed thumbnail with **● PLAYING** label
+- Large pause icon in gold circle centred on thumbnail
+- Title rendered in gold; footer shows checkmark instead of plus
 
-### Bottom Navigation Bar
-- Active tab is 🎵 Library. Note the Sessions tab uses the `auto_stories` icon.
+### Bottom Persistent Player Bar
+Fixed horizontal bar spanning main content width:
+
+| Region | Elements |
+|---|---|
+| Left | Thumbnail, track title, category (e.g. "UI • Magic") |
+| Centre | Previous, **Play/Pause** (large gold circle), Next; `Progress` bar with elapsed/total |
+| Right | Add-to-playlist icon, volume icon + `Slider` |
+
+- Master volume uses **Cubic ($x^3$) mapping**
+- Player persists while browsing the grid
 
 ---
 
@@ -90,22 +100,31 @@ This screen is reached via the **🎵 LIBRARY** bottom nav tab (Sound Effects ta
 
 | Interaction | Result |
 |---|---|
-| Tap **▶** on track image | Loads track into Global Playback Controller and plays it |
-| Tap **Free Tracks** | Initiates download of 100 demo sound effects |
-| Tap **⋮** on track | Opens contextual menu (edit, delete) |
-| Tap Play/Pause in controller | Toggles playback of the loaded track |
-| Adjust Volume in track row | Sets base volume level for that specific track |
-| Tap "Soundscapes" tab | Switch to Soundscapes tab |
+| Click card thumbnail / play | Loads track into bottom player and plays |
+| Click **+** on card | Adds track to playlist or active scene context |
+| Click **✓** on card | No duplicate add |
+| Click **Import FX** | Opens browser file picker |
+| Click **Free Tracks** | Initiates download of 100 demo sound effects |
+| Adjust card volume slider | Sets base volume for that track |
+| Use sidebar search/filters | Filters grid in real time (debounced search) |
+| Player prev/next | Skips to adjacent track in filtered list |
+| Click ⚙️ | Navigate to Arcane Settings |
 
 ---
 
 ## States
 
-### Populated list
-Grid of robust track cards with images and controls.
+### Populated grid
+Card grid with thumbnails, tags, and controls.
 
-### Playback State
-When playing, the Playback Controller reflects the active track and allows skipping or pausing.
+### Playback state
+Active card shows PLAYING overlay; bottom player reflects current track.
+
+### Empty library
+Centred illustration + Import FX and Free Tracks CTAs.
+
+### Filtered empty
+"No incantations match your filters" message with clear-filters action.
 
 ---
 
@@ -113,10 +132,7 @@ When playing, the Playback Controller reflects the active track and allows skipp
 
 | Destination | Trigger |
 |---|---|
-| Device file picker (OS overlay) | Import FX |
-| Audio Library — Soundscapes tab | Tap "Soundscapes" in tab strip |
-| Settings Overlay | ⚙️ gear icon |
-ary — Soundscapes tab | Tap "Soundscapes" in tab strip |
-| Settings Overlay | ⚙️ gear icon |
-Tap "Soundscapes" in tab strip |
-| Settings Overlay | ⚙️ gear icon |
+| Sound Library (compositions) | Sidebar or library sub-nav |
+| Browser file picker | Import FX |
+| Storefront | Buy More |
+| Arcane Settings | ⚙️ gear or sidebar |

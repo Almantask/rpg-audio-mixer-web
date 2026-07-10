@@ -1,70 +1,80 @@
-# Campaigns — Screen Design
+﻿# Active Campaigns — Screen Design
 
 **Design References:**
 - [`docs/designs/Campaigns.html`](../../docs/designs/Campaigns.html)
 - [`docs/designs/Campaigns.png`](../../docs/designs/Campaigns.png)
+- **New source of truth:** FE sidebar layout screenshots (Jul 2026 redesign)
 
 ---
 
 ## Purpose
 
-The Campaigns screen lists all the GM's campaigns. It is the primary entry point when the GM wants to jump into a specific story arc they haven't recently played.
+The Active Campaigns screen lists all the GM's campaigns in a visual grid. It is reached from the Current Session dashboard (not a top-level sidebar item) when the GM wants to jump into a specific story arc or create a new campaign.
+
+**Sidebar nav item:** Current Session (active — campaigns are a sub-view of session context)
 
 ---
 
-## Layout
+## App Shell
+
+Shared FE layout with left sidebar ("The Tome"). See `home-design.md` for full shell spec.
+
+- **Top bar:** hamburger · "Alchemist's Console" · ⚙️
+- **Sidebar:** Current Session active (gold bar + tint)
+- **FE sidebar navigation only (no tab bar)**
+
+---
+
+## Layout — Main Content
 
 ```
-┌─────────────────────────────────────┐
-│  ← Campaigns                  [⚙️]  │
-├─────────────────────────────────────┤
-│  ┌───────────────────────────────┐  │
-│  │ [Hero Cover art]              │  │
-│  │ Last Played                   │  │
-│  │ Featured Campaign name        │  │
-│  │ Description                   │  │
-│  │              [RESUME]         │  │
-│  └───────────────────────────────┘  │
-│  ┌───────────────────────────────┐  │
-│  │ [Cover]  Campaign name        │  │
-│  │          Last played          │  │
-│  │          Description          │  │
-│  │          [RESUME]             │  │
-│  └───────────────────────────────┘  │
-│  …                                  │
-│                                     │
-│  [ + SCRIBE NEW TALE ]              │
-├─────────────────────────────────────┤
-│  🏰 HOME  📖 CAMPAIGNS  🖼 SCENES  🎵 LIBRARY │
-└─────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────────┐
+│  Active Campaigns                                                    │
+│  Manage your ongoing tales and orchestrate new adventures.           │
+│                                                                      │
+│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐                │
+│  │ ┌ ─ ─ ─ │ │ [Cover]  │ │ [Cover]  │ │ [Cover]  │                │
+│  │    +     │ │ Overview │ │          │ │          │                │
+│  │ Scribe   │ │ Map Lore │ │ Campaign │ │ Campaign │                │
+│  │ New Tale │ │ …        │ │ name     │ │ name     │                │
+│  └──────────┘ │ desc…    │ │ desc…    │ │ desc…    │                │
+│               │ Sess 14  │ │ Sess 5   │ │ Sess 22  │                │
+│               │ [Resume] │ │ [Resume] │ │ [Resume] │                │
+│               └──────────┘ └──────────┘ └──────────┘                │
+└──────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
 ## Components
 
-### Top Bar
-- Screen title "Campaigns" left-aligned with back arrow (when navigated to from elsewhere)
-- ⚙️ gear icon top-right
+### Page Header
+- **Title:** "Active Campaigns" — large gold serif
+- **Subtitle:** "Manage your ongoing tales and orchestrate new adventures." — subdued sans-serif
 
-### Campaign Card (repeating)
-- Cover art thumbnail (user-selected from device photo library; placeholder illustration when none set)
-- Campaign name in gold typography
-- Last played date in subdued text
-- **RESUME** button → navigates to that campaign's Sessions list
+### Campaign Card (`Card` — repeating, horizontal grid)
+- Cover art as card background with gradient overlay
+- Campaign title in gold serif
+- Description snippet (truncated)
+- Session count label (e.g. "Session 14")
+- **Resume** — gold `Button` (default) → navigates to that campaign's Sessions list
+- Clicking card body (outside Resume) → same navigation as Resume
 - ~~CURRENT badge~~ — removed; active campaign is determined automatically as most recently played
 
-### Empty State
-- Centred illustration (fantasy/scroll theme)
-- Headline: *"No campaigns yet"*
-- **Scribe New Tale** button → opens the new campaign creation flow
+#### Campaign Card Chrome (optional sub-nav tabs)
+Some campaign cards display an embedded tab strip for future campaign-management features:
+- **Overview · Map · Lore · Party · Quests · Settings**
+- Document as decorative / forthcoming chrome — audio playback is not gated on these tabs
+- Tabs are part of the card visual, not global navigation
 
-### New Campaign Button
-- Persistent **+ NEW CAMPAIGN** at the bottom of the list (or FAB)
+### Scribe New Tale Card (`Card` — dashed border)
+- Dashed gold border, centred **+** icon
+- Label: **Scribe New Tale**
 - Opens campaign creation flow: name, cover art selection
 
-### Bottom Navigation Bar
-- 📖 CAMPAIGNS tab is active
+### Empty State
+- Only the Scribe New Tale card visible
+- Centred illustration (fantasy/scroll theme) with headline *"No campaigns yet"*
 
 ---
 
@@ -72,30 +82,30 @@ The Campaigns screen lists all the GM's campaigns. It is the primary entry point
 
 | Interaction | Result |
 |---|---|
-| Tap **RESUME** on a card | Navigate to that campaign's Sessions list |
-| Tap campaign card body | Navigate to that campaign's Sessions list |
-| Swipe right on card | Instantly removes the campaign |
-| Tap **+ NEW CAMPAIGN** | Open new campaign creation screen/dialog |
-| Tap ⚙️ | Navigate to Credits screen |
+| Click **Resume** on a card | Navigate to that campaign's Sessions list |
+| Click campaign card body | Navigate to that campaign's Sessions list |
+| Click delete on card | Instantly removes the campaign (with confirmation if configured) |
+| Click **Scribe New Tale** | Open new campaign creation screen/dialog |
+| Click ⚙️ | Navigate to Arcane Settings |
 
 ### Sorting
 Campaigns are sorted by most recently played, descending. No manual sort or filter control.
 
 ### Cover Art
-Tapping the cover art area (during creation or edit) opens the device's native photo picker.
+Clicking the cover art area (during creation or edit) opens the browser image upload dialog.
 
 ---
 
 ## States
 
-### Populated list
-One card per campaign, sorted most recent first.
+### Populated grid
+One card per campaign plus Scribe New Tale card, sorted most recent first.
 
 ### Empty state
-Illustration + "Scribe New Tale" CTA button.
+Scribe New Tale card + onboarding illustration.
 
 ### Creating a campaign
-Inline or modal form: name input, optional cover art picker, confirm/cancel.
+Inline or modal `Dialog`: name input, optional cover art picker, confirm/cancel.
 
 ---
 
@@ -103,9 +113,7 @@ Inline or modal form: name input, optional cover art picker, confirm/cancel.
 
 | Destination | Trigger |
 |---|---|
-| Campaign Sessions | Tap card or RESUME button |
-| New campaign creation | + NEW CAMPAIGN / Scribe New Tale button |
-| Credits | ⚙️ gear icon |
-| Home tab | 🏰 bottom nav |
-| Scenes tab | 🖼 bottom nav |
-| Library tab | 🎵 bottom nav |
+| Current Session dashboard | Sidebar → Current Session |
+| Campaign Sessions | Click card or Resume button |
+| New campaign creation | Scribe New Tale card |
+| Arcane Settings | ⚙️ gear or sidebar |

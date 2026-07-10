@@ -1,76 +1,84 @@
-# Audio Library — Soundscapes Tab — Screen Design
+﻿# Sound Library — Screen Design
 
 **Design References:**
 - [`docs/designs/AudioLibrary-Soundscape-Categories.html`](../../docs/designs/AudioLibrary-Soundscape-Categories.html)
 - [`docs/designs/AudioLibrary-Soundscape-Categories.png`](../../docs/designs/AudioLibrary-Soundscape-Categories.png)
+- **New source of truth:** FE sidebar layout screenshots (Jul 2026 redesign)
 
 ---
 
 ## Purpose
 
-The Soundscapes tab of the Audio Library is the master catalogue of all Soundscape Categories the GM has created. From here the GM can review, edit, and organise their soundscape content. Editing a category opens the Soundscape Category Composer.
+The Sound Library is the master catalogue of all Soundscape Categories the GM has created. From here the GM can review, edit, and organise soundscape content. Editing a category opens the Category Composer (Global Mixer).
 
-This screen is reached via the **🎵 LIBRARY** bottom nav tab.
+**Sidebar nav item:** Sound Library (active on this screen)
+
+Sound Effects are accessed as a sub-view within Sound Library (see `audio-library-fx-design.md`).
 
 ---
 
-## Layout
+## App Shell
+
+Shared FE layout with left sidebar ("The Tome"). See `home-design.md` for full shell spec.
+
+- **Sidebar footer:** user profile — avatar, name (e.g. "Grand Alchemist"), studio/campaign context
+- **FE sidebar navigation only (no tab bar)**
+
+---
+
+## Layout — Main Content
 
 ```
-┌─────────────────────────────────────┐
-│ [←] ARCANUM AUDIO              [⚙️]  │
-├─────────────────────────────────────┤
-│  Soundscape Library                 │
-│  Select an atmospheric core...      │
-├─────────────────────────────────────┤
-│  [ FREE SOUNDSCAPES DEMO ]          │
-├─────────────────────────────────────┤
-│  ┌───────────────────────────────┐  │
-│  │ [Icon]                        │  │
-│  │ Theme Label                   │  │
-│  │ Category Name           [✏️]  │  │
-│  │ I: 04    II: 02    III: 01    │  │
-│  └───────────────────────────────┘  │
-│  ┌───────────────────────────────┐  │
-│  │ [ +  NEW COMPOSITION ]        │  │
-│  └───────────────────────────────┘  │
-├─────────────────────────────────────┤
-│  🏰 HOME 📖 SESSIONS 🖼 SCENES 🎵 LIB│
-└─────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────────┐
+│  Sound Library                              [ Filter ]  [ Search ]   │
+│  Curate and compose your acoustic environments.                      │
+│                                                                      │
+│  ┌──────────────┐ ┌──────────────┐ ┌──────────────┐                 │
+│  │ ┌ ─ ─ ─     │ │ ☁ Meteorolog.│ │ 🍺 Tavern &  │                 │
+│  │    +         │ │ 2 active     │ │    Hearth    │                 │
+│  │ New          │ │ Heavy Rain ══│ │ Crowd ══════ │                 │
+│  │ Composition  │ │ Distant Thnd ═│ │ Crackling ═══ │                 │
+│  └──────────────┘ └──────────────┘ └──────────────┘                 │
+│  ┌──────────────┐ ┌────────────────────────────────────────────┐    │
+│  │ ✨ Ethereal  │ │ 🐉 Creatures of the Deep (wide — 2 cols)   │    │
+│  │ 2 active     │ │ Goblin ═══  │ Wolf ═════  │ Dragon ══ │ …  │    │
+│  └──────────────┘ └────────────────────────────────────────────┘    │
+└──────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
 ## Components
 
-### Top App Bar
-- **← Back Arrow:** Returns to the previous screen.
-- App identity text ("Arcanum Audio").
-- ⚙️ Settings icon top-right.
+### Page Header
+- **Title:** "Sound Library" — large gold serif
+- **Subtitle:** "Curate and compose your acoustic environments."
+- **Filter** — outline `Button` (top right)
+- **Search** — gold `Button` (top right) → opens search/filter panel or `Command` palette
 
-### Editorial Header
-- Title "Soundscape Library"
-- Description paragraph: "Select an atmospheric core to begin weaving your auditory tapestry..."
+### Free Tracks Action Button
+*(Retained for feature parity — may appear in header actions or empty state)*
+- Fetches "100 Free Demo Soundscapes" for fast category population
 
-### Free Tracks Action Button 
-*(Not pictured in HTML mock, but retained for feature parity)*
-- A button to fetch the "100 Free Demo Soundscapes" allowing fast population of new categories.
+### New Composition Card (`Card` — dashed border)
+- Centred **+** icon
+- **New Composition** title
+- Description: "Blend categories to create a new master atmosphere."
+- Clicking creates a new empty category and opens the Category Composer
 
-### Bento Grid Categories
-Soundscapes are visualised as large, immersive cards in a grid layout (columns scale by screen size).
-- **Backgrounds:** Amber/coloured glow borders with a large, faded ghost icon in the bottom right (e.g., cloud, castle).
-- **Theme Label:** Small uppercase category group identifier (e.g., Environment, Atmosphere).
-- **Category Name:** Large italicized title.
-- **Track Counts:** Displays track quantity per intensity Level (I, II, III). **Levels with zero tracks show their count dimmed / greyed out** to signal the GM that those intensities are unfilled and will be non-selectable during active scene playback.
-- **Edit Button (✏️):** Located top-right, navigates to the Soundscape Category Composer.
+### Category Card (`Card` — grid, repeating)
+- Thematic icon (top-left)
+- Category name — gold serif
+- **N active layers** count
+- Sample layer rows with inline `Slider` previews (e.g. "Heavy Rain", "Distant Thunder")
+- **Edit** action → navigates to Category Composer
+- Track counts per intensity (I, II, III) — **levels with zero tracks show count dimmed/greyed**
 
-### New Composition Card
-- A visually distinct card with a dashed border at the end of the grid.
-- Contains a large `+` icon.
-- Tapping creates a new empty category and opens the Composer.
+**Wide cards:** some categories (e.g. "Creatures of the Deep") span **2 columns** with a two-column layer grid.
 
-### Bottom Navigation Bar
-- Active tab is 🎵 Library. Note the Sessions tab uses the `auto_stories` icon.
+### Bento Grid Behaviour
+- Responsive grid; columns scale by viewport width
+- Amber/gold accent borders with faded ghost icon in card background (optional)
 
 ---
 
@@ -78,21 +86,26 @@ Soundscapes are visualised as large, immersive cards in a grid layout (columns s
 
 | Interaction | Result |
 |---|---|
-| Tap **✏️** on category | Navigate to Soundscape Category Composer (edit mode) |
-| Tap Card Body | Navigate to Composer or load scenes (TBD by routing logic) |
-| Tap **New Composition** | Prompt for name → open Soundscape Category Composer (new) |
-| Tap **Free Soundscapes** | Initiates download of 100 demo tracks. Shows loading state |
-| Tap ⚙️ | Navigate to Settings screen |
+| Click **✏️** / edit on category | Navigate to Category Composer (edit mode) |
+| Click category card body | Navigate to Category Composer |
+| Click **New Composition** | Prompt for name → open Category Composer (new) |
+| Click **Filter** / **Search** | Open filter/search UI |
+| Click **Free Soundscapes** | Initiates download of 100 demo tracks; shows loading state |
+| Click ⚙️ | Navigate to Arcane Settings |
+| Navigate to Sound Effects | Sub-nav or library tab switch (within Sound Library context) |
 
 ---
 
 ## States
 
-### Populated list
-Displays all categories as visually rich bento cards. Categories with all intensity levels at 0 tracks are still shown (so the GM can edit them), but their track counts are fully dimmed.
+### Populated grid
+All categories as rich cards. Categories with all intensity levels at 0 tracks still shown (counts dimmed).
 
 ### Empty state
-If no categories exist, only the "New Composition" card and "Free Soundscapes" button might be visible, along with an onboarding illustration if implemented.
+Only New Composition card + Free Soundscapes button + optional onboarding illustration.
+
+### Loading
+`Skeleton` cards while library data loads.
 
 ---
 
@@ -100,7 +113,7 @@ If no categories exist, only the "New Composition" card and "Free Soundscapes" b
 
 | Destination | Trigger |
 |---|---|
-| Soundscape Category Composer | Tap ✏️ or card body |
-| New category → Composer | New Composition card |
-| Settings | ⚙️ gear icon |
-| Previous Screen | Back arrow |
+| Category Composer (Global Mixer) | Edit on category or New Composition |
+| Sound Effects sub-view | Library navigation (see `audio-library-fx-design.md`) |
+| Arcane Settings | ⚙️ gear or sidebar |
+| Global Mixer | Sidebar |

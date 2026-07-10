@@ -1,72 +1,109 @@
-# Soundscape Category Composer — Screen Design
+﻿# Category Composer (Global Mixer) — Screen Design
 
 **Design References:**
 - [`docs/designs/Soundscape-Category-Composer.html`](../../docs/designs/Soundscape-Category-Composer.html)
 - [`docs/designs/Soundscape-Category-Composer.png`](../../docs/designs/Soundscape-Category-Composer.png)
+- **New source of truth:** FE sidebar layout screenshots (Jul 2026 redesign)
 
 ---
 
 ## Purpose
 
-The Composer is where the GM assembles a Soundscape Category by combining multiple soundscapes, one per intensity level. Adding a new soundscape means importing an audio file from the device. Saving applies the composition globally — any scene using this category will immediately reflect the change.
+The Category Composer (Global Mixer) is where the GM orchestrates elemental audio layers across intensity tiers. The GM balances Foundation, Atmosphere, and Incantation levels, manages active layers, and saves compositions globally — any scene using affected categories reflects changes immediately.
+
+**Sidebar nav item:** Global Mixer (active on this screen)
 
 ---
 
-## Layout
+## App Shell
+
+Shared FE layout with left sidebar ("The Tome"). See `home-design.md` for full shell spec.
+
+- **FE sidebar navigation only (no tab bar)**
+- Main content area may use a lighter off-white panel (`#F5F5F0`) contrasting the dark sidebar
+
+---
+
+## Layout — Main Content
 
 ```
-┌─────────────────────────────────────┐
-│  ← [Category Name]             [⚙️]  │
-├─────────────────────────────────────┤
-│  ┌─────────────────────────────┐    │
-│  │  Soundscape name      [🗑️]  │    │
-│  │  Intensity: II              │    │
-│  │  MIX  ════════◉═══════      │    │
-│  │  [Track list: track1, ...]  │    │
-│  └─────────────────────────────┘    │
-│  ┌─────────────────────────────┐    │
-│  │  Soundscape name      [🗑️]  │    │
-│  │  Intensity: I               │    │
-│  │  MIX  ═══◉═════════════     │    │
-│  └─────────────────────────────┘    │
-│  …                                  │
-│                                     │
-│  [ + INVOKE NEW SOUNDSCAPE ]        │
-│                                     │
-│  [ SAVE COMPOSITION ]               │
-├─────────────────────────────────────┤
-│  🏰 HOME  📖 CAMPAIGNS  🖼 SCENES  🎵 LIBRARY │
-└─────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────────┐
+│  Category Composer                          [ Save Composition ✨ ]  │
+│  Orchestrate and balance the elemental layers of your active session.│
+│                                                                      │
+│  ┌─ Level I ──────┐ ┌─ Level II ─────┐ ┌─ Level III ────┐           │
+│  │ 💧 Foundation  │ │ 🌬 Atmosphere  │ │ ☀ Incantations │           │
+│  │ Intensity ═◉══ │ │ Intensity ═══◉ │ │ Intensity ═◉══ │           │
+│  │           45%  │ │           72%  │ │           15%  │           │
+│  └────────────────┘ └────────────────┘ └────────────────┘           │
+│                                                                      │
+│  ◆ Current Layers                                    [ 2 Active ]    │
+│  ┌─ Thunderous Downpour ────────────────────────────────────── [×] ┐ │
+│  │ ⠿ [thumb] LVL II  Continuous · Wide Stereo  ════════◉══  75%  │ │
+│  └────────────────────────────────────────────────────────────────┘ │
+│  ┌─ Howling Gorges ─────────────────────────────────────────── [×] ┐ │
+│  │ ⠿ [thumb] LVL I   Dynamic · Binaural        ════◉══════  40%  │ │
+│  └────────────────────────────────────────────────────────────────┘ │
+│  ┌ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┐ │
+│  │              +  Invoke New Layer                                │ │
+│  │   Browse the Grimoire to add more atmospheric elements…       │ │
+│  └ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┘ │
+└──────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
 ## Components
 
-### Top Bar
-- Back arrow → returns to Audio Library — Soundscapes tab
-- Category name as title
-- ⚙️ gear icon top-right
+### Page Header
+- **Title:** "Category Composer" — large serif
+- **Subtitle:** "Orchestrate and balance the elemental layers of your active session."
+- **Save Composition** — gold `Button` with wand icon (top right)
 
-### Soundscape Card (repeating)
-Each soundscape within the category has:
+### Elemental Level Cards (`Card` — 3-column row)
+Three tier cards representing intensity pools:
+
+| Card | Icon | Label | Control |
+|---|---|---|---|
+| Level I | Water drop | Foundation | Intensity `Slider` |
+| Level II | Wind | Atmosphere | Intensity `Slider` |
+| Level III | Sun/sparkle | Incantations | Intensity `Slider` |
+
+Each shows percentage readout. Sliders use **Cubic ($x^3$) mapping**.
+
+### Current Layers Section
+- Header: diamond icon + **Current Layers** + `Badge` "N Active"
+- Layer cards (`Card` — repeating, draggable):
 
 | Element | Description |
 |---|---|
-| Soundscape name | Editable text input for this soundscape |
-| Delete button | A trash icon button to remove the soundscape from the category |
-| Intensity level | Which intensity pool this soundscape belongs to (I, II, or III), presented as a segmented control |
-| MIX slider | Per-soundscape relative volume; used in the Active Scene's multiplicative calculation. Uses **Cubic ($x^3$) mapping** for natural hearing progression. |
-| Track list | Names of audio files associated with this soundscape |
+| Drag handle | Reorder layers in the stack |
+| Thumbnail | Layer artwork with **LVL I/II/III** `Badge` |
+| Title + subtitle | e.g. "Thunderous Downpour" / "Continuous · Wide Stereo" |
+| Volume `Slider` | Per-layer mix; **Cubic ($x^3$) mapping** |
+| Remove **×** | Removes layer from composition |
 
-### Add Soundscape Button
-- **+ INVOKE NEW SOUNDSCAPE** — opens the device's native file picker, filtered to audio files only
-- On file selection, a new soundscape is created using that file's name, default intensity I, default MIX 100%
-- There is **no limit** on number of soundscapes
+### Invoke New Layer (`Card` — dashed border)
+- Centred **+** icon in circle
+- **Invoke New Layer** title
+- Description: "Browse the Grimoire to add more atmospheric elements to your composition."
+- Opens layer picker / Sound Library browse
 
-### Save Composition Button
-- **SAVE COMPOSITION** — saves the entire category composition globally
-- Changes are reflected everywhere this category is used — no per-scene versioning
+### Soundscape Card (per-category edit mode)
+When editing a single category (navigated from Sound Library), each soundscape within the category retains:
+
+| Element | Description |
+|---|---|
+| Soundscape name | Editable text input |
+| Delete button | Remove soundscape from category |
+| Intensity level | Segmented control (I, II, III) |
+| MIX slider | Per-soundscape relative volume |
+| Track list | Names of associated audio files |
+
+### Add Soundscape
+- **+ INVOKE NEW SOUNDSCAPE** — opens browser file picker (audio only)
+- On selection: new soundscape created with file name, default intensity I, default MIX 100%
+- No limit on number of soundscapes
 
 ---
 
@@ -74,30 +111,32 @@ Each soundscape within the category has:
 
 | Interaction | Result |
 |---|---|
-| Tap **+ INVOKE NEW SOUNDSCAPE** | Opens device file picker; selected audio file becomes a new soundscape |
-| Adjust a MIX slider | Changes that soundscape's relative volume (live preview if the category is currently in a playing scene) |
-| Change intensity level on a soundscape | Reassigns that soundscape to a different intensity pool |
-| Edit soundscape name | In-line text edit |
-| Swipe right on the soundscape card | Removes a soundscape |
-| Tap **SAVE COMPOSITION** | Persists the composition globally; navigates back or shows success confirmation |
-| Tap back arrow | Returns to Soundscapes Library (prompts to save if unsaved changes) |
-| Tap ⚙️ | Navigate to Credits screen |
+| Adjust Elemental Level slider | Changes tier intensity for session-wide balance |
+| Drag layer by handle | Reorders layers in Current Layers stack |
+| Adjust layer volume slider | Changes layer mix (live preview if playing) |
+| Click **×** on layer | Removes layer from composition |
+| Click **Invoke New Layer** | Opens Grimoire / Sound Library layer picker |
+| Click **+ INVOKE NEW SOUNDSCAPE** | Opens browser file picker (category edit mode) |
+| Click **Save Composition** | Persists globally; success confirmation or navigate back |
+| Click ⚙️ | Navigate to Arcane Settings |
+
+Changes apply globally — no per-scene versioning.
 
 ---
 
 ## States
 
-### New category (empty)
-Empty soundscape list with **+ INVOKE NEW SOUNDSCAPE** and **SAVE COMPOSITION** as primary CTAs.
+### New / empty composition
+Elemental cards at defaults; Invoke New Layer as primary CTA.
 
-### One or more soundscapes present
-Soundscapes displayed as cards, draggable to reorder.
+### Layers present
+Draggable layer cards with active count badge.
 
 ### File picker open
-Native OS picker overlay; composer screen waits behind it.
+Browser file picker dialog; composer waits behind it.
 
 ### Unsaved changes
-Back navigation shows a discard-changes confirmation dialog.
+Navigation away shows discard-changes `AlertDialog`.
 
 ---
 
@@ -105,6 +144,7 @@ Back navigation shows a discard-changes confirmation dialog.
 
 | Destination | Trigger |
 |---|---|
-| Audio Library — Soundscapes tab | Back arrow (after save or discard confirm) |
-| Device file picker (OS overlay) | + INVOKE NEW SOUNDSCAPE |
-| Credits | ⚙️ gear icon |
+| Sound Library | Sidebar or back navigation |
+| Layer picker / Grimoire | Invoke New Layer |
+| Browser file picker | Invoke New Soundscape |
+| Arcane Settings | ⚙️ gear or sidebar |

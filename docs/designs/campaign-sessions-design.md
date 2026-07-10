@@ -1,8 +1,9 @@
-# Campaign Sessions — Screen Design
+﻿# Campaign Sessions — Screen Design
 
 **Design References:**
 - [`docs/designs/CampaignSessions.html`](../../docs/designs/CampaignSessions.html)
 - [`docs/designs/CampaignSessions.png`](../../docs/designs/CampaignSessions.png)
+- **New source of truth:** FE sidebar layout (inferred from Jul 2026 IA redesign)
 
 ---
 
@@ -10,63 +11,74 @@
 
 Lists all play sessions belonging to a single campaign. The GM navigates here to open a session and access its associated scenes.
 
+**Sidebar nav item:** Current Session (active — campaign sessions are session-context navigation)
+
 ---
 
-## Layout
+## App Shell
+
+Shared FE layout with left sidebar ("The Tome"). See `home-design.md` for full shell spec.
+
+- **FE sidebar navigation only (no tab bar)**
+- Breadcrumb or inline back link replaces former bottom-tab "Campaigns" entry
+
+---
+
+## Layout — Main Content
 
 ```
-┌─────────────────────────────────────┐
-│  ← [Campaign Name]             [⚙️]  │
-├─────────────────────────────────────┤
-│  [Campaign cover art — full width   │
-│   hero banner]                      │
-│                                     │
-│  ┌───────────────────────────────┐  │
-│  │ [Cover]  Session name         │  │
-│  │          Date  •  # Scenes    │  │
-│  └───────────────────────────────┘  │
-│  ┌───────────────────────────────┐  │
-│  │ [Cover]  Session name         │  │
-│  │          Date  •  # Scenes    │  │
-│  └───────────────────────────────┘  │
-│  …                                  │
-│                                     │
-│  [ + ADD NEW SESSION ]              │
-├─────────────────────────────────────┤
-│  🏰 HOME  📖 CAMPAIGNS  🖼 SCENES  🎵 LIBRARY │
-└─────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────────┐
+│  ← Active Campaigns                                                  │
+│  [Campaign Name]                                                     │
+│  Campaign Sessions                                                   │
+│                                                                      │
+│  ┌────────────────────────────────────────────────────────────────┐  │
+│  │  [Campaign cover art — hero banner]                            │  │
+│  └────────────────────────────────────────────────────────────────┘  │
+│                                                                      │
+│  ┌───────────────────────────────┐  ┌───────────────────────────────┐│
+│  │ [Cover]  Session 14           │  │ [Cover]  Session 13           ││
+│  │          The Howling Crags    │  │          Sunken Temple        ││
+│  │          Mar 12 • 4 Scenes    │  │          Feb 28 • 3 Scenes    ││
+│  └───────────────────────────────┘  └───────────────────────────────┘│
+│  …                                                                   │
+│  ┌ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┐  │
+│  │              +  Add New Session                                 │  │
+│  └ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┘  │
+└──────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
 ## Components
 
-### Top Bar / Header
-- Breadcrumb link "← Back to Campaigns"
-- Campaign name as large screen title
-- "Campaign Sessions" subtitle
-- ⚙️ gear icon top-right
+### Breadcrumb / Back Link
+- **← Active Campaigns** — returns to Active Campaigns grid (not a sidebar item)
 
-### Session Card (repeating)
-- Cover art thumbnail (user-selected from device photo library; placeholder when none set)
-- Session number label
+### Page Header
+- Campaign name — large gold serif
+- **Campaign Sessions** subtitle — subdued uppercase or small caps
+
+### Campaign Hero Banner (`Card`)
+- Full-width campaign cover art with gradient overlay
+- Optional campaign description snippet
+
+### Session Card (`Card` — grid or list, repeating)
+- Cover art thumbnail (user-selected from browser image upload; placeholder when none set)
+- Session number label (e.g. "Session 14")
 - Session name
-- Date of session
-- Italicised session description snippet
-- Tapping the card navigates to that session's Scene list
+- Date of session · scene count (e.g. "Mar 12 • 4 Scenes")
+- Italicised session description snippet (optional)
+- Clicking the card navigates to that session's Scene list
+
+### Add New Session (`Card` — dashed border)
+- Centred **+** icon
+- **Add New Session** label
+- Opens session creation flow: name, date, optional cover art
 
 ### Empty State
 - Centred illustration
-- **Add New Session** button
-
-### Add New Session Button
-- Persistent **+ ADD NEW SESSION** at the bottom of the list
-- Opens session creation flow: name, date, optional cover art
-
-### ~~FILTER button~~ — removed (no filtering needed; auto-sorted by date)
-
-### Bottom Navigation Bar
-- 📖 CAMPAIGNS tab remains active
+- Add New Session as primary CTA
 
 ---
 
@@ -74,30 +86,30 @@ Lists all play sessions belonging to a single campaign. The GM navigates here to
 
 | Interaction | Result |
 |---|---|
-| Tap a session card | Navigate to Session Scenes list |
-| Swipe right on card | Instantly removes the session |
-| Tap **+ ADD NEW SESSION** | Open new session creation |
-| Tap back arrow | Return to Campaigns list |
-| Tap ⚙️ | Navigate to Credits screen |
+| Click a session card | Navigate to Session Scenes list |
+| Click delete on card | Instantly removes the session |
+| Click **Add New Session** | Open new session creation |
+| Click ← Active Campaigns | Return to Active Campaigns grid |
+| Click ⚙️ | Navigate to Arcane Settings |
 
 ### Sorting
-Sessions are sorted by date, most recent first. No manual sort or filter controls.
+Sessions sorted by date, most recent first. No manual sort or filter controls.
 
 ### Cover Art
-Tapping the cover art area during creation or edit opens the device's native photo picker.
+Clicking cover art during creation or edit opens the browser image upload dialog.
 
 ---
 
 ## States
 
 ### Populated list
-One card per session, most recent at top.
+One card per session, most recent at top, plus Add New Session card.
 
 ### Empty state
-Illustration + "Add New Session" CTA button.
+Illustration + Add New Session CTA.
 
 ### Creating a session
-Inline or modal form: name input, date picker, optional cover art selection.
+`Dialog` or inline form: name input, date picker, optional cover art selection.
 
 ---
 
@@ -105,23 +117,8 @@ Inline or modal form: name input, date picker, optional cover art selection.
 
 | Destination | Trigger |
 |---|---|
-| Session Scenes | Tap session card |
-| New session creation | + ADD NEW SESSION |
-| Campaigns list | Back arrow |
-| Credits | ⚙️ gear icon |
-# Empty state
-Illustration + "Add New Session" CTA button.
-
-### Creating a session
-Inline or modal form: name input, date picker, optional cover art selection.
-
----
-
-## Navigation
-
-| Destination | Trigger |
-|---|---|
-| Session Scenes | Tap session card |
-| New session creation | + ADD NEW SESSION |
-| Campaigns list | Back arrow |
-| Credits | ⚙️ gear icon |
+| Active Campaigns | ← back link |
+| Session Scenes | Click session card |
+| New session creation | Add New Session |
+| Arcane Settings | ⚙️ gear or sidebar |
+| Current Session dashboard | Sidebar |
