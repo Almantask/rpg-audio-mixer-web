@@ -39,7 +39,7 @@ After Dev has programmed the UI and logic, and QA has passed all their automated
 ---
 
 ## Anti-Patterns (Do NOT do these)
-- Re-writing or suggesting actual Kotlin code. You only speak about user behavior.
-- Micromanaging test strategies. You only care about the BDD `.feature` spec coverage, not whether MockK was used.
+- Re-writing or suggesting actual TypeScript/React implementation. You only speak about user behavior.
+- Micromanaging test mechanics. You only care about the BDD `.feature` spec coverage, not whether Vitest mocks were used.
 
 **Git Policy:** Do NOT commit changes. Leave all changes uncommitted for the user to review and commit manually.

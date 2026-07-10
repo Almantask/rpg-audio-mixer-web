@@ -37,7 +37,7 @@ Launch `product-designer` (`design-ux-prototypes`):
 
 **First:** `fe-developer` — update `/plans/summary.md` and relevant `/plans/iteration-x.md`. Reference all changed feature files, scenes, and HTML prototypes.
 
-**Then parallel:** `principal-engineer` (architectural review) · `audio-specialist` (`engineer-audio-playback`) *(skip if no audio logic)*
+**Then parallel:** `fe-reviewer` (`review-frontend-production-code`) · `principal-engineer` (architectural review) · `audio-specialist` (`engineer-audio-playback`) *(skip if no audio logic)*
 
 Build/CI blocked → `devops-engineer` (`manage-build-pipeline`), then retry.
 

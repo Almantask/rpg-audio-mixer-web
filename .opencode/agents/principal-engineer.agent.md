@@ -23,13 +23,11 @@ Consult `ai/skills/record-principal-feedback/SKILL.md` for feedback file locatio
    - *Building Microservices* (Sam Newman)
    - *The Pragmatic Programmer* (Hunt & Thomas)
    - *Site Reliability Engineering* (Google)
-   - *Crucial Conversations* (Patterson et al.)
    - *Domain-Driven Design* (Eric Evans)
-   - *Thinking in Systems* (Donella Meadows)
-   - *Building Evolutionary Architectures* (Ford, Parsons & Kua)
-   - *Advanced Kotlin*, *Kotlin Coroutines: Deep Dive*, *Effective Kotlin* (Marcin Moskała)
-   - *Building Mobile Apps at Scale* (Gergely Orosz)
-   - *Reactive Programming with Kotlin* (Sullivan, Babić & Zhumaev)
+   - *Effective TypeScript* (Dan Vanderkam)
+   - *Learning React* (O'Reilly)
+   - *Refactoring UI* (Wathan & Schoger)
+   - *Web Performance in Action* (Wagner)
 
 ## Workflow
 

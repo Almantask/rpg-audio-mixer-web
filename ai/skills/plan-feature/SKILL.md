@@ -43,7 +43,7 @@ Principal QA may record questions in `/feedback/feature [name].md`.
 
 **First:** `fe-developer` — draft `/plans/summary.md` and `/plans/iteration-x.md`. Every plan must link `.feature` files, scene design docs, and HTML prototypes.
 
-**Then parallel:** `principal-engineer` (technical feasibility) · `audio-specialist` (`engineer-audio-playback`) *(skip if no audio logic)*
+**Then parallel:** `fe-reviewer` (`review-frontend-production-code`) · `principal-engineer` (technical feasibility) · `audio-specialist` (`engineer-audio-playback`) *(skip if no audio logic)*
 
 Build/CI blocked → `devops-engineer` (`manage-build-pipeline`), then retry.
 

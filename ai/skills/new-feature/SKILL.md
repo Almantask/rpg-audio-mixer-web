@@ -37,9 +37,9 @@ Launch `qa-tester` to run:
 
 ## Phase 3 — Review Council (strict batches)
 
-**Batch A** (parallel): `qa-reviewer` · `principal-engineer`
+**Batch A** (parallel): `fe-reviewer` · `qa-reviewer`
 
-**Batch B** (parallel, after A): `principal-qa` · `audio-specialist` *(skip audio if feature has no media logic)*
+**Batch B** (parallel, after A): `principal-engineer` · `principal-qa` · `audio-specialist` *(skip audio if feature has no media logic)*
 
 **Human gate:** Principal reviewers may record questions in `/feedback/`. Stop and notify the human. Do not start Batch C until decisions exist.
 
@@ -53,7 +53,7 @@ Launch `fe-developer` and `qa-tester` to resolve all reviewer findings and `/fee
 
 ## Phase 5 — Documentation
 
-Launch `project-historian` (`document-learnings`) to update `app/Learnings.md` and related docs.
+Launch `project-historian` (`document-learnings`) to update `docs/Learnings.md` and related docs.
 
 ## Reporting
 

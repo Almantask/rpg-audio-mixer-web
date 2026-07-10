@@ -1,11 +1,27 @@
 param(
-    [string]$FeaturePath = "campaign_crud.feature"
+    [string]$FeaturePath = ""
 )
 
-$env:JAVA_HOME="C:\Program Files\Android\Android Studio1\jbr"
+$ErrorActionPreference = "Stop"
+Set-Location $PSScriptRoot\..\..\..\..\..
 
-if ([string]::IsNullOrWhiteSpace($FeaturePath)) {
-    .\gradlew connectedAndroidTest
-} else {
-    .\gradlew connectedAndroidTest -PcucumberFeatures="$FeaturePath"
+if (-not (Test-Path "package.json")) {
+    Write-Error "package.json not found. Run from the web app repository root."
+    exit 1
 }
+
+if ($FeaturePath) {
+    if (Get-Command pnpm -ErrorAction SilentlyContinue) {
+        pnpm exec playwright test $FeaturePath
+    } else {
+        npx playwright test $FeaturePath
+    }
+} else {
+    if (Get-Command pnpm -ErrorAction SilentlyContinue) {
+        pnpm exec playwright test
+    } else {
+        npx playwright test
+    }
+}
+
+exit $LASTEXITCODE

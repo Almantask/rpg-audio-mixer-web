@@ -1,13 +1,13 @@
 <#
 .SYNOPSIS
-    Converts all .mp3 files in the res/raw directory to .ogg (Opus) while maintaining filenames.
+    Converts all .mp3 files in a directory tree to .ogg (Opus) while maintaining filenames.
 
 .DESCRIPTION
     Iterates through all .mp3 files in the current and subdirectories, converts them using FFmpeg
     with libopus codec at 96k VBR, and deletes the original .mp3 files upon success.
 
 .EXAMPLE
-    cd app/src/main/res/raw
+    cd public/audio
     pwsh ai/skills/engineer-audio-playback/scripts/convert_to_ogg.ps1
 #>
 

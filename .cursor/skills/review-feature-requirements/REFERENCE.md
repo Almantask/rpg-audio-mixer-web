@@ -17,27 +17,27 @@ Principles: *Escaping the Build Trap* (Perri), *Continuous Discovery Habits* (To
 
 ## Experience (`@product-designer`)
 
-Principles: Material 3 patterns, progressive disclosure, state-driven design.
+Principles: shadcn/ui patterns, progressive disclosure, state-driven design.
 
 - For each user action, are **empty**, **loading**, **success**, and **error** states addressed or explicitly out of scope?
 - If a scenario references a screen, what happens with zero soundscapes, zero FX, or partial data?
 - Are destructive or irreversible actions (delete, global stop, session lock) specified clearly?
-- Is navigation consistent with `screen_transitions.feature`?
-- Are disabled or greyed controls explained — condition and recovery?
+- Is navigation consistent with route and layout conventions in `docs/design-overall.md`?
+- Are disabled controls explained — condition and recovery?
 - Are timing-sensitive interactions (fades, crossfades) defined enough for consistent UX?
 
 **Gap signals:** `When` without observable `Then`; success-only paths; controls named in one scenario but undefined elsewhere.
 
 ## Audio semantics (`@audio-specialist`)
 
-Principles: Android audio focus, perceptual mixing, low-latency feedback for live GM use.
+Principles: Web Audio API, perceptual mixing, low-latency feedback for live GM use, browser autoplay policy.
 
 - Are perceptual outcomes stated in testable terms? ("smoothly", "seamlessly", "no dip")
-- How does behavior interact with **audio focus loss** during crossfade, ducking, or FX playback?
-- What happens with concurrent triggers, overlapping loops, or mid-FX scene switches?
-- Do background, lock-screen, and Bluetooth behaviors align with `system_audio_handling.feature`?
+- What happens when the tab loses focus or `AudioContext` is suspended during crossfade or FX?
+- Concurrent triggers, overlapping loops, mid-FX scene switches?
+- Bluetooth / system mute / browser autoplay block behaviors aligned with system audio scenarios?
 - Are fade/duck durations requirements or implementation defaults?
-- Is missing or corrupt asset behavior specified?
+- Missing or corrupt asset behavior specified?
 
 **Gap signals:** playback without pause/resume policy; intensity changes during ducking; master stop during crossfade.
 

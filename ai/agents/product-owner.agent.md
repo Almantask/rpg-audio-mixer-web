@@ -12,8 +12,8 @@ Consult `ai/skills/define-product-requirements/SKILL.md` for requirements defini
 
 ## Boundaries
 
-- Speak about user behavior and acceptance criteria — never suggest Kotlin implementation.
-- Do not micromanage test mechanics — care about `.feature` coverage, not MockK usage.
+- Speak about user behavior and acceptance criteria — never suggest TypeScript/React implementation.
+- Do not micromanage test mechanics — care about `.feature` coverage, not Vitest mock details.
 
 ## Deliverables
 

@@ -1,6 +1,15 @@
 {
   "architecture_design": {
     "pattern": "supervisor_skills",
+    "platform": "web",
+    "stack": {
+      "framework": "React (Next.js or Vite)",
+      "language": "TypeScript",
+      "styling": "Tailwind CSS + shadcn/ui",
+      "unit_tests": "Vitest + Testing Library",
+      "e2e_tests": "Playwright + Cucumber",
+      "audio": "Web Audio API"
+    },
     "orchestration_skills": [
       {
         "name": "plan-feature",
@@ -18,16 +27,27 @@
         "purpose": "End-to-end delivery: implementation → validation → review → docs"
       }
     ],
-    "rule": "Only orchestration skills name subagents. Specialist agents and skills do not reference each other."
+    "specialist_agents": [
+      "fe-developer",
+      "fe-reviewer",
+      "qa-tester",
+      "qa-reviewer",
+      "product-owner",
+      "product-designer",
+      "audio-specialist",
+      "devops-engineer",
+      "project-historian",
+      "principal-engineer",
+      "principal-po",
+      "principal-qa"
+    ],
+    "removed_legacy": [
+      "android-developer",
+      "android-reviewer",
+      "implement-android-with-tdd",
+      "review-android-production-code"
+    ],
+    "rule": "Only orchestration skills name subagents. Specialist agents load operation-focused skills under ai/skills/."
   },
-  "mermaid_diagram": "graph LR\n    user[User] --> plan[/plan-feature]\n    user --> refine[/refine-feature]\n    user --> deliver[/new-feature]\n    plan -->|artifacts ready| deliver\n    refine -->|artifacts ready| deliver\n    plan --> specialists[Specialist subagents]\n    refine --> specialists\n    deliver --> specialists",
-  "metadata": {
-    "removed": [
-      "planning-refinement-orchestrator.agent.md",
-      "workflows/planning.md",
-      "workflows/refinement.md",
-      "feature-delivery.agent.md",
-      "workflows/feature-delivery.md"
-    ]
-  }
+  "mermaid_diagram": "graph LR\n    user[User] --> plan[/plan-feature]\n    user --> refine[/refine-feature]\n    user --> deliver[/new-feature]\n    plan -->|artifacts ready| deliver\n    refine -->|artifacts ready| deliver\n    plan --> specialists[Web specialist subagents]\n    refine --> specialists\n    deliver --> specialists\n    specialists --> fe[fe-developer]\n    specialists --> feRev[fe-reviewer]\n    specialists --> qa[qa-tester]"
 }

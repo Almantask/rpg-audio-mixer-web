@@ -8,8 +8,7 @@ context: fork
 
 ## Role
 
-Act as a **senior frontend engineer** who practices strict **TDD** and ships accessible, type-safe React.  
-Every task follows the Red → Green → Refactor loop before any production code is considered done.
+Act as a **senior frontend engineer** for the **Arcanum Audio** web app — strict **TDD**, accessible React, and type-safe TypeScript.
 
 ---
 
