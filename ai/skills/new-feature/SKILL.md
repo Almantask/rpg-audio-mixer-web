@@ -1,6 +1,6 @@
 ---
 name: new-feature
-description: 'Deliver a feature end-to-end — implementation, validation, review council, and fixes. Use when: user says /new-feature, requests full feature delivery, or wants the complete pipeline for a bug or requirement.'
+description: Deliver a feature end-to-end through implementation, validation, review council, and fixes. Use when the user says /new-feature, requests full feature delivery, or wants the complete pipeline for a bug or requirement.
 ---
 
 # New Feature Delivery

@@ -1,7 +1,6 @@
 ---
 name: author-acceptance-tests
-description: 'Author and run BDD acceptance tests. Use when: writing Cucumber Gherkin scenarios, implementing Playwright step definitions, executing E2E tests, or reporting acceptance failures.'
-context: fork
+description: Author and run BDD acceptance tests with Playwright. Use when writing Cucumber Gherkin scenarios, implementing Playwright step definitions, executing E2E tests, or reporting acceptance failures.
 ---
 
 # Author Acceptance Tests

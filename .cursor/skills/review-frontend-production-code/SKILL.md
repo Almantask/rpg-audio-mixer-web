@@ -1,7 +1,6 @@
 ---
 name: review-frontend-production-code
-description: 'Review React/TypeScript production code for quality. Use when: reviewing PRs, building the project, and flagging warnings, deprecations, bugs, security issues, audio performance, and architectural code smells.'
-context: fork
+description: Review React and TypeScript production code for quality. Use when reviewing PRs, building the project, or flagging warnings, deprecations, bugs, security issues, audio performance, and architectural code smells.
 ---
 
 # Review Frontend Production Code

@@ -1,7 +1,6 @@
 ---
 name: engineer-audio-playback
-description: 'Engineer browser audio playback and mixing. Use when: implementing Web Audio logic, managing latency, handling autoplay policy, mixing tracks, optimizing assets, or reviewing audio hooks and modules.'
-context: fork
+description: Engineer browser audio playback and mixing with the Web Audio API. Use when implementing audio logic, managing latency, handling autoplay policy, mixing tracks, optimizing assets, or reviewing audio hooks and modules.
 ---
 
 # Engineer Audio Playback

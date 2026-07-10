@@ -1,6 +1,6 @@
 ---
 name: design-ux-prototypes
-description: 'Design UX flows and HTML prototypes. Use when: translating requirements into scene design docs, building shadcn/Tailwind HTML prototypes, defining information architecture, or specifying empty/loading/error states.'
+description: Design UX flows and HTML prototypes with shadcn/ui and Tailwind. Use when translating requirements into scene design docs, building HTML prototypes, defining information architecture, or specifying empty, loading, and error states.
 ---
 
 # Design UX Prototypes

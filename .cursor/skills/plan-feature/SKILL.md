@@ -1,6 +1,6 @@
 ---
 name: plan-feature
-description: 'Plan a new feature from requirements to finalized designs, Gherkin specs, and implementation strategy. Use when: user says /plan-feature, requests feature planning, or needs an iteration plan before any production code.'
+description: Plan a new feature from requirements to designs, Gherkin specs, and implementation strategy. Use when the user says /plan-feature, requests feature planning, or needs an iteration plan before production code.
 ---
 
 # Plan Feature

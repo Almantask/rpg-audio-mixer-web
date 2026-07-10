@@ -1,6 +1,6 @@
 ---
 name: manage-build-pipeline
-description: 'Manage build and release infrastructure. Use when: configuring npm/pnpm, Vite/Next.js, CI/CD (GitHub Actions), build performance, deployment, or infrastructure automation.'
+description: Manage frontend build and release infrastructure. Use when configuring npm or pnpm, Vite or Next.js, GitHub Actions CI/CD, build performance, deployment, or infrastructure automation.
 ---
 
 # Manage Build Pipeline

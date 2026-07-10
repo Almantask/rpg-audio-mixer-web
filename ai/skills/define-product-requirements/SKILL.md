@@ -1,6 +1,6 @@
 ---
 name: define-product-requirements
-description: 'Define and validate product requirements. Use when: drafting acceptance criteria, reviewing designs, verifying UX against requirements, syncing documentation, or granting feature sign-off.'
+description: Define and validate product requirements and acceptance criteria. Use when drafting acceptance criteria, reviewing designs, verifying UX against requirements, syncing documentation, or granting feature sign-off.
 ---
 
 # Define Product Requirements

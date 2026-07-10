@@ -1,7 +1,6 @@
 ---
 name: review-bdd-artifacts
-description: 'Review BDD test artifacts for quality. Use when: auditing Cucumber feature files, Playwright step definitions, and E2E suites against BDD Discovery and BDD Formulation practices.'
-context: fork
+description: Review BDD test artifacts for quality against Discovery and Formulation practices. Use when auditing Cucumber feature files, Playwright step definitions, and E2E suites.
 ---
 
 # Review BDD Artifacts

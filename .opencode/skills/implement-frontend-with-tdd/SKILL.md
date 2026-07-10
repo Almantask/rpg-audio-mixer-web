@@ -1,7 +1,6 @@
 ---
 name: implement-frontend-with-tdd
-description: 'Implement React frontend features with strict TDD (Red → Green → Refactor). Use when: writing components, pages, hooks, or client logic with Vitest/RTL; bootstrapping Next.js or Vite with Tailwind and shadcn/ui; or debugging frontend build/test failures.'
-context: fork
+description: Implement React frontend features with strict TDD (Red-Green-Refactor). Use when writing components, pages, hooks, or client logic with Vitest and Testing Library, bootstrapping Next.js or Vite with Tailwind and shadcn/ui, or debugging frontend build and test failures.
 ---
 
 # Implement Frontend with TDD

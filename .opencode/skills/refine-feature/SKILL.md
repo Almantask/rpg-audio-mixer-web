@@ -1,6 +1,6 @@
 ---
 name: refine-feature
-description: 'Refine existing specs, designs, and implementation plans for a feature. Use when: user says /refine-feature, requests spec or design updates, or needs plan corrections before implementation.'
+description: Refine existing specs, designs, and implementation plans. Use when the user says /refine-feature, requests spec or design updates, or needs plan corrections before implementation.
 ---
 
 # Refine Feature

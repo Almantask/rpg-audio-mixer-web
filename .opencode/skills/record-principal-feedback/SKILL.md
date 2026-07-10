@@ -1,6 +1,6 @@
 ---
 name: record-principal-feedback
-description: 'Record principal-level human decisions. Use when: principal agents need to ask the human strategic questions with structured options in /feedback/.'
+description: Record principal-level human decisions in /feedback/ with structured options. Use when principal agents need to ask the human strategic questions with checkbox choices.
 ---
 
 # Record Principal Feedback
