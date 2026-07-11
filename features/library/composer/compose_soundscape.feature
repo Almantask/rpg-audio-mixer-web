@@ -3,7 +3,7 @@ Feature: Compose soundscape category
 
   As a GM
   I want to assign tracks to fixed intensity levels within a soundscape category
-  So that the Scene screen can pick randomly from the right pool when each intensity is active.
+  So that the Active Scene screen can pick randomly from the right pool when each intensity is active.
 
   Rule: The Category Composer presents fixed intensity levels
 

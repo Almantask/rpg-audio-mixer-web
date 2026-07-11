@@ -18,11 +18,11 @@ Feature: Add description to scene
     When I add the description "A lively inn with music and chatter" to the "Tavern" scene via Edit
     Then the "Tavern" scene has the description "A lively inn with music and chatter"
 
-  Scenario: Scene description is visible on the Scene screen
+  Scenario: Scene description is visible on the Active Scene screen
     Given a scene named "Tavern" exists
     And the "Tavern" scene has the description "A lively inn with music and chatter"
     When I open the "Tavern" scene
-    Then I see the description "A lively inn with music and chatter" on the Scene screen
+    Then I see the description "A lively inn with music and chatter" on the Active Scene screen
 
   Scenario: Scene description is not shown on Scenes list cards
     Given a scene named "Tavern" exists
@@ -36,7 +36,7 @@ Feature: Add description to scene
     When I update the description of the "Tavern" scene to "A lively inn with music and chatter"
     Then the "Tavern" scene has the description "A lively inn with music and chatter"
 
-  Scenario: Clearing a description via Edit removes it from the Scene screen
+  Scenario: Clearing a description via Edit removes it from the Active Scene screen
     Given the "Tavern" scene has the description "An old inn"
     When I clear the description of the "Tavern" scene via Edit
     Then the "Tavern" scene has no description

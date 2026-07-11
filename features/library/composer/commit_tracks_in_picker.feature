@@ -5,7 +5,7 @@ Feature: Commit tracks in Category Composer picker
   I want to add checked tracks to an intensity level
   So that the composition picks from the right pool at play time.
 
-  Scenario: Add Selected is disabled when no tracks are checked
+  Scenario: Track picker Add Selected is disabled when no tracks are checked
     Given the Track Picker modal is open for "Level I" in "Weather"
     And no track cards are checked
     Then the "Add Selected (0)" button is disabled

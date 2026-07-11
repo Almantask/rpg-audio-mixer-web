@@ -15,7 +15,7 @@ Feature: Reorder soundscape categories
     When I drag "Monsters" by its drag handle above "Weather"
     Then the order becomes "Monsters", "Weather", "Interior"
 
-  Scenario: Reordering auto-saves on drop and persists after closing and reopening the scene
+  Scenario: Category reordering auto-saves on drop and persists after closing and reopening the scene
     Given the order is "Weather", "Interior", "Monsters"
     When I drag "Interior" by its drag handle to the top
     Then "Interior" is the first category
@@ -27,6 +27,8 @@ Feature: Reorder soundscape categories
     Given "Weather" is currently playing
     When I drag "Interior" by its drag handle above "Weather"
     Then "Weather" continues playing during and after the reorder
+
+  # Scope: Session Lock disables reorder — see session_lock.feature.
 
   Scenario: Reordering is disabled while Session Lock is on
     Given the session is locked

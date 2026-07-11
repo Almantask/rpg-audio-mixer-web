@@ -39,7 +39,7 @@ Feature: Filter FX picker
     When I set the Sort Order to "Name A–Z" in the picker
     Then "Alpha FX" appears before "Zulu FX" in the picker grid
 
-  Scenario: No matching filters shows a clear-filters action
+  Scenario: FX picker no-match filters shows a clear-filters action
     Given the Sound Effects picker modal is open
     And the FX library has "Thunder Crack"
     When I type "nonexistent" in the picker search bar

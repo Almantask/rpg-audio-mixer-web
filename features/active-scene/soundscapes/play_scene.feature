@@ -5,11 +5,8 @@ Feature: Play scene
   I want to open and play scenes
   So that I can provide the right audio atmosphere for a specific moment in my game.
 
-  Scenario: Tapping a scene card opens the scene without starting playback
-    Given I have a scene "Tavern" with soundscape categories
-    When I tap the "Tavern" scene card
-    Then I see the Active Scene screen for "Tavern"
-    And no soundscape audio is playing
+  # Scope: open-without-play from Scenes — see view_created_scenes.feature.
+  # Scope: open-without-play from Session Scenes — see open_scene_from_session.feature.
 
   Scenario: Play Scene on the Active Scene screen starts idle categories from their intensity pools
     Given I have opened the "Tavern" scene on the Active Scene — Soundscapes tab

@@ -27,14 +27,10 @@ Feature: Home inline preview behavior
     When I tap the preview button on the Top FX card
     Then I do not see a bottom mini player on the Home screen
 
-  Scenario Outline: Home stat sections reflect missing play history
+  Scenario: Home stat sections reflect missing play history
     Given I have at least one campaign
-    And <soundscape setup>
-    And <fx setup>
+    And no soundscape categories have been played yet
+    And no soundboard effects have been played yet
     When I open the Home screen
-    Then <soundscape expectation>
-    And <fx expectation>
-
-    Examples:
-      | soundscape setup                              | fx setup                                   | soundscape expectation                                   | fx expectation                                       |
-      | no soundscape categories have been played yet | no soundboard effects have been played yet | the Top Soundscape section shows "No soundscapes played yet" | the Top FX section shows "No sound effects played yet" |
+    Then the Top Soundscape section shows "No soundscapes played yet"
+    And the Top FX section shows "No sound effects played yet"

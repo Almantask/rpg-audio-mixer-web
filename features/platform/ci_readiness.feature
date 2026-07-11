@@ -8,9 +8,9 @@ Feature: CI hardware compatibility
   Scenario: Real Audio Stack is used in CI with virtual audio output
     Given I am running on a CI environment with a virtual audio output device
     When I launch the app
-    Then the "Real Audio Stack" is initialized (Web Audio API with buffer pool for FX)
+    Then the real audio stack is initialized for playback
     And I play a soundscape
-    Then audio processing is verified through the Web Audio graph
+    Then audio processing is verified through the production audio pipeline
     And the app remains fully functional (UI remains responsive, playback states update correctly)
 
   Scenario: Media Session API is registered when playback starts

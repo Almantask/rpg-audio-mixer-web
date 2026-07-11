@@ -5,7 +5,7 @@ Feature: Commit FX selection to soundboard
   I want to add checked effects to the soundboard in one commit
   So that I can build the scene's effect grid deliberately.
 
-  Scenario: Add Selected is disabled when no tracks are checked
+  Scenario: FX picker Add Selected is disabled when no tracks are checked
     Given the Sound Effects picker modal is open
     And no FX cards are checked in the picker
     Then the "Add Selected (0)" button is disabled

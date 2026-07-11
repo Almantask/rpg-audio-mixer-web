@@ -16,10 +16,14 @@ Feature: Audio engineering
     Then the mixed output remains free of digital clipping at normal listening levels
     And loud moments do not crackle or distort
 
+  # Scope: scene-switch crossfade behaviour — see play_scene.feature.
+
   Scenario: Switching scenes crossfades without a noticeable volume dip
     Given "Tavern" is playing at full volume
     When I switch to the "Forest" scene with playback
     Then the transition crossfades smoothly without a momentary drop in loudness
+
+  # Scope: intensity transition behaviour — see modify_intensity_level_of_loopable_track.feature.
 
   Scenario: Intensity changes crossfade without a noticeable volume dip
     Given the "Weather" category is playing at intensity level I

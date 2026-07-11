@@ -10,6 +10,8 @@ Feature: Master controls
     And the "Battle" scene is playing
     And I have triggered "Scream" from the soundboard
 
+  # Scope: Master Volume slider positions persist across Stop All — see mixer_persistence.feature.
+
   Scenario: Stop All silences all audio and resets play state
     When I tap "Stop All"
     Then the "Combat" soundscape should fade out and stop
@@ -17,4 +19,4 @@ Feature: Master controls
     And the "Scream" sound effect should stop immediately
     And the "Combat" category shows a paused state
     And the "Fire" category shows a paused state
-    And the Soundboard volume slider position is unchanged
+    And the Master Volume slider position is unchanged

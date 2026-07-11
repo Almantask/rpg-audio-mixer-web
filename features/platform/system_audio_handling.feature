@@ -12,38 +12,31 @@ Feature: System audio handling
     And the app visually reflects the paused state on the active playing cards
 
   @audio-boundary
-  Scenario: Audio pauses during a short interruption and resumes automatically if under 3 minutes
+  Scenario Outline: Audio resumes automatically when interruption ends within 3 minutes
     Given the app is playing audio loops on the Active Scene screen
-    When an audio interruption lasts for 2 minutes
+    When an audio interruption lasts for <duration>
     Then all playing audio in the app pauses immediately
     When audio focus is regained
     Then the previously playing loops and soundscapes resume automatically
 
-  @audio-boundary
-  Scenario: Audio resumes automatically when interruption ends just under 3 minutes
-    Given the app is playing audio loops on the Active Scene screen
-    When an audio interruption lasts for 3 minutes
-    Then all playing audio in the app pauses immediately
-    When audio focus is regained
-    Then the previously playing loops and soundscapes resume automatically
+    Examples:
+      | duration  |
+      | 2 minutes |
+      | 3 minutes |
 
   @audio-boundary
-  Scenario: Audio remains paused after interruption exceeds 3 minutes
+  Scenario Outline: Audio remains paused after interruption exceeds 3 minutes
     Given the app is playing audio loops on the Active Scene screen
-    When an audio interruption lasts for 3 minutes and 1 second
+    When an audio interruption lasts for <duration>
     Then all playing audio in the app pauses immediately
     When audio focus is regained
     Then the app remains paused
     And requires a manual play to resume the soundscape
 
-  @audio-boundary
-  Scenario: Audio remains paused after a long interruption
-    Given the app is playing audio loops on the Active Scene screen
-    When an audio interruption lasts for 4 minutes
-    Then all playing audio in the app pauses immediately
-    When audio focus is regained
-    Then the app remains paused
-    And requires a manual play to resume the soundscape
+    Examples:
+      | duration            |
+      | 3 minutes and 1 second |
+      | 4 minutes           |
 
   Scenario: App continues playing when the tab is in the background
     Given the app is playing audio loops on the Active Scene screen
@@ -61,8 +54,10 @@ Feature: System audio handling
     When I tap pause on the media controls
     Then the app audio pauses
 
-  Scenario: Media Session next plays a random track from the active category
+  # Scope: multi-category Next behaviour — see play_random_track.feature.
+
+  Scenario: Media Session next randomizes the focused soundscape category
     Given the Media Session controls are active
     And the app is playing a soundscape from the "Weather" category at intensity level II
     When I tap "Next" on the media controls or a keyboard media key
-    Then the app plays a random track from the active category at its current intensity level
+    Then the app plays a random track from "Weather" at its current intensity level

@@ -16,7 +16,7 @@ Feature: Reorder soundboard effects
     When I drag "Door Creak" by its drag handle to the first position
     Then the order becomes "Door Creak", "Thunder Crack", "Wolf Howl"
 
-  Scenario: Reordering auto-saves on drop and persists after closing and reopening the scene
+  Scenario: Soundboard reordering auto-saves on drop and persists after closing and reopening the scene
     Given "Wolf Howl" is the first tile in the soundboard
     When I drag "Thunder Crack" by its drag handle to the first position
     And I leave and reopen the scene

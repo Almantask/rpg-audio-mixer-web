@@ -6,6 +6,7 @@ Feature: Open soundscape picker on Active Scene
   So that I can browse categories available to add to the scene.
 
   # Design: audio-library-soundscapes-modal-design.md — Session Lock guard: see session_lock.feature.
+  # Design: Buy/Free offered in picker (unlike FX picker); Import lives on Library only.
 
   Scenario: Tapping Add Soundscape opens the category picker modal
     Given I am on the Active Scene — Soundscapes tab

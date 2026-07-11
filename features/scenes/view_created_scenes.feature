@@ -39,7 +39,7 @@ Feature: View created scenes
   Scenario: Opening a scene from Scenes navigates without starting playback
     Given a scene named "Tavern" exists
     When I open the "Tavern" scene from Scenes
-    Then I see the Scene screen for "Tavern"
+    Then I see the Active Scene screen for "Tavern"
     And no audio playback has started
 
   Scenario: The New Scene control appears at the bottom of the list

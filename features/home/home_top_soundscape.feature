@@ -5,6 +5,8 @@ Feature: Home Top Soundscape stat
   I want to see my most played soundscape category on Home
   So that I can preview it without opening the Library.
 
+  # Scope: empty-state copy for missing play history — see home_preview_behavior.feature.
+
   Scenario: Top Soundscape shows this GM's all-time most played soundscape category
     Given "Ominous Chant" is my most played soundscape category with 42 plays
     When I open the Home screen
