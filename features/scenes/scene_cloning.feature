@@ -1,0 +1,37 @@
+@iter10 @iter11
+Feature: Scene cloning
+
+  As a GM
+  I want to duplicate an existing scene
+  So that I can use it as a starting point for a similar scene with all its configuration.
+
+  Background:
+    Given a scene named "Forest Night" exists
+    And "Forest Night" has the description "A moonlit woodland path"
+    And "Forest Night" has cover image "forest-night.jpg"
+    And "Forest Night" has "Owl Hooting" soundscape category at MIX 80%
+    And "Forest Night" has "Thunder" sound effect at MIX 50%
+    And "Forest Night" has "Nature" tag
+
+  Scenario: Duplicating a scene creates a copy with one tap
+    When I tap the duplicate icon on the "Forest Night" scene card
+    Then I see the "Copy of Forest Night" scene in Scenes
+    And no duplicate-name dialog is shown
+
+  Scenario: Duplicating a scene copies all configuration
+    Given I have duplicated the "Forest Night" scene
+    Then the "Copy of Forest Night" scene has "Owl Hooting" at MIX 80%
+    And the "Copy of Forest Night" scene has "Thunder" sound effect
+    And the "Copy of Forest Night" scene has "Nature" tag
+    And the "Copy of Forest Night" scene has the description "A moonlit woodland path"
+    And the "Copy of Forest Night" scene has cover image "forest-night.jpg"
+
+  Scenario: Duplicated scene is independent of the original
+    Given I have duplicated the "Forest Night" scene
+    When I add "Wind" to the "Copy of Forest Night" soundscape categories
+    Then the original "Forest Night" scene does not contain "Wind"
+
+  Scenario: Modifying a duplicate does not affect the source
+    Given I have duplicated the "Forest Night" scene
+    When I change "Owl Hooting" MIX to 10% on "Copy of Forest Night"
+    Then the "Forest Night" scene still has "Owl Hooting" at MIX 80%
