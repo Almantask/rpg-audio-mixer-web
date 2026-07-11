@@ -1,56 +1,58 @@
 @iter7 @iter11 @core
-Feature: Current Session dashboard
+Feature: Home screen
 
   As a GM
-  I want to see my active campaign, recent scenes, and top atmospheres on the Current Session dashboard
-  So that I can jump back into my game quickly without deep navigation.
+  I want the Home screen to show my current campaign, top atmosphere category, and legendary soundboard action
+  So that I can jump back into my game at a glance without deep navigation.
 
-  Scenario: Current Session shows the most recently played campaign
-    Given I have played "Curse of Strahd" most recently
-    When I open the Current Session dashboard
-    Then I see "Curse of Strahd" as the active campaign
+  Scenario: Home shows the most recently played campaign
+    Given I have played "Shadows of the Underdark" most recently
+    When I open the Home screen
+    Then I see "Shadows of the Underdark" in the Active Campaigns hero
+    And I see an "Enter Domain" button
 
   Scenario: Enter Domain navigates to the active campaign's sessions
-    Given "Curse of Strahd" is the active campaign
+    Given "Shadows of the Underdark" is the active campaign
     When I tap "Enter Domain"
-    Then I see the sessions list for "Curse of Strahd"
+    Then I see the sessions list for "Shadows of the Underdark"
 
-  Scenario: Resume Journey shows recently opened scenes
-    Given the active campaign has recently opened scenes "The Foyer" and "Sunken Temple"
-    When I open the Current Session dashboard
-    Then I see "The Foyer" in the Resume Journey section
-    And I see "Sunken Temple" in the Resume Journey section
+  Scenario: Top Atmosphere shows the globally most played soundscape category
+    Given "Ominous Chant" is the most played soundscape category globally with 42 plays
+    When I open the Home screen
+    Then I see "Ominous Chant" in the Top Atmosphere card
+    And I see "42 PLAYS" on the Top Atmosphere card
+    And I see ambience type badges on the Top Atmosphere card
 
-  Scenario: Tapping a Resume Journey card opens the scene with playback
-    Given "The Foyer" is shown in the Resume Journey section
-    When I tap the play button on "The Foyer" in Resume Journey
-    Then I see the Active Scene screen for "The Foyer"
-    And playback begins with a 2-3s fade-in using Cubic mapping
+  Scenario: Tapping play on Top Atmosphere previews that category inline
+    Given "Ominous Chant" is shown in the Top Atmosphere card
+    When I tap the play button on the Top Atmosphere card
+    Then the Top Atmosphere category begins playing as an inline preview
 
-  Scenario: Top Atmospheres shows the globally most played loopable tracks
-    Given "Ominous Fog", "Dripping Cave", and "Tavern Hearth" are the top three most played loopable tracks globally
-    When I open the Current Session dashboard
-    Then I see "Ominous Fog" in the Top Atmospheres list
-    And I see "Dripping Cave" in the Top Atmospheres list
-    And I see "Tavern Hearth" in the Top Atmospheres list
+  Scenario: Legendary Action shows the globally most played soundboard effect
+    Given "Dragon Roar" is the most played soundboard effect globally with 128 casts
+    When I open the Home screen
+    Then I see "Dragon Roar" in the Legendary Action card
+    And I see "128 CASTS" on the Legendary Action card
+    And I see FX type badges on the Legendary Action card
 
-  Scenario: Tapping play on a Top Atmospheres row previews that track inline
-    Given "Ominous Fog" is shown in the Top Atmospheres list
-    When I tap the play button on the "Ominous Fog" row
-    Then "Ominous Fog" begins playing as an inline preview
+  Scenario: Tapping play on Legendary Action previews that effect inline
+    Given "Dragon Roar" is shown in the Legendary Action card
+    When I tap the play button on the Legendary Action card
+    Then "Dragon Roar" plays as an inline one-shot preview
 
-  Scenario: Current Session shows an empty state when no campaigns exist
+  Scenario: Home shows an empty state when no campaigns exist
     Given I have no campaigns
-    When I open the Current Session dashboard
-    Then the active campaign area shows a prompt to create or open a campaign
-    And the Resume Journey section is not shown
+    When I open the Home screen
+    Then the Active Campaigns hero shows a prompt to create or open a campaign
+    And the Top Atmosphere section is not shown
+    And the Legendary Action section is not shown
 
-  Scenario: Resume Journey shows a placeholder when no scenes have been played yet
-    Given I have a campaign but have not opened any scenes
-    When I open the Current Session dashboard
-    Then the Resume Journey section shows a placeholder prompting me to open a scene
+  Scenario: Top Atmosphere shows a placeholder when no categories have been played yet
+    Given no soundscape categories have been played yet
+    When I open the Home screen
+    Then the Top Atmosphere section shows "No atmospheres played yet"
 
-  Scenario: Top Atmospheres shows a placeholder when no tracks have been played yet
-    Given no loopable tracks have been played yet
-    When I open the Current Session dashboard
-    Then the Top Atmospheres section shows "No atmospheres played yet"
+  Scenario: Legendary Action shows a placeholder when no effects have been cast yet
+    Given no soundboard effects have been triggered yet
+    When I open the Home screen
+    Then the Legendary Action section shows "No effects cast yet"

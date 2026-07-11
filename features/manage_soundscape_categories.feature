@@ -2,23 +2,23 @@
 Feature: Manage soundscape categories in library
 
   As a GM
-  I want to view and navigate my soundscape categories in the Sound Library
+  I want to view and navigate my soundscape categories in the Library
   So that I can keep my audio collection organised and up to date.
 
   Scenario: Soundscape categories list shows all created categories
     Given I have created categories "Weather", "Interior", "Monsters"
-    When I open the Sound Library screen
+    When I open the Library screen
     Then I see "Weather", "Interior", and "Monsters" in the list
 
   Scenario: Download free demo soundscape tracks
-    Given I am on the Sound Library screen
+    Given I am on the Library screen
     When I tap "Free Tracks"
     Then I see a loading spinner
     And 100 free soundscape tracks are downloaded and added to new categories
 
   Scenario: Each category card shows the track count per intensity level
     Given "Weather" has 3 tracks at level I, 5 at level II, and 2 at level III
-    When I open the Sound Library screen
+    When I open the Library screen
     Then the "Weather" card shows "I: 3 · II: 5 · III: 2"
 
   Scenario: Tapping the edit icon on a category opens the Category Composer
@@ -33,7 +33,7 @@ Feature: Manage soundscape categories in library
 
   Scenario: Soundscape categories list is empty before any categories are created
     Given I have not created any soundscape categories
-    When I open the Sound Library screen
+    When I open the Library screen
     Then I see a centred empty-state illustration with a prompt
     And I see a "New Composition" card
 

@@ -22,11 +22,11 @@ Feature: Mix loops and soundboard effects
     Then "Sword Clash" continues to play
     And only "Weather" has stopped
 
-  Scenario: Master Atmosphere slider does not affect soundboard volume
+  Scenario: Master Volume slider does not affect soundboard volume
     Given "Forest Loop" is playing at Master 80% and "Wolf Howl" is on the soundboard
-    When I reduce the Master Atmosphere to 30%
+    When I reduce the Master Volume to 30%
     Then "Forest Loop" plays at the reduced level
-    But "Wolf Howl" is unaffected by the Master Atmosphere slider
+    But "Wolf Howl" is unaffected by the Master Volume slider
 
   Scenario: Setting a concurrency limit on soundscapes
     Given there are 10 soundscape categories currently looping

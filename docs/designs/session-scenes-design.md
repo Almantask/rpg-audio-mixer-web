@@ -1,17 +1,28 @@
 ﻿# Session Scenes — Screen Design
 
 **Design References:**
-- [`docs/designs/SessionScenes.html`](../../docs/designs/SessionScenes.html)
-- [`docs/designs/SessionScenes.png`](../../docs/designs/SessionScenes.png)
-- **New source of truth:** FE sidebar layout (inferred from Jul 2026 IA redesign)
+- **Same list as global Scenes** — [`scenes-list-design.md`](scenes-list-design.md) (one row per scene, same card chrome and actions); this screen shows only scenes **linked to this session**
+- **Scene screen (after open):** [`active-scene-soundscapes-design.md`](active-scene-soundscapes-design.md), [`active-scene-soundboard-design.md`](active-scene-soundboard-design.md) — **identical** to opening from the global Scenes list
+- **New source of truth:** FE sidebar layout (Jul 2026 IA redesign)
 
 ---
 
 ## Purpose
 
-Lists the scenes associated with a specific session within a campaign. Because scenes are global, this screen shows a curated subset — scenes the GM has linked to this session. Editing a scene here still updates it globally.
+The **Session Scenes** screen is the **same list UI as Scenes** (`scenes-list-design.md`), filtered to scenes the GM has linked to **this session**. Scenes remain global — editing a scene here updates it everywhere it is used.
 
-**Sidebar nav item:** Current Session (active — session scenes are session-context navigation)
+**Only differences from global Scenes list:**
+
+| Aspect | Global Scenes list | Session Scenes list |
+|---|---|---|
+| Scope | All scenes | Scenes linked to this session only |
+| Page header | **Scenes** + subtitle | Session name + **Session Scenes** + campaign breadcrumb |
+| Bottom CTA | **New Scene** (create globally) | **Import Scene** (link existing global scenes to session) |
+| **Trash** icon | Soft-deletes scene globally → Trash | **Unlinks** scene from session (scene persists globally) |
+
+Row click opens the **same Scene screen** as the global list — Soundscapes tab, no auto-playback.
+
+**Sidebar nav item:** Home (active — session scenes are drill-down from Campaign)
 
 ---
 
@@ -20,7 +31,7 @@ Lists the scenes associated with a specific session within a campaign. Because s
 Shared FE layout for **Arcanum Audio** (left sidebar navigation). See `home-design.md` for full shell spec.
 
 - **FE sidebar navigation only (no tab bar)**
-- Scene card visual language aligns with Ambience Presets (`scenes-list-design.md`) but scoped to session-linked scenes
+- **Sidebar:** Home active (gold bar + tint)
 
 ---
 
@@ -28,20 +39,25 @@ Shared FE layout for **Arcanum Audio** (left sidebar navigation). See `home-desi
 
 ```
 ┌──────────────────────────────────────────────────────────────────────┐
-│  CAMPAIGN > [CAMPAIGN NAME] > SESSION 14                             │
+│  CAMPAIGN > ECHOES OF THE VOID > SESSION 14                          │
 │  The Howling Crags                                                   │
-│  Session Scenes                              [ Import Scene ]        │
+│  Session Scenes                                                      │
 │                                                                      │
-│  ┌──────────────┐ ┌──────────────┐ ┌──────────────┐                 │
-│  │ COMBAT       │ │ EXPLORATION  │ │ SOCIAL       │                 │
-│  │ (•) Last     │ │          [⋮] │ │          [⋮] │                 │
-│  │ Active       │ │ Frostwind    │ │ Campfire     │                 │
-│  │ Dragon's Lair│ │ Pass         │ │ Rest         │                 │
-│  │ 4 SC  12 FX  │ │ 3 SC  8 FX   │ │ 2 SC  6 FX   │                 │
-│  │ [▶]          │ │ [▶]          │ │ [▶]          │                 │
-│  └──────────────┘ └──────────────┘ └──────────────┘                 │
+│  ┌────────────────────────────────────────────────────────────────┐  │
+│  │ [background image]                                             │  │
+│  │ COMBAT   Dragon's Lair              4 SC · 12 FX   ✏️  ⧉  🗑   │  │
+│  └────────────────────────────────────────────────────────────────┘  │
+│  ┌────────────────────────────────────────────────────────────────┐  │
+│  │ [background image]                                             │  │
+│  │ FOREST   Frostwind Pass             3 SC · 8 FX    ✏️  ⧉  🗑   │  │
+│  └────────────────────────────────────────────────────────────────┘  │
+│  ┌ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - +  │
+│  │              +  Import Scene                                    │  │
+│  └ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - +  │
 └──────────────────────────────────────────────────────────────────────┘
 ```
+
+*(Same row pattern as global Scenes list — background image, gradient overlay, one scene per row.)*
 
 ---
 
@@ -49,31 +65,40 @@ Shared FE layout for **Arcanum Audio** (left sidebar navigation). See `home-desi
 
 ### Breadcrumb
 - **CAMPAIGN > [CAMPAIGN NAME] > SESSION N** — uppercase sans-serif trail
-- Links back to Campaign Sessions
+- Tapping campaign or session segment navigates up the hierarchy
 
 ### Page Header
-- Session name — large gold serif (e.g. "The Howling Crags")
-- **Session Scenes** subtitle
-- **Import Scene** — gold outline `Button` (top right)
+- **Session name** — large gold serif (e.g. "The Howling Crags")
+- **Session Scenes** — subtitle below session name
 
-### Scene Card (`Card` — repeating)
-Same visual language as Ambience Presets cards, minus clone action:
-- Background cover art with gradient overlay
-- Category `Badge` tags
-- **Last Active** pulsing indicator on most recently played scene in this session
-- Scene title, description snippet
-- Stats: soundscape count · effect count
-- **▶ Play button** — starts playback on open (2–3 s fade-in, cubic volume mapping)
-- **⋮ menu** — unlink from session (does not delete globally)
-- Card body click — opens Active Scene without starting playback
+### Scene Card (`Card` — repeating, **one per row**)
+
+**Identical to** `scenes-list-design.md` — Scene Card:
+
+| Element | Description |
+|---|---|
+| **Background image** | Scene cover art fills the row; dark gradient overlay |
+| **Category tags** | Optional `Badge` chips (COMBAT, FOREST, etc.) |
+| **Scene title** | Location name in white/gold serif |
+| **Stats** | **SC · FX** — e.g. **4 SC · 12 FX** |
+| **Edit** | ✏️ — scene metadata (global) |
+| **Duplicate** | ⧉ — clones as "Copy of [Scene Name]" (global) |
+| **Trash** | 🗑 — **unlinks from this session** (does not delete globally) |
+
+- Action icon clicks do **not** navigate to the Scene screen
+- Row body click navigates to the Scene screen
+
+**Not on cards:** play button, ▶ control, **⋯** menu, or list-level playback.
+
+### Import Scene (`Button` / dashed row)
+- Full-width **Import Scene** at the **bottom** of the list — same dashed-row pattern as **New Scene** on the global list
+- Opens a searchable picker of global scenes **not yet linked** to this session
+- Multi-select + confirm links selected scenes to the session list
 
 ### Empty State
-- Centred illustration
-- **Import Scene** as primary CTA (scenes are global; creation happens via Ambience Presets)
-
-### Import Scene Flow
-- Searchable picker overlay showing all global scenes not yet linked to this session
-- Multi-select + confirm
+- Centred illustration (parchment / scroll)
+- **Import Scene** as primary CTA
+- Optional secondary link: Sidebar → **Scenes** → **New Scene** to create a scene globally, then return and **Import Scene**
 
 ---
 
@@ -81,31 +106,32 @@ Same visual language as Ambience Presets cards, minus clone action:
 
 | Interaction | Result |
 |---|---|
-| Click scene card (body) | Navigate to Active Scene — **no playback** |
-| Click **▶** on scene card | Navigate to Active Scene — **playback starts** (2–3 s fade-in) |
-| Click **⋮** → Unlink | Removes scene link from session (scene persists globally) |
-| Click delete on card | Instantly unlinks scene from session |
-| Click **Import Scene** | Open global scene picker to link scenes |
+| Click scene card body | Navigate to **Scene screen** (Soundscapes tab) — **no playback starts**; same screen as global Scenes list |
+| Click **✏️ Edit** | Open scene edit (metadata + background image) — updates scene globally |
+| Click **⧉ Duplicate** | Creates duplicate scene named "Copy of [Scene Name]" |
+| Click **🗑 Trash** | Unlinks scene from this session (confirmation if configured); scene remains in global Scenes list |
+| Click **Import Scene** | Open global scene picker to link scenes to session |
 | Click breadcrumb | Navigate up campaign hierarchy |
-| Click ⚙️ | Navigate to Arcane Settings |
 
-### Scene Linking
-- Scenes are global; "importing" creates a link, not a copy
-- Removing a link does not delete the scene globally
+Playback is controlled only from the **Scene screen** after opening a scene — not from this list.
+
+### Scene linking
+- **Import Scene** creates a session link, not a copy
+- Unlinking (🗑) does not delete the scene globally
 - Changes to a linked scene affect the scene everywhere it appears
 
 ---
 
 ## States
 
-### Populated
-One card per linked scene in horizontal grid.
+### Populated list
+One row per linked scene plus **Import Scene** row at the bottom.
 
 ### Empty state
-Illustration + Import Scene button.
+Illustration + **Import Scene** button.
 
 ### Importing scenes
-Selection overlay with multi-select and confirm button.
+Picker overlay with search, multi-select, and confirm.
 
 ---
 
@@ -113,9 +139,10 @@ Selection overlay with multi-select and confirm button.
 
 | Destination | Trigger |
 |---|---|
-| Campaign Sessions | Breadcrumb |
-| Active Scene (view only) | Click scene card body |
-| Active Scene (with playback) | Click ▶ on card |
-| Scene picker (import) | Import Scene |
-| Ambience Presets (global scenes) | Sidebar |
-| Arcane Settings | ⚙️ gear or sidebar |
+| Campaign Sessions | Breadcrumb — campaign or session segment |
+| Scene screen | Click scene card body (same as global Scenes list) |
+| Scene edit | ✏️ Edit icon |
+| Scene picker (import) | **Import Scene** |
+| Scenes (global list) | Sidebar → Scenes |
+| Credits | Sidebar → Credits |
+| Trash | Sidebar → Trash |

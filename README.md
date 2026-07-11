@@ -15,7 +15,7 @@
 - **Layered Soundscapes:** Compose complex atmospheres by mixing multiple loopable audio categories (Weather, Interior, Monsters, etc.).
 - **Dynamic Intensity:** Seamlessly transition between three levels of intensity (I, II, III) for any soundscape category with automatic 2-second crossfades.
 - **Low-Latency Soundboard:** Trigger one-shot sound effects (FX) that overlap perfectly with background ambience.
-- **Smart Mixing:** Real-time control over Master Atmosphere and per-category MIX volumes using a cubic power curve for natural-sounding fades.
+- **Smart Mixing:** Real-time control over Master Volume and per-category MIX volumes using a cubic power curve for natural-sounding fades.
 - **Campaign Management:** Organize your sessions into Campaigns and Sessions with full support for soft-deletion and recovery via the "Vault of Echoes."
 - **Home Dashboard:** Quickly resume your last session or scene with one tap from a personalized landing page.
 

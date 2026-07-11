@@ -16,7 +16,7 @@ Feature: All scenes are user-owned and fully editable
   Scenario: Add button is always shown in a scene's atmospheres tab
     Given I have a scene named "Epic Battle"
     When I open the Atmospheres tab of "Epic Battle"
-    Then I see the "Add New Soundscape" button
+    Then I see the "Add Soundscape" button
 
   Scenario: Removing a soundscape category from a scene is always permitted
     Given "Epic Battle" has the soundscape category "Combat Drums"
@@ -28,7 +28,7 @@ Feature: All scenes are user-owned and fully editable
     When I remove "Battle Horn" from the soundboard
     Then "Battle Horn" is no longer in the "Epic Battle" scene
 
-  Scenario: All scenes in Ambience Presets appear the same (no purchased distinction)
+  Scenario: All scenes in Scenes appear the same (no purchased distinction)
     Given I have scenes "Forest Path", "Dungeon Entrance", and "Tavern"
-    When I view the Ambience Presets list
+    When I view the Scenes list
     Then all scenes have the same visual appearance without any ownership badge

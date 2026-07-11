@@ -8,7 +8,7 @@ Feature: Add FX to soundboard
   # Design: The selection view shows all FX library tracks with instant + add.
   # Effects already in the scene's soundboard show an indicator icon instead of +.
 
-  Scenario: Tapping Add New Effect opens the FX selection screen
+  Scenario: Tapping Add Sound opens the FX selection modal
     Given I am on the Active Scene — One-Shots & SFX tab
     When I tap "Add Sound"
     Then I see the FX selection screen with a back link
@@ -53,12 +53,12 @@ Feature: Add FX to soundboard
     Then I see the Active Scene — One-Shots & SFX tab
     And both "Thunder Crack" and "Wolf Howl" appear as buttons in the soundboard grid
 
-  Scenario: The Import New button opens the browser file picker
+  Scenario: The Import button opens the browser file picker
     Given the FX selection screen is open
-    When I tap "Import New" in the footer card
+    When I tap "Import" in the footer card
     Then the browser file picker opens for audio files only
 
-  Scenario: A file imported via Import New appears in the FX library and selection list
+  Scenario: A file imported via Import appears in the FX library and selection list
     Given the browser file picker is open from the FX selection screen
     When I select "cannon_fire.mp3"
     Then "cannon_fire.mp3" appears in the FX selection list

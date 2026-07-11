@@ -54,12 +54,17 @@ Feature: Compose soundscape
     When I tap the back button
     Then I see a confirmation dialog asking whether to discard changes
 
-  Scenario: Global Mixer shows elemental level cards for session-wide balance
-    Given I am on the Global Mixer screen
+  Scenario: Category Composer is reachable from the Library
+    Given I am on the Library screen
+    When I tap "New Composition"
+    Then I see the Category Composer screen
+
+  Scenario: Category Composer shows elemental level cards for session-wide balance
+    Given I am in the Category Composer from the Library
     Then I see elemental level cards for Foundation, Atmosphere, and Incantations
     And each card has an intensity slider with Cubic mapping
 
-  Scenario: Current Layers can be reordered in the Global Mixer
-    Given the Global Mixer has layers "Thunderous Downpour" and "Howling Gorges"
+  Scenario: Current Layers can be reordered in the Category Composer
+    Given the Category Composer has layers "Thunderous Downpour" and "Howling Gorges"
     When I drag "Howling Gorges" above "Thunderous Downpour"
     Then "Howling Gorges" appears before "Thunderous Downpour" in the layer stack

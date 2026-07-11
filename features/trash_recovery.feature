@@ -12,8 +12,9 @@ Feature: Trash recovery and soft-deletion
     And it becomes temporarily unavailable in the main app lists
     And no instant permanent deletion dialog is shown unless it's a destructive cascade
 
-  Scenario: The Vault is reachable from the sidebar
-    When I tap "Vault" in the sidebar
+  Scenario: The Vault is reachable from Arcane Settings
+    Given I am on the Arcane Settings screen
+    When I tap "Restore Recent Deletes"
     Then I see the "Vault of Echoes" screen
 
   Scenario: The Trash screen lists all temporarily deleted items
@@ -33,7 +34,7 @@ Feature: Trash recovery and soft-deletion
     Given "Cursed Catacombs" (Scene) is in the Trash
     When I tap the "Restore" button on the "Cursed Catacombs" card
     Then "Cursed Catacombs" is removed from the Trash
-    And it reappears exactly as it was in Ambience Presets
+    And it reappears exactly as it was in Scenes
 
   Scenario: Restoring a campaign also restores its sessions
     Given I have a campaign "Curse of Strahd" in the Trash

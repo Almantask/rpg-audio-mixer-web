@@ -33,7 +33,7 @@ Feature: Manage campaigns
 
   Scenario: Active campaign is the most recently played one
     Given I have played "Curse of Strahd" most recently
-    When I open the Current Session dashboard
+    When I open the Home screen
     Then "Curse of Strahd" is shown as the active campaign
 
   Scenario: Resume a campaign from the campaigns list

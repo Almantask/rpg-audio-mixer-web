@@ -91,12 +91,12 @@ Acceptance criteria as Gherkin compatible with **Playwright + Cucumber**.
 | Settings form | `Label` + `Switch` / `Select` rows | Group with section headings |
 | Search | Input with search icon or `Command` palette | Debounced filter |
 | Playback progress | `Progress` | Indeterminate while buffering |
-| App navigation | Sidebar or top `NavigationMenu` | Match `docs/design-overall.md` |
+| App navigation | Sidebar or top `NavigationMenu` | Match `docs/designs/home-design.md` |
 | Contextual actions | `DropdownMenu` | Keyboard accessible |
 | Toast feedback | `Sonner` / `Toast` | Prefer over `alert()` |
 | Import / upload | `Dialog` + file input | Drag-drop zone optional |
 
-**Theme:** Dark-first — black background, gold/amber text, purple/pink/gold accents per `docs/design-overall.md`.
+**Theme:** Dark-first — black background, gold/amber text, purple/pink/gold accents per `docs/designs/home-design.md`.
 
 ---
 

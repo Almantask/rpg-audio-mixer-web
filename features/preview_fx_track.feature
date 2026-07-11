@@ -21,9 +21,9 @@ Feature: Preview FX track in library
     Then "Thunder Crack" stops playing
     And the mini player remains visible
 
-  Scenario: The mini player is only visible on the Sound Library screen
+  Scenario: The mini player is only visible on the Library screen
     Given the mini player is visible while previewing "Thunder Crack"
-    When I navigate to Ambience Presets
+    When I navigate to Scenes
     Then the mini player is no longer visible
     And "Thunder Crack" has stopped playing
 
@@ -36,6 +36,6 @@ Feature: Preview FX track in library
 
   Scenario: Switching from Sound Effects to Soundscapes sub-view hides the mini player
     Given the mini player is visible while previewing an FX track
-    When I switch to the Soundscapes sub-view in Sound Library
+    When I switch to the Soundscapes sub-view in the Library
     Then the mini player disappears
     And audio playback stops

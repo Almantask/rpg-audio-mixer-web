@@ -22,7 +22,7 @@ Principles: shadcn/ui patterns, progressive disclosure, state-driven design.
 - For each user action, are **empty**, **loading**, **success**, and **error** states addressed or explicitly out of scope?
 - If a scenario references a screen, what happens with zero soundscapes, zero FX, or partial data?
 - Are destructive or irreversible actions (delete, global stop, session lock) specified clearly?
-- Is navigation consistent with route and layout conventions in `docs/design-overall.md`?
+- Is navigation consistent with route and layout conventions in `docs/designs/home-design.md`?
 - Are disabled controls explained — condition and recovery?
 - Are timing-sensitive interactions (fades, crossfades) defined enough for consistent UX?
 

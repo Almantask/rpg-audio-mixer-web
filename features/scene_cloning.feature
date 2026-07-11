@@ -13,7 +13,7 @@ Feature: Scene cloning
 
   Scenario: Cloning a scene duplicates all configuration
     When I clone the "Forest Night" scene as "Forest Storm"
-    Then I see the "Forest Storm" scene in Ambience Presets
+    Then I see the "Forest Storm" scene in Scenes
     And the "Forest Storm" scene should have "Owl Hooting" at MIX 80%
     And the "Forest Storm" scene should have "Thunder" sound effect
     And the "Forest Storm" scene should have "Nature" tag

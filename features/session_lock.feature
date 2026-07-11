@@ -16,10 +16,10 @@ Feature: Session Lock
     And swiping right on a category card to remove it should be disabled
     And dragging soundboard effects to reorder should be disabled
     And dragging soundboard effects to the flames to delete should be disabled
-    And the "Add New Soundscape" button should be disabled or hidden
+    And the "Add Soundscape" button should be disabled or hidden
     And navigating to a different scene should be blocked
-    But I can still drag the Master Atmosphere slider
-    And I can still drag the MIX sliders
+    But I can still drag the Master Volume slider
+    And I can still drag the Volume sliders
     And I can still tap the play/pause and d20 buttons
 
   Scenario: Unlocking the session restores destructive gestures and scene switching
@@ -28,5 +28,5 @@ Feature: Session Lock
     Then the "Lock" icon should appear in an "Unlocked" state
     And dragging category cards by their handle to reorder should be enabled
     And swiping right on a category card to remove it should be enabled
-    And the "Add New Soundscape" button should be visible and enabled
+    And the "Add Soundscape" button should be visible and enabled
     And navigating to a different scene should be allowed

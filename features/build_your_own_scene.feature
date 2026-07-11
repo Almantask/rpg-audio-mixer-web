@@ -34,7 +34,7 @@ Feature: Build your own scene
   Scenario: Atmospheres tab shows an add button when empty
     Given I have created a new scene
     When I open the "Atmospheres" tab
-    Then I see an "Add New Soundscape" button
+    Then I see an "Add Soundscape" button
 
   Scenario: Add button always appears at the end of the atmospheres list
     Given I have created a new scene

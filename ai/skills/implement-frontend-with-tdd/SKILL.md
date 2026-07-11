@@ -55,7 +55,7 @@ Before creating any file:
 
 1. Search `src/components/`, `components/ui/`, `app/`, and `src/hooks/` for existing code to extend.
 2. Read the relevant `docs/designs/[scene]-design.md` and linked HTML prototype for layout, states, and copy.
-3. Read `docs/design-overall.md` for navigation, theme, and data-model constraints.
+3. Read `docs/designs/home-design.md` for app shell, sidebar navigation, and theme.
 4. Match existing naming, import style, and folder layout.
 
 **Simple first:** implement inline in the page/component until the same pattern appears twice, then extract.
@@ -110,7 +110,7 @@ src/
 - Components are **presentational by default** — data fetching and side effects live in hooks or route loaders.
 - Co-locate tests: `[Component].test.tsx` next to `[Component].tsx`.
 - Use `cn()` from `lib/utils` for conditional Tailwind classes.
-- Dark theme only — match `docs/design-overall.md` palette (black bg, gold/amber text, purple/pink/gold accents).
+- Dark theme only — match `docs/designs/home-design.md` (black bg, gold/amber text, purple/pink/gold accents).
 
 ---
 

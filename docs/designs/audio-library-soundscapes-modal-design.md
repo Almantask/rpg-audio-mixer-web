@@ -1,84 +1,128 @@
-﻿# Sound Library — Screen Design
+﻿# Soundscapes — Picker Modal Design
 
 **Design References:**
-- [`docs/designs/AudioLibrary-Soundscape-Categories.html`](../../docs/designs/AudioLibrary-Soundscape-Categories.html)
-- [`docs/designs/AudioLibrary-Soundscape-Categories.png`](../../docs/designs/AudioLibrary-Soundscape-Categories.png)
-- **New source of truth:** FE sidebar layout screenshots (Jul 2026 redesign)
+- **Browse mode (Library page):** [`audio-library-design.md`](audio-library-design.md) — Soundscapes tab
+- **Parallel pattern:** [`audio-library-fx-modal-design.md`](audio-library-fx-modal-design.md)
+- **Launched from scene:** [`active-scene-soundscapes-design.md`](active-scene-soundscapes-design.md) — **ADD SOUNDSCAPE**
 
 ---
 
 ## Purpose
 
-The Sound Library is the master catalogue of all Soundscape Categories the GM has created. From here the GM can review, edit, and organise soundscape content. Editing a category opens the Category Composer (Global Mixer).
+The Soundscapes **picker modal** lets the GM select soundscape categories from the library and add them to the **active scene** in one commit action. It is launched from Active Scene — **ADD SOUNDSCAPE**, not from the sidebar.
 
-**Sidebar nav item:** Sound Library (active on this screen)
+For browsing, buying, composing, and editing categories, use the **Library page** — [`audio-library-design.md`](audio-library-design.md).
 
-Sound Effects are accessed as a sub-view within Sound Library (see `audio-library-fx-design.md`).
+This modal provides filters, buy/free actions, card grid, preview-on-click, **multi-select checkboxes**, and a footer **Add Selected** button.
 
----
+**No Detail button.** Per-card edit / **+** is replaced by selection checkboxes.
 
-## App Shell
-
-Shared FE layout for **Arcanum Audio** (left sidebar navigation). See `home-design.md` for full shell spec.
-
-- **Sidebar footer:** user profile — avatar, name (e.g. "Grand Alchemist"), studio/campaign context
-- **FE sidebar navigation only (no tab bar)**
+**Not used for:** Sidebar → Library (that route is the full Library page).
 
 ---
 
-## Layout — Main Content
+## Presentation
+
+| Viewport | Container |
+|---|---|
+| **Mobile** | Full-screen `Sheet`; ← back when launched from Active Scene |
+| **Web (sidebar layout)** | Large content-area `Sheet` / `Dialog`; app sidebar remains visible; filter panel stays in sidebar footer |
+
+---
+
+## Layout — Modal
 
 ```
-┌──────────────────────────────────────────────────────────────────────┐
-│  Sound Library                              [ Filter ]  [ Search ]   │
-│  Curate and compose your acoustic environments.                      │
-│                                                                      │
-│  ┌──────────────┐ ┌──────────────┐ ┌──────────────┐                 │
-│  │ ┌ ─ ─ ─     │ │ ☁ Meteorolog.│ │ 🍺 Tavern &  │                 │
-│  │    +         │ │ 2 active     │ │    Hearth    │                 │
-│  │ New          │ │ Heavy Rain ══│ │ Crowd ══════ │                 │
-│  │ Composition  │ │ Distant Thnd ═│ │ Crackling ═══ │                 │
-│  └──────────────┘ └──────────────┘ └──────────────┘                 │
-│  ┌──────────────┐ ┌────────────────────────────────────────────┐    │
-│  │ ✨ Ethereal  │ │ 🐉 Creatures of the Deep (wide — 2 cols)   │    │
-│  │ 2 active     │ │ Goblin ═══  │ Wolf ═════  │ Dragon ══ │ …  │    │
-│  └──────────────┘ └────────────────────────────────────────────┘    │
-└──────────────────────────────────────────────────────────────────────┘
+┌──────────┬──────────────────────────────────────────────────────────────┐
+│ Sidebar  │  ← Back to Active Scene          (picker launch only)      │
+│          │  Soundscapes                                               │
+│  Search  │  Add categories to your active scene.                       │
+│  Type    │  [ Buy Composition ]  [ Free Compositions ]                │
+│  Sort    │  🔍  Search compositions…                                    │
+│          │                                                              │
+│          │  ┌──────────────┐ ┌──────────────┐ ┌──────────────┐       │
+│          │  │☑ 🌧 Weather  │ │☐ 🍺 Tavern   │ │☐ ✨ Ethereal  │       │
+│          │  │ 12 tracks    │ │ 8 tracks     │ │ 6 tracks     │       │
+│          │  │ 3 layers     │ │ 2 layers     │ │ 1 layer      │       │
+│          │  └──────────────┘ └──────────────┘ └──────────────┘       │
+│          │ ┌──────────────────────────────────────────────────────────┐  │
+│          │ │              Add Selected (1)                        │  │
+│          │ └──────────────────────────────────────────────────────────┘  │
+└──────────┴──────────────────────────────────────────────────────────────┘
 ```
+
+---
+
+## Sidebar Filter Panel
+
+Anchored in the **sidebar footer**:
+
+| Control | Component | Description |
+|---|---|---|
+| Search | `Input` | Placeholder: "Search compositions…" with magnifying glass |
+| Category Type | `Select` | Dropdown — e.g. "All Types" |
+| Sort Order | `Select` | Dropdown — e.g. "Recently Added" |
+
+Filters apply to the modal grid in real time (debounced).
 
 ---
 
 ## Components
 
-### Page Header
-- **Title:** "Sound Library" — large gold serif
-- **Subtitle:** "Curate and compose your acoustic environments."
-- **Filter** — outline `Button` (top right)
-- **Search** — gold `Button` (top right) → opens search/filter panel or `Command` palette
+### Modal Header
+- **Back control** — ← **Back to Active Scene** (always shown in picker)
+- **Title:** **Soundscapes** — large gold serif
+- **Subtitle:** "Add categories to your active scene."
 
-### Free Tracks Action Button
-*(Retained for feature parity — may appear in header actions or empty state)*
-- Fetches "100 Free Demo Soundscapes" for fast category population
+### Action Buttons (below subtitle)
 
-### New Composition Card (`Card` — dashed border)
-- Centred **+** icon
-- **New Composition** title
-- Description: "Blend categories to create a new master atmosphere."
-- Clicking creates a new empty category and opens the Category Composer
+| Button | Style | Action |
+|---|---|---|
+| **Buy Composition** | gold + cart | Storefront — purchase pre-made soundscape compositions |
+| **Free Compositions** | outline + external-link | Download free demo composition pack |
 
-### Category Card (`Card` — grid, repeating)
-- Thematic icon (top-left)
-- Category name — gold serif
-- **N active layers** count
-- Sample layer rows with inline `Slider` previews (e.g. "Heavy Rain", "Distant Thunder")
-- **Edit** action → navigates to Category Composer
-- Track counts per intensity (I, II, III) — **levels with zero tracks show count dimmed/greyed**
+### Search Bar
+- Full-width `Input` below the action buttons
+- Magnifying-glass icon; placeholder: **Search compositions…**
+- Filters the card grid in real time (debounced)
+- Synced with sidebar search when both are visible on web
 
-**Wide cards:** some categories (e.g. "Creatures of the Deep") span **2 columns** with a two-column layer grid.
+### Composition Card (`Card` — grid, repeating)
 
-### Bento Grid Behaviour
-- Responsive grid; columns scale by viewport width
-- Amber/gold accent borders with faded ghost icon in card background (optional)
+| Element | Description |
+|---|---|
+| **Selection** | Checkbox top-left — toggles category in selection set; does not play or navigate |
+| Thumbnail / icon | Thematic artwork — **click card body to preview** a sample from the category |
+| Category name | Gold serif (e.g. *Meteorological*) |
+| Track count | e.g. **12 tracks** |
+| Layer summary | e.g. **12 tracks**; intensity level counts (**I – V**) dimmed when zero |
+
+**Not on cards:** Detail (⋯) button, per-card **+** / **?**, inline edit control.
+
+**Playing state:**
+- Gold border + optional **● PLAYING** on thumbnail
+- Click playing card again to stop
+- One preview at a time
+
+**Already in target (picker mode):** checkbox disabled + muted card when category is already on the active scene.
+
+### Add Soundscape Card
+- **Hidden in picker modal** — use Library page to create categories
+
+### Footer — Add Selected
+- Sticky full-width gold `Button` at bottom of modal
+- Label: **Add Selected (N)** — **N** = checked count; disabled when **N = 0**
+- Commits all checked categories to the active scene
+
+---
+
+## Launch Context
+
+| Launched from | Back link | Click card body | Add Selected commits to |
+|---|---|---|---|
+| **ADD SOUNDSCAPE** (Active Scene) | ← Back to Active Scene | Preview sample | Adds checked categories to the scene; modal may stay open |
+
+> **Picker list scope:** categories with **zero tracks** at all intensity levels are **excluded**.
 
 ---
 
@@ -86,26 +130,39 @@ Shared FE layout for **Arcanum Audio** (left sidebar navigation). See `home-desi
 
 | Interaction | Result |
 |---|---|
-| Click **✏️** / edit on category | Navigate to Category Composer (edit mode) |
-| Click category card body | Navigate to Category Composer |
-| Click **New Composition** | Prompt for name → open Category Composer (new) |
-| Click **Filter** / **Search** | Open filter/search UI |
-| Click **Free Soundscapes** | Initiates download of 100 demo tracks; shows loading state |
-| Click ⚙️ | Navigate to Arcane Settings |
-| Navigate to Sound Effects | Sub-nav or library tab switch (within Sound Library context) |
+| Click card body / thumbnail | Previews a sample track from that category |
+| Click playing card again | Stops preview |
+| Toggle checkbox | Adds/removes category from selection |
+| Click **Add Selected (N)** | Adds all checked categories to the scene; clears selection on success |
+| Click **Buy Composition** | Navigate to storefront |
+| Click **Free Compositions** | Initiates free demo download; new compositions appear in grid |
+| Type in **Search** bar | Filters grid by composition name (debounced) |
+| Use sidebar search/filters | Same filter state as main search bar |
+| Click ← back | Closes modal (picker); committed adds remain |
+
+Adding a category to the scene does **not** start playback on the Active Scene.
 
 ---
 
 ## States
 
 ### Populated grid
-All categories as rich cards. Categories with all intensity levels at 0 tracks still shown (counts dimmed).
+Composition cards with checkboxes; footer **Add Selected (0)** disabled.
 
-### Empty state
-Only New Composition card + Free Soundscapes button + optional onboarding illustration.
+### Selection active
+One or more checkboxes checked; footer count updates; button enabled.
+
+### Playback state
+One card shows gold border / **● PLAYING**; selection and footer remain usable.
+
+### Empty library
+Centred illustration + **Buy Composition** and **Free Compositions**; footer hidden or disabled.
+
+### Filtered empty
+"No compositions match your filters" with clear-filters action.
 
 ### Loading
-`Skeleton` cards while library data loads.
+`Skeleton` cards until library data resolves.
 
 ---
 
@@ -113,7 +170,21 @@ Only New Composition card + Free Soundscapes button + optional onboarding illust
 
 | Destination | Trigger |
 |---|---|
-| Category Composer (Global Mixer) | Edit on category or New Composition |
-| Sound Effects sub-view | Library navigation (see `audio-library-fx-design.md`) |
-| Arcane Settings | ⚙️ gear or sidebar |
-| Global Mixer | Sidebar |
+| Active Scene — Soundscapes tab | ← back |
+| Library page (browse) | `audio-library-design.md` |
+| Category Composer | Library page — card click or Add Soundscape |
+| Storefront | Buy Composition |
+| FX picker modal | Add Sound on soundboard |
+| Credits | Sidebar → Credits |
+| Trash | Sidebar → Trash |
+
+---
+
+## Related Flows
+
+| Flow | Doc |
+|---|---|
+| Library page (browse) | `audio-library-design.md` |
+| Active Scene soundscapes tab | `active-scene-soundscapes-design.md` |
+| Category Composer | `soundscape-category-composer-design.md` |
+| FX picker modal | `audio-library-fx-modal-design.md` |

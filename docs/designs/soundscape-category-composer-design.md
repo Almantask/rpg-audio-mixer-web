@@ -1,17 +1,22 @@
-﻿# Category Composer (Global Mixer) — Screen Design
+﻿# Category Composer — Screen Design
 
 **Design References:**
-- [`docs/designs/Soundscape-Category-Composer.html`](../../docs/designs/Soundscape-Category-Composer.html)
-- [`docs/designs/Soundscape-Category-Composer.png`](../../docs/designs/Soundscape-Category-Composer.png)
+- **Parent screen:** [`audio-library-design.md`](audio-library-design.md) — Soundscapes tab
+- **Add track modal:** Soundscapes modal (track picker — browse library + import)
 - **New source of truth:** FE sidebar layout screenshots (Jul 2026 redesign)
 
 ---
 
 ## Purpose
 
-The Category Composer (Global Mixer) is where the GM orchestrates elemental audio layers across intensity tiers. The GM balances Foundation, Atmosphere, and Incantation levels, manages active layers, and saves compositions globally — any scene using affected categories reflects changes immediately.
+The **Category Composer** is where the GM organizes **tracks** into **intensity levels** for a soundscape category. Each level is a pool of tracks the Scene screen picks from at random when that intensity is active.
 
-**Sidebar nav item:** Global Mixer (active on this screen)
+- Categories start with **one** intensity level
+- GM can add up to **five** levels total
+- **No volume mixing** here — balance is handled on the Scene screen (Master Volume × per-category Volume)
+- Changes save **globally** — any scene using this category reflects updates immediately
+
+**Sidebar nav item:** Library (Category Composer is a drill-down from Soundscapes tab)
 
 ---
 
@@ -20,7 +25,8 @@ The Category Composer (Global Mixer) is where the GM orchestrates elemental audi
 Shared FE layout for **Arcanum Audio** (left sidebar navigation). See `home-design.md` for full shell spec.
 
 - **FE sidebar navigation only (no tab bar)**
-- Main content area may use a lighter off-white panel (`#F5F5F0`) contrasting the dark sidebar
+- **Sidebar:** Library active
+- Main content may use a lighter off-white panel (`#F5F5F0`) contrasting the dark sidebar
 
 ---
 
@@ -28,82 +34,86 @@ Shared FE layout for **Arcanum Audio** (left sidebar navigation). See `home-desi
 
 ```
 ┌──────────────────────────────────────────────────────────────────────┐
-│  Category Composer                          [ Save Composition ✨ ]  │
-│  Orchestrate and balance the elemental layers of your active session.│
+│  ← Library    Meteorological                    [ Save Composition ] │
+│  Category Composer                                                   │
+│  Assign tracks to intensity levels for this category.                │
 │                                                                      │
-│  ┌─ Level I ──────┐ ┌─ Level II ─────┐ ┌─ Level III ────┐           │
-│  │ 💧 Foundation  │ │ 🌬 Atmosphere  │ │ ☀ Incantations │           │
-│  │ Intensity ═◉══ │ │ Intensity ═══◉ │ │ Intensity ═◉══ │           │
-│  │           45%  │ │           72%  │ │           15%  │           │
-│  └────────────────┘ └────────────────┘ └────────────────┘           │
+│  ┌─ Level I ──────────────────────────────────────────────── [▼] ─┐ │
+│  │  [ + Add track ]                                                 │ │
+│  │  ┌ Thunderous Downpour ──────────────────────────────── [×] ─┐  │ │
+│  │  │ Continuous · Wide Stereo · 3:42                            │  │ │
+│  │  └────────────────────────────────────────────────────────────┘  │ │
+│  │  ┌ Distant Rolling Thunder ──────────────────────────── [×] ─┐  │ │
+│  │  │ Ambient · Stereo · 2:15                                    │  │ │
+│  │  └────────────────────────────────────────────────────────────┘  │ │
+│  └──────────────────────────────────────────────────────────────────┘ │
 │                                                                      │
-│  ◆ Current Layers                                    [ 2 Active ]    │
-│  ┌─ Thunderous Downpour ────────────────────────────────────── [×] ┐ │
-│  │ ⠿ [thumb] LVL II  Continuous · Wide Stereo  ════════◉══  75%  │ │
-│  └────────────────────────────────────────────────────────────────┘ │
-│  ┌─ Howling Gorges ─────────────────────────────────────────── [×] ┐ │
-│  │ ⠿ [thumb] LVL I   Dynamic · Binaural        ════◉══════  40%  │ │
-│  └────────────────────────────────────────────────────────────────┘ │
-│  ┌ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┐ │
-│  │              +  Invoke New Layer                                │ │
-│  │   Browse the Grimoire to add more atmospheric elements…       │ │
-│  └ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┘ │
+│  ┌─ Level II ─────────────────────────────────────────────── [▶] ─┐ │
+│  │  (collapsed — 0 tracks)                                          │ │
+│  └──────────────────────────────────────────────────────────────────┘ │
+│                                                                      │
+│  ┌ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - + │
+│  │              +  Add intensity level                              │ │
+│  └ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - + │
 └──────────────────────────────────────────────────────────────────────┘
 ```
+
+*(One intensity level per row. Expanded rows show **Add track** at the top of the track list, then tracks with **×** remove. Collapsed rows show level label + track count.)*
 
 ---
 
 ## Components
 
 ### Page Header
-- **Title:** "Category Composer" — large serif
-- **Subtitle:** "Orchestrate and balance the elemental layers of your active session."
-- **Save Composition** — gold `Button` with wand icon (top right)
+- **Back:** ← **Library** — returns to Soundscapes tab grid
+- **Category name** — gold serif (e.g. *Meteorological*)
+- **Title:** "Category Composer"
+- **Subtitle:** "Assign tracks to intensity levels for this category."
+- **Save Composition** — gold `Button` (top right)
 
-### Elemental Level Cards (`Card` — 3-column row)
-Three tier cards representing intensity pools:
+### Intensity Level Row (`Card` — repeating, **one per row**)
 
-| Card | Icon | Label | Control |
-|---|---|---|---|
-| Level I | Water drop | Foundation | Intensity `Slider` |
-| Level II | Wind | Atmosphere | Intensity `Slider` |
-| Level III | Sun/sparkle | Incantations | Intensity `Slider` |
-
-Each shows percentage readout. Sliders use **Cubic ($x^3$) mapping**.
-
-### Current Layers Section
-- Header: diamond icon + **Current Layers** + `Badge` "N Active"
-- Layer cards (`Card` — repeating, draggable):
+Vertical stack of levels — **Level I** through **Level V** (roman numerals).
 
 | Element | Description |
 |---|---|
-| Drag handle | Reorder layers in the stack |
-| Thumbnail | Layer artwork with **LVL I/II/III** `Badge` |
-| Title + subtitle | e.g. "Thunderous Downpour" / "Continuous · Wide Stereo" |
-| Volume `Slider` | Per-layer mix; **Cubic ($x^3$) mapping** |
-| Remove **×** | Removes layer from composition |
+| Level label | **Level I**, **Level II**, … **Level V** |
+| Track count | e.g. **2 tracks** when collapsed |
+| Expand / collapse | Chevron **[▼]** expanded / **[▶]** collapsed — toggles track list visibility |
+| Track list | Shown when expanded (see below) |
 
-### Invoke New Layer (`Card` — dashed border)
-- Centred **+** icon in circle
-- **Invoke New Layer** title
-- Description: "Browse the Grimoire to add more atmospheric elements to your composition."
-- Opens layer picker / Sound Library browse
+- New categories start with **Level I** only (expanded or collapsed — default **expanded** when empty)
+- Levels are ordered I → V; Scene screen intensity toggles mirror levels that exist on the category
 
-### Soundscape Card (per-category edit mode)
-When editing a single category (navigated from Sound Library), each soundscape within the category retains:
+### Track List (inside expanded level)
 
 | Element | Description |
 |---|---|
-| Soundscape name | Editable text input |
-| Delete button | Remove soundscape from category |
-| Intensity level | Segmented control (I, II, III) |
-| MIX slider | Per-soundscape relative volume |
-| Track list | Names of associated audio files |
+| **Add track** | Full-width or prominent `Button` at the **top** of the list — opens **Soundscapes modal** (track picker) scoped to this intensity level |
+| Track row | Track title + optional subtitle (format, duration); **×** remove `Button` on the trailing edge |
+| Empty state | Only **Add track** visible — no placeholder tracks |
 
-### Add Soundscape
-- **+ INVOKE NEW SOUNDSCAPE** — opens browser file picker (audio only)
-- On selection: new soundscape created with file name, default intensity I, default MIX 100%
-- No limit on number of soundscapes
+**Not in composer:** per-track volume sliders, MIX sliders, drag-to-reorder (unless added later), tier balance sliders.
+
+### Add track → Soundscapes modal
+
+Opens the **Soundscapes modal** (track picker):
+
+- Browse existing soundscape **tracks** in the library and/or **Import Soundscape** (browser file picker — audio only)
+- Selected tracks are added to the **current intensity level**
+- Modal may support multi-select + confirm (same **Add Selected** pattern as other pickers)
+- ← back returns to Category Composer with the same level still expanded
+
+### Add intensity level (`Button` / dashed row)
+- Full-width dashed row at the **bottom** of all level rows
+- Label: **+ Add intensity level**
+- Adds the next level in sequence (**Level II** after I, then III, IV, V)
+- **Hidden or disabled** when the category already has **5** levels
+- New level starts **empty**; GM adds tracks via **Add track**
+
+### Remove track (**×**)
+- Removes the track from **this intensity level** only (not global library delete)
+- Confirmation optional if track exists only in this level
 
 ---
 
@@ -111,32 +121,46 @@ When editing a single category (navigated from Sound Library), each soundscape w
 
 | Interaction | Result |
 |---|---|
-| Adjust Elemental Level slider | Changes tier intensity for session-wide balance |
-| Drag layer by handle | Reorders layers in Current Layers stack |
-| Adjust layer volume slider | Changes layer mix (live preview if playing) |
-| Click **×** on layer | Removes layer from composition |
-| Click **Invoke New Layer** | Opens Grimoire / Sound Library layer picker |
-| Click **+ INVOKE NEW SOUNDSCAPE** | Opens browser file picker (category edit mode) |
-| Click **Save Composition** | Persists globally; success confirmation or navigate back |
-| Click ⚙️ | Navigate to Arcane Settings |
+| Click expand/collapse chevron | Shows or hides track list for that level |
+| Click **Add track** | Opens Soundscapes modal; adds chosen tracks to this level |
+| Click **×** on track | Removes track from this intensity level |
+| Click **Add intensity level** | Appends next level (max 5); empty until tracks added |
+| Click **Save Composition** | Persists level + track assignments globally |
+| Click ← **Library** | Back to Soundscapes tab (unsaved-changes prompt if dirty) |
 
 Changes apply globally — no per-scene versioning.
+
+### Intensity level rules
+
+| Rule | Detail |
+|---|---|
+| Starting count | **1** level (**Level I**) on new category |
+| Maximum | **5** levels |
+| Labels | Roman numerals **I** – **V** |
+| Scene screen | Only levels with **≥ 1 track** are selectable; empty levels greyed out |
+| Playback | Scene screen picks **at random** from tracks in the active level |
 
 ---
 
 ## States
 
-### New / empty composition
-Elemental cards at defaults; Invoke New Layer as primary CTA.
+### New category
+Single **Level I** row; expanded; **Add track** as primary CTA; **Add intensity level** at bottom.
 
-### Layers present
-Draggable layer cards with active count badge.
+### One level, populated
+Level I expanded with track rows and **×** remove buttons.
 
-### File picker open
-Browser file picker dialog; composer waits behind it.
+### Multiple levels
+Stack of rows; any mix of expanded/collapsed; **Add intensity level** hidden at 5 levels.
+
+### Maximum levels (5)
+**Add intensity level** control not shown.
 
 ### Unsaved changes
-Navigation away shows discard-changes `AlertDialog`.
+Navigate away shows discard-changes `AlertDialog`.
+
+### Soundscapes modal open
+Composer visible behind modal; ← back restores expanded level context.
 
 ---
 
@@ -144,7 +168,18 @@ Navigation away shows discard-changes `AlertDialog`.
 
 | Destination | Trigger |
 |---|---|
-| Sound Library | Sidebar or back navigation |
-| Layer picker / Grimoire | Invoke New Layer |
-| Browser file picker | Invoke New Soundscape |
-| Arcane Settings | ⚙️ gear or sidebar |
+| Library — Soundscapes tab | ← Library |
+| Soundscapes modal (track picker) | **Add track** on any level |
+| Browser file picker | Import path inside Soundscapes modal |
+| Credits | Sidebar → Credits |
+| Trash | Sidebar → Trash |
+
+---
+
+## Related screens
+
+| Screen | Relationship |
+|---|---|
+| [`audio-library-design.md`](audio-library-design.md) | Parent grid; card click opens this composer |
+| [`active-scene-soundscapes-design.md`](active-scene-soundscapes-design.md) | Scene playback uses levels + random track from active level |
+| [`audio-library-soundscapes-modal-design.md`](audio-library-soundscapes-modal-design.md) | Category picker for Scene screen — distinct from composer **track** picker (same modal pattern family) |

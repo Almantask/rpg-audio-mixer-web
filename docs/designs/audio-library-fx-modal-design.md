@@ -1,98 +1,127 @@
-﻿# Sound Effects — Screen Design
+﻿# Sound Effects — Picker Modal Design
 
 **Design References:**
-- [`docs/designs/AudioLibrary-FX.html`](../../docs/designs/AudioLibrary-FX.html)
-- [`docs/designs/AudioLibrary-FX.png`](../../docs/designs/AudioLibrary-FX.png)
-- **New source of truth:** FE sidebar layout screenshots (Jul 2026 redesign)
+- **Browse mode (Library page):** [`audio-library-design.md`](audio-library-design.md) — Sound Effects tab
+- **Parallel pattern:** [`audio-library-soundscapes-modal-design.md`](audio-library-soundscapes-modal-design.md)
+- **Launched from soundboard:** [`active-scene-soundboard-design.md`](active-scene-soundboard-design.md) — **Add Sound**
 
 ---
 
 ## Purpose
 
-The Sound Effects view is the global catalogue of all one-shot FX tracks within the Sound Library. The GM can import new audio files, search and filter the collection, preview tracks via the persistent bottom player, and add tracks to scenes or playlists.
+The Sound Effects **picker modal** lets the GM select FX tracks from the library and add them to the **active scene soundboard** in one commit action. It is launched from Active Scene — **Add Sound**, not from the sidebar.
 
-**Sidebar nav item:** Sound Library (active — FX is a sub-view of Sound Library)
+For browsing, importing, buying, previewing, and editing the global FX catalogue, use the **Library page** — [`audio-library-design.md`](audio-library-design.md).
+
+This modal provides filters, import/buy actions, card grid, preview-on-click, **multi-select checkboxes**, and a footer **Add Selected** button.
+
+**No Detail button.** Per-card **+** is replaced by selection checkboxes.
+
+**Not used for:** Sidebar → Library (that route is the full Library page).
 
 ---
 
-## App Shell
+## Presentation
 
-Shared FE layout for **Arcanum Audio** (left sidebar navigation). See `home-design.md` for full shell spec.
+| Viewport | Container |
+|---|---|
+| **Mobile** | Full-screen `Sheet`; ← back when launched from Active Scene |
+| **Web (sidebar layout)** | Large content-area `Sheet` / `Dialog`; app sidebar remains visible; filter panel stays in sidebar footer |
 
-### Sidebar Filter Panel (bottom of sidebar)
-Filters are anchored in the sidebar footer area, not the main content header:
+---
+
+## Layout — Modal
+
+```
+┌──────────┬──────────────────────────────────────────────────────────────┐
+│ Sidebar  │  ← Back to Active Scene          (picker launch only)      │
+│          │  Sound Effects                                               │
+│  Search  │  Browse, import, and manage your sound effects.       │
+│  Types   │  [ Import FX ]  [ Buy More ]  [ Free Tracks ]              │
+│  Intens. │  🔍  Search effects…                                         │
+│  Sort    │                                                              │
+│          │  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐       │
+│          │  │☑ [thumb] │ │☐ [thumb] │ │☑ [thumb] │ │☐ [thumb] │       │
+│          │  │ Thunder  │ │ Sword    │ │ Rune Act │ │ Goblin   │       │
+│          │  │ 0:04 · II│ │ 0:02 · I │ │ 0:03 · III│ │ 0:01 · I │       │
+│          │  │ IMPACT   │ │ COMBAT   │ │ UI MAGIC │ │ CREATURE │       │
+│          │  └──────────┘ └──────────┘ └──────────┘ └──────────┘       │
+│          │                                                               │
+│          │ ┌──────────────────────────────────────────────────────────┐  │
+│          │ │              Add Selected (2)                        │  │
+│          │ └──────────────────────────────────────────────────────────┘  │
+└──────────┴──────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Sidebar Filter Panel
+
+Same as before — anchored in the **sidebar footer**, not the modal header:
 
 | Control | Component | Description |
 |---|---|---|
-| Search | `Input` | Placeholder: "Search Incantations…" with magnifying glass |
+| Search | `Input` | Placeholder: "Search effects…" with magnifying glass |
 | FX Types | `Select` | Dropdown — e.g. "All Types" |
 | Base Intensity | `Slider` | Horizontal slider with speaker icons at each end |
 | Sort Order | `Select` | Dropdown — e.g. "Recently Added" |
 
-- **FE sidebar navigation only (no tab bar)**
-
----
-
-## Layout — Main Content + Player
-
-```
-┌──────────────────────────────────────────────────────────────────────┐
-│  Sound Effects                                                       │
-│  Browse, import, and manage your arcane audio assets.                │
-│  [ Import FX ]  [ Buy More ]  [ Free Tracks ]                        │
-│                                                                      │
-│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐                │
-│  │ [thumb]  │ │ [thumb]  │ │ ●PLAYING │ │ [thumb]  │                │
-│  │ Thunder  │ │ Sword    │ │ Rune Act │ │ Goblin   │                │
-│  │ 0:04     │ │ 0:02     │ │ 0:03     │ │ 0:01     │                │
-│  │ IMPACT   │ │ COMBAT   │ │ UI MAGIC │ │ CREATURE │                │
-│  │ ═◉══ [+] │ │ ═◉══ [+] │ │ ═◉══ [✓] │ │ ═◉══ [+] │                │
-│  └──────────┘ └──────────┘ └──────────┘ └──────────┘                │
-├──────────────────────────────────────────────────────────────────────┤
-│  [thumb] Rune Activation  UI·Magic  │◀  ⏸  ▶│ ═══◉════ 0:03/8:08  🔊│
-└──────────────────────────────────────────────────────────────────────┘
-```
+Filters apply to the modal grid in real time (debounced search).
 
 ---
 
 ## Components
 
-### Page Header
-- **Title:** "Sound Effects" — large gold serif
-- **Subtitle:** "Browse, import, and manage your arcane audio assets."
+### Modal Header
+- **Back control** — ← **Back to Active Scene** (always shown in picker)
+- **Title:** **Sound Effects** — large gold serif
+- **Subtitle:** "Browse, import, and manage your sound effects."
 
-### Action Buttons (top right)
-- **Import FX** — outline `Button` with upload icon → browser file picker
-- **Buy More** — gold `Button` with cart icon → storefront
-- **Free Tracks** — outline `Button` with external-link icon → demo download
+### Action Buttons (below subtitle)
+Unchanged from the import-capable library — always visible in the modal:
+
+| Button | Style | Action |
+|---|---|---|
+| **Import FX** | outline + upload | Browser file picker → new tracks appear in grid (auto-selected optional) |
+| **Buy More** | gold + cart | Storefront |
+| **Free Tracks** | outline + external-link | Download demo FX pack |
+
+### Search Bar
+- Full-width `Input` below the action buttons
+- Magnifying-glass icon; placeholder: **Search effects…**
+- Filters the card grid in real time (debounced)
+- Synced with sidebar search when both are visible on web
 
 ### FX Card (`Card` — grid, repeating)
 
 | Element | Description |
 |---|---|
-| Thumbnail | Square artwork or icon |
-| Title + duration | e.g. "Thunder Strike" · 0:04 |
-| Tags | `Badge` chips (IMPACT, WEATHER, UI, MAGIC, etc.) |
-| Volume `Slider` | Per-track default output. **Cubic ($x^3$) mapping** |
-| Add / check button | **+** to add to playlist/scene; **✓** when already added |
+| **Selection** | Checkbox top-left — toggles track in selection set; does not play or navigate |
+| Thumbnail | Square artwork — **click card body to preview** |
+| Title + duration + intensity | e.g. "Thunder Strike" — 0:04 — **II** (roman **I** / **II** / **III**) |
+| Tags | `Badge` chips (IMPACT, COMBAT, UI, MAGIC, etc.) |
 
-**PLAYING overlay (active card):**
-- Gold border highlight
-- Dimmed thumbnail with **● PLAYING** label
-- Large pause icon in gold circle centred on thumbnail
-- Title rendered in gold; footer shows checkmark instead of plus
+**Not on cards:** Detail (⋯) button, per-card **+** add button.
 
-### Bottom Persistent Player Bar
-Fixed horizontal bar spanning main content width:
+**Playing state:**
+- Gold border + optional **● PLAYING** on thumbnail
+- Click playing card again to stop
+- One preview at a time
 
-| Region | Elements |
-|---|---|
-| Left | Thumbnail, track title, category (e.g. "UI • Magic") |
-| Centre | Previous, **Play/Pause** (large gold circle), Next; `Progress` bar with elapsed/total |
-| Right | Add-to-playlist icon, volume icon + `Slider` |
+**Already in target (picker mode):** checkbox disabled + muted card styling when track is already on the active scene soundboard.
 
-- Master volume uses **Cubic ($x^3$) mapping**
-- Player persists while browsing the grid
+### Footer — Add Selected
+- Sticky full-width gold `Button` at bottom of modal
+- Label: **Add Selected (N)** — **N** = checked count; disabled when **N = 0**
+- Commits all checked tracks to the active scene soundboard
+
+---
+
+## Launch Context
+
+| Launched from | Back link | Add Selected commits to |
+|---|---|---|
+| **Add Sound** (Active Scene soundboard) | ← Back to Active Scene | Adds checked tracks to the scene soundboard; modal may stay open for more picks |
 
 ---
 
@@ -100,31 +129,40 @@ Fixed horizontal bar spanning main content width:
 
 | Interaction | Result |
 |---|---|
-| Click card thumbnail / play | Loads track into bottom player and plays |
-| Click **+** on card | Adds track to playlist or active scene context |
-| Click **✓** on card | No duplicate add |
-| Click **Import FX** | Opens browser file picker |
-| Click **Free Tracks** | Initiates download of 100 demo sound effects |
-| Adjust card volume slider | Sets base volume for that track |
-| Use sidebar search/filters | Filters grid in real time (debounced search) |
-| Player prev/next | Skips to adjacent track in filtered list |
-| Click ⚙️ | Navigate to Arcane Settings |
+| Click card body / thumbnail | Previews track |
+| Click playing card again | Stops preview |
+| Toggle checkbox | Adds/removes track from selection |
+| Click **Add Selected (N)** | Adds all checked tracks to the scene soundboard; clears selection on success |
+| Click **Import FX** | Opens browser file picker; new tracks appear in grid |
+| Click **Buy More** | Navigate to storefront |
+| Click **Free Tracks** | Initiates demo FX download |
+| Type in **Search** bar | Filters grid by track name and tags (debounced) |
+| Use sidebar search/filters | Same filter state as main search bar; filters grid in real time |
+| Click ← back | Closes modal (picker); already-committed adds remain |
+
+Preview volume uses each track's saved default with **Cubic ($x^3$) mapping**.
 
 ---
 
 ## States
 
 ### Populated grid
-Card grid with thumbnails, tags, and controls.
+Card grid with checkboxes, tags, intensity; footer shows **Add Selected (0)** disabled.
+
+### Selection active
+One or more checkboxes checked; footer label updates count; button enabled.
 
 ### Playback state
-Active card shows PLAYING overlay; bottom player reflects current track.
+One card shows gold border / **● PLAYING**; selection and footer remain usable.
 
 ### Empty library
-Centred illustration + Import FX and Free Tracks CTAs.
+Centred illustration + **Import FX**, **Buy More**, and **Free Tracks**; footer hidden or disabled.
 
 ### Filtered empty
-"No incantations match your filters" message with clear-filters action.
+"No effects match your filters" with clear-filters action.
+
+### Loading
+`Skeleton` cards until library data resolves.
 
 ---
 
@@ -132,7 +170,20 @@ Centred illustration + Import FX and Free Tracks CTAs.
 
 | Destination | Trigger |
 |---|---|
-| Sound Library (compositions) | Sidebar or library sub-nav |
+| Active Scene — Soundboard tab | ← back |
+| Library page (browse) | `audio-library-design.md` |
 | Browser file picker | Import FX |
 | Storefront | Buy More |
-| Arcane Settings | ⚙️ gear or sidebar |
+| Credits | Sidebar → Credits |
+| Trash | Sidebar → Trash |
+
+---
+
+## Related Flows
+
+| Flow | Doc |
+|---|---|
+| Library page (browse) | `audio-library-design.md` |
+| Soundboard grid | `active-scene-soundboard-design.md` |
+| Soundscapes picker modal | `audio-library-soundscapes-modal-design.md` |
+| Legacy combined spec | `add-fx-or-soundscape-to-scene-design.md` |

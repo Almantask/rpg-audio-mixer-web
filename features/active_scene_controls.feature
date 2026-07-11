@@ -22,29 +22,34 @@ Feature: Active scene controls
     And both category cards show the playing state
 
   Scenario: Mute silences all atmosphere output without changing slider positions
-    Given "Weather" is playing with Master Atmosphere at 85%
-    When I tap the mute button on the Master Atmosphere bar
+    Given "Weather" is playing with Master Volume at 85%
+    When I tap the mute button on the Master Volume bar
     Then all atmosphere audio is silenced
-    And the Master Atmosphere slider still reads 85%
+    And the Master Volume slider still reads 85%
 
   Scenario: Unmuting restores atmosphere output at the saved slider level
-    Given atmosphere output is muted with Master Atmosphere at 85%
+    Given atmosphere output is muted with Master Volume at 85%
     When I tap the mute button again
     Then atmosphere audio resumes at the mapped volume for 85%
 
   Scenario: Save State persists the current mixer configuration
-    Given I set Master Atmosphere to 60%
-    And I set the "Weather" MIX slider to 40%
+    Given I set Master Volume to 60%
+    And I set the "Weather" Volume slider to 40%
     When I tap "Save State"
     And I leave and reopen the "Dragon's Lair" scene
-    Then the Master Atmosphere slider is immediately at 60%
-    And the "Weather" MIX slider is immediately at 40%
+    Then the Master Volume slider is immediately at 60%
+    And the "Weather" Volume slider is immediately at 40%
 
-  Scenario: Per-layer sliders adjust individual tracks within a category
-    Given the "Weather" category has active layers "Gale Force Winds" and "Heavy Rain"
-    When I set the "Gale Force Winds" layer slider to 90%
-    And I set the "Heavy Rain" layer slider to 65%
-    Then "Gale Force Winds" plays louder than "Heavy Rain" relative to their layer sliders
+  Scenario: Each category card shows a single Volume slider without track names
+    Given the "Weather" category is playing
+    When I view the Active Scene Atmospheres tab
+    Then the "Weather" card shows one row labeled "Volume"
+    And the "Weather" card does not show a slider labeled with a track name
+
+  Scenario: The Volume slider adjusts output for the category
+    Given the "Weather" category is playing
+    When I set the Volume slider on the "Weather" card to 50%
+    Then "Weather" plays at the mapped volume for 50% Volume using Cubic mapping
 
   Scenario: Loop toggle disables looping for a category
     Given the "Weather" category is looping

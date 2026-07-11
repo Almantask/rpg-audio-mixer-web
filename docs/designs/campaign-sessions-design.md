@@ -1,8 +1,6 @@
 ﻿# Campaign Sessions — Screen Design
 
 **Design References:**
-- [`docs/designs/CampaignSessions.html`](../../docs/designs/CampaignSessions.html)
-- [`docs/designs/CampaignSessions.png`](../../docs/designs/CampaignSessions.png)
 - **New source of truth:** FE sidebar layout (inferred from Jul 2026 IA redesign)
 
 ---
@@ -11,7 +9,7 @@
 
 Lists all play sessions belonging to a single campaign. The GM navigates here to open a session and access its associated scenes.
 
-**Sidebar nav item:** Current Session (active — campaign sessions are session-context navigation)
+**Sidebar nav item:** Home (active — campaign sessions are drill-down from Campaign or Home)
 
 ---
 
@@ -39,12 +37,12 @@ Shared FE layout for **Arcanum Audio** (left sidebar navigation). See `home-desi
 │  ┌───────────────────────────────┐  ┌───────────────────────────────┐│
 │  │ [Cover]  Session 14           │  │ [Cover]  Session 13           ││
 │  │          The Howling Crags    │  │          Sunken Temple        ││
-│  │          Mar 12 • 4 Scenes    │  │          Feb 28 • 3 Scenes    ││
+│  │          Mar 12 · 4 Scenes    │  │          Feb 28 · 3 Scenes    ││
 │  └───────────────────────────────┘  └───────────────────────────────┘│
-│  …                                                                   │
-│  ┌ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┐  │
+│                                                                      │
+│  ┌ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - +  │
 │  │              +  Add New Session                                 │  │
-│  └ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┘  │
+│  └ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - +  │
 └──────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -67,7 +65,7 @@ Shared FE layout for **Arcanum Audio** (left sidebar navigation). See `home-desi
 - Cover art thumbnail (user-selected from browser image upload; placeholder when none set)
 - Session number label (e.g. "Session 14")
 - Session name
-- Date of session · scene count (e.g. "Mar 12 • 4 Scenes")
+- Date of session · scene count (e.g. "Mar 12 · 4 Scenes")
 - Italicised session description snippet (optional)
 - Clicking the card navigates to that session's Scene list
 
@@ -90,7 +88,6 @@ Shared FE layout for **Arcanum Audio** (left sidebar navigation). See `home-desi
 | Click delete on card | Instantly removes the session |
 | Click **Add New Session** | Open new session creation |
 | Click ← Active Campaigns | Return to Active Campaigns grid |
-| Click ⚙️ | Navigate to Arcane Settings |
 
 ### Sorting
 Sessions sorted by date, most recent first. No manual sort or filter controls.
@@ -120,5 +117,6 @@ Illustration + Add New Session CTA.
 | Active Campaigns | ← back link |
 | Session Scenes | Click session card |
 | New session creation | Add New Session |
-| Arcane Settings | ⚙️ gear or sidebar |
-| Current Session dashboard | Sidebar |
+| Credits | Sidebar → Credits |
+| Trash | Sidebar → Trash |
+| Home | Sidebar → Home |

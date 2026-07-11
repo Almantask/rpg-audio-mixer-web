@@ -3,62 +3,55 @@ Feature: Navigation
 
   As a GM
   I want to use the sidebar to switch between the main sections of the app
-  So that I can move quickly between Current Session, Sound Library, Global Mixer, Ambience Presets, and Vault.
+  So that I can move quickly between Home, Campaign, Scenes, and Library.
 
   Scenario: The app shell shows Arcanum Audio and primary navigation
     When I open the app
     Then I see "Arcanum Audio" in the top bar
     And I see the sidebar with items:
-      | Current Session  |
-      | Sound Library    |
-      | Global Mixer     |
-      | Ambience Presets |
-      | Vault            |
-      | Arcane Settings  |
+      | Home     |
+      | Campaign |
+      | Scenes   |
+      | Library  |
 
-  Scenario: Tapping Current Session shows the home dashboard
-    Given I am on the Sound Library screen
-    When I tap "Current Session" in the sidebar
-    Then I see the Current Session dashboard with the active campaign hero
+  Scenario: Tapping Home shows the home dashboard
+    Given I am on the Library screen
+    When I tap "Home" in the sidebar
+    Then I see the Home screen with the active campaign hero
 
-  Scenario: Tapping Sound Library shows the sound library
-    Given I am on the Current Session dashboard
-    When I tap "Sound Library" in the sidebar
-    Then I see the Sound Library screen
+  Scenario: Tapping Campaign shows the campaigns list
+    Given I am on the Home screen
+    When I tap "Campaign" in the sidebar
+    Then I see the Active Campaigns screen
 
-  Scenario: Tapping Global Mixer opens the Category Composer
-    Given I am on the Current Session dashboard
-    When I tap "Global Mixer" in the sidebar
-    Then I see the Category Composer screen
+  Scenario: Tapping Scenes shows the global scenes list
+    Given I am on the Home screen
+    When I tap "Scenes" in the sidebar
+    Then I see the Scenes screen
 
-  Scenario: Tapping Ambience Presets shows the global scenes list
-    Given I am on the Current Session dashboard
-    When I tap "Ambience Presets" in the sidebar
-    Then I see the Atmospheric Scenes screen
-
-  Scenario: Tapping Vault shows the Vault of Echoes
-    Given I am on the Current Session dashboard
-    When I tap "Vault" in the sidebar
-    Then I see the "Vault of Echoes" screen
+  Scenario: Tapping Library shows the audio library
+    Given I am on the Home screen
+    When I tap "Library" in the sidebar
+    Then I see the Library screen
 
   Scenario: The active sidebar item is visually highlighted
-    Given I am on the Ambience Presets screen
-    Then the "Ambience Presets" sidebar item appears highlighted in gold
+    Given I am on the Scenes screen
+    Then the "Scenes" sidebar item appears highlighted in gold
     And the other sidebar items appear inactive
 
   Scenario: The gear icon navigates to Arcane Settings from any screen
-    Given I am on the Ambience Presets screen
+    Given I am on the Scenes screen
     When I tap the gear icon in the top bar
     Then I see the "Behind the Screen" heading on the Arcane Settings screen
 
-  Scenario: Enter Domain navigates to the active campaign's sessions
-    Given "Curse of Strahd" is the active campaign on the Current Session dashboard
+  Scenario: Enter Domain on Home navigates to the active campaign's sessions
+    Given "Curse of Strahd" is the active campaign on the Home screen
     When I tap "Enter Domain"
     Then I see the sessions list for "Curse of Strahd"
 
-  Scenario: Campaigns are reached from Current Session not a top-level tab
+  Scenario: The sidebar has exactly four primary items
     When I open the app
-    Then I do not see a bottom navigation bar with HOME, CAMPAIGNS, SCENES, and LIBRARY tabs
+    Then the sidebar contains only "Home", "Campaign", "Scenes", and "Library"
 
   Scenario: The hamburger menu toggles the sidebar on narrow viewports
     Given the viewport is narrow enough to collapse the sidebar
@@ -68,6 +61,6 @@ Feature: Navigation
     Then the sidebar is hidden
 
   Scenario: The back control returns to the previous screen
-    Given I navigated from Ambience Presets to the Active Scene for "Tavern"
+    Given I navigated from Scenes to the Active Scene for "Tavern"
     When I tap the back control
-    Then I am back on the Ambience Presets screen
+    Then I am back on the Scenes screen

@@ -12,7 +12,7 @@ Feature: Session scenes
     And I see an "Import Scene" button
 
   Scenario: Import an existing scene into a session
-    Given I have a scene "Tavern" in Ambience Presets
+    Given I have a scene "Tavern" in Scenes
     And I have a session "Session 1" with no scenes
     When I open "Session 1"
     And I tap "Import Scene"
@@ -21,7 +21,7 @@ Feature: Session scenes
     Then I see "Tavern" in the session "Session 1"
 
   Scenario: Can import multiple scenes at once
-    Given I have scenes "Tavern", "Forest", "Dungeon" in Ambience Presets
+    Given I have scenes "Tavern", "Forest", "Dungeon" in Scenes
     And I have a session "Session 1" with no scenes
     When I open "Session 1"
     And I tap "Import Scene"
@@ -33,7 +33,7 @@ Feature: Session scenes
     Given "Tavern" is linked to "Session 1"
     When I swipe right on the "Tavern" card to unlink it
     Then "Tavern" is no longer shown in "Session 1"
-    But "Tavern" still appears in Ambience Presets
+    But "Tavern" still appears in Scenes
 
   Scenario: Editing a linked scene updates it in the session too
     Given "Tavern" is linked to "Session 1"

@@ -19,23 +19,23 @@ Feature: Play scene
 
   Scenario: Switching from one scene to another crossfades the audio
     Given "Tavern" is the current playing scene
-    When I navigate back to Ambience Presets
+    When I navigate back to Scenes
     And I tap the play button on the "Forest" scene card
     Then the "Tavern" audio fades out while the "Forest" audio fades in simultaneously
     And there should be no dip in perceived volume during the crossfade
 
   Scenario: Opening a scene without the play button does not stop the currently playing scene
     Given "Tavern" is the current playing scene
-    When I navigate back to Ambience Presets
+    When I navigate back to Scenes
     And I tap the "Forest" scene card (not the play button)
     Then I see the Active Scene screen for "Forest"
     And "Forest" audio is not playing
     And "Tavern" audio continues playing in the background
 
   Scenario: Sliders snap instantly to their saved positions when a scene loads
-    Given "Tavern" has a saved Master Atmosphere value of 70%
+    Given "Tavern" has a saved Master Volume value of 70%
     When I open the "Tavern" scene
-    Then the Master Atmosphere slider is immediately at 70% with no animation
+    Then the Master Volume slider is immediately at 70% with no animation
 
   Scenario: Soundscape volume ducks when soundboard effect is triggered
     Given "Tavern" is playing with soundscapes at "100%" volume

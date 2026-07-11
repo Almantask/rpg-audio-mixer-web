@@ -14,10 +14,10 @@ Feature: Screen transitions
 
   @iter9
   Scenario: Lateral navigation uses Shared X-Axis slide
-    Given I am on the Current Session dashboard
-    When I tap "Ambience Presets" in the sidebar
-    Then the Current Session content fades and slides out horizontally
-    And the Ambience Presets screen fades and slides in horizontally
+    Given I am on the Home screen
+    When I tap "Scenes" in the sidebar
+    Then the Home content fades and slides out horizontally
+    And the Scenes screen fades and slides in horizontally
 
   @iter9
   Scenario: Drill-down navigation uses Shared Z-Axis
