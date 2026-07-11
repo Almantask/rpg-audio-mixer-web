@@ -55,9 +55,3 @@ Feature: System audio handling
     Then the app audio pauses
 
   # Scope: multi-category Next behaviour — see play_random_track.feature.
-
-  Scenario: Media Session next randomizes the focused soundscape category
-    Given the Media Session controls are active
-    And the app is playing a soundscape from the "Weather" category at intensity level II
-    When I tap "Next" on the media controls or a keyboard media key
-    Then the app plays a random track from "Weather" at its current intensity level

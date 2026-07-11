@@ -29,7 +29,7 @@ Feature: Home Top FX stat
   Scenario: Top FX empty state links to the Library
     Given I have at least one campaign
     And no soundboard effects have been played yet
-    When I open the Home screen
-    And I tap the Library link on the Top FX card
+    And I have opened the Home screen
+    When I tap the Library link on the Top FX card
     Then I see the Library screen
     And I do not see the Scenes screen

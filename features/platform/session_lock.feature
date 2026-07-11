@@ -37,9 +37,10 @@ Feature: Session Lock
     Given the session is locked
     Then I can drag the Master Volume slider
     And I can drag the Volume sliders
+    And I can drag the Soundboard Master slider
     And I can switch between the "Soundscapes" and "Soundboard" tabs
 
-  Scenario: Unlocking the session restores editing and navigation
+  Scenario: Unlocking the session restores editing
     Given the session is locked
     When I tap the "Lock" icon to unlock
     Then the session is unlocked

@@ -22,6 +22,8 @@ Feature: Play mixed track loops and sounds
     Then "Sword Clash" continues to play
     And only "Weather" has stopped
 
+  # Scope: Soundboard Master volume — see soundboard_volume_control.feature.
+
   Scenario: Master Volume slider does not affect soundboard volume
     Given "Forest Loop" is playing at Master 80% and "Wolf Howl" is on the soundboard
     When I reduce the Master Volume to 30%

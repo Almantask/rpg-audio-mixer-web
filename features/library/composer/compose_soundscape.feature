@@ -53,11 +53,15 @@ Feature: Compose soundscape category
     Then "Light Rain" is no longer shown in "Level I"
     And "Light Rain" remains available in the library
 
-  Scenario: Save Composition shows success toast and stays on Composer
+  Scenario: Save Composition shows success toast
     Given I have made composition changes in "Weather"
     When I tap "Save Composition"
     Then I see a toast "Composition saved"
-    And I remain on the Soundscape Category Composer for "Weather"
+
+  Scenario: Save Composition stays on the Composer
+    Given I have made composition changes in "Weather"
+    When I tap "Save Composition"
+    Then I remain on the Soundscape Category Composer for "Weather"
 
   Scenario: Navigating back to Library does not prompt to discard changes
     Given I have added a track to "Level I" in "Weather"

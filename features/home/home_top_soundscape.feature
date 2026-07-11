@@ -35,15 +35,15 @@ Feature: Home Top Soundscape stat
   Scenario: Top Soundscape preview plays the category default track
     Given "Ominous Chant" is my most played soundscape category
     And "Ominous Chant" has a designated default loopable track
-    When I open the Home screen
-    And I tap the preview button on the Top Soundscape card
+    And I have opened the Home screen
+    When I tap the preview button on the Top Soundscape card
     Then the Top Soundscape category default track plays as an inline preview
 
   Scenario: Top Soundscape preview plays the first loopable track when no default is set
     Given "Ominous Chant" is my most played soundscape category
     And "Ominous Chant" has loopable tracks but no designated default
-    When I open the Home screen
-    And I tap the preview button on the Top Soundscape card
+    And I have opened the Home screen
+    When I tap the preview button on the Top Soundscape card
     Then the first loopable track in "Ominous Chant" plays as an inline preview
 
   Scenario: Home preview does not increment play counts
@@ -54,6 +54,6 @@ Feature: Home Top Soundscape stat
   Scenario: Top Soundscape empty state links to the Library
     Given I have at least one campaign
     And no soundscape categories have been played yet
-    When I open the Home screen
-    And I tap the Library link on the Top Soundscape card
+    And I have opened the Home screen
+    When I tap the Library link on the Top Soundscape card
     Then I see the Library screen

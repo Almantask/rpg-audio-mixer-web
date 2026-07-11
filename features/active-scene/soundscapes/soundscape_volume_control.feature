@@ -32,7 +32,8 @@ Feature: Soundscape volume control
     Then "Weather" plays at the mapped volume for 100% Master × 30% Volume
     And "Interior" plays at the mapped volume for 100% Master × 100% Volume
 
-  # Scope: Session Lock still allows volume adjustments — see session_lock.feature.
+  # Scope: soundscape Master Volume and mute — see soundscape_volume_control.feature and soundscape_mute.feature.
+  # Scope: Soundboard Master volume — see soundboard_volume_control.feature.
 
   Scenario: Master Volume and mute remain adjustable when Session Lock is on
     Given the session is locked on the Active Scene — Soundscapes tab

@@ -15,11 +15,14 @@ Feature: Reorder soundscape categories
     When I drag "Monsters" by its drag handle above "Weather"
     Then the order becomes "Monsters", "Weather", "Interior"
 
-  Scenario: Category reordering auto-saves on drop and persists after closing and reopening the scene
+  Scenario: Category reordering auto-saves on drop
     Given the order is "Weather", "Interior", "Monsters"
     When I drag "Interior" by its drag handle to the top
     Then "Interior" is the first category
     And the new order is saved without any save action
+
+  Scenario: Category reorder persists after closing and reopening the scene
+    Given the order is "Interior", "Weather", "Monsters"
     When I close and reopen the scene
     Then "Interior" is still the first category
 
