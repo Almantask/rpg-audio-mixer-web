@@ -139,7 +139,7 @@ FX instances triggered before a scene switch **persist until natural end** — o
 
 ### Sound Effects Modal (Add Sound)
 
-Full FX picker modal — filters, **Import FX** / **Buy More** / **Free Tracks**, card grid with preview-on-click, **selection checkboxes**, footer **Add Selected (N)**. No Detail button.
+Full FX picker modal — filters, card grid with preview-on-click, **selection checkboxes**, footer **Add Selected (N)**. No Import/Buy/Free actions in picker — Library page only (**FX-13**). No Detail button.
 
 **Commit model:** checkbox multi-select + **Add Selected (N)**. Modal **stays open** after commit for additional picks; GM closes with ← back when done.
 

@@ -1,7 +1,7 @@
 ﻿# Campaign Sessions — Screen Design
 
 **Design References:**
-- **Parent screen:** [`campaigns-design.md`](campaigns-design.md) — entry via **Resume** / **Open Campaign** (Container Transform)
+- **Parent screen:** [`campaigns-design.md`](campaigns-design.md) — entry via **Resume** / **Start** (Container Transform)
 - **Child screen:** [`session-scenes-design.md`](session-scenes-design.md) — uppercase breadcrumb trail reserved for Session Scenes depth
 - **Trash:** [`trash-design.md`](trash-design.md) — soft-deleted sessions appear on **Sessions** tab (7-day retention)
 - **New source of truth:** FE sidebar layout (Jul 2026 IA redesign)
@@ -23,7 +23,7 @@ Shared FE layout for **Arcanum Audio** (left sidebar navigation). See [`platform
 - **FE sidebar navigation only (no tab bar)**
 - **Sidebar:** Home active (gold bar + tint) when drilled into Campaign → Sessions
 - **No explicit back link** on this screen — GM returns to Active Campaigns via **browser back** (history)
-- **Container Transform** animation when entering from a campaign card on Active Campaigns or Home hero **Open Campaign** CTA; campaign hero banner persists after transition
+- **Container Transform** animation when entering from a campaign card on Active Campaigns or Home hero **Resume** CTA; campaign hero banner persists after transition
 
 ---
 
@@ -105,14 +105,14 @@ Shared FE layout for **Arcanum Audio** (left sidebar navigation). See [`platform
 |---|---|
 | Click session card body | Navigate to Session Scenes list; marks session as **Last Active** |
 | Click **✏️ Edit** | Open session edit `Dialog` — name, date, cover, optional description |
-| Click **🗑 Trash** (or swipe-right on touch) | Soft-deletes session → Trash **Sessions** tab; **no confirm** on routine soft-delete; optional undo toast (**PW-15**, **PW-16**, **PW-17**) |
-| Swipe-right on card (touch/narrow) | Same soft-delete as **🗑** |
+| Click **🗑 Trash** (or swipe-right on touch) | Opens `AlertDialog` confirmation; on confirm soft-deletes session → Trash **Sessions** tab (**PW-15**, **PW-16**, **PW-17 B**) |
+| Swipe-right on card (touch/narrow) | Same flow as **🗑** — confirm then soft-delete |
 | Click **Add New Session** | Open new session creation `Dialog` |
 | Browser back | Return to Active Campaigns grid |
 
 ### Soft-delete
 - Session soft-delete moves card to Trash **Sessions** tab with **7-day retention** (**PW-16**)
-- **No** confirmation dialog on routine delete — optional undo `Sonner` toast (**PW-17**)
+- **Always** show `AlertDialog` before soft-delete (**PW-17 B**)
 - Restore from Trash returns session to this list
 
 ### Session creation (`Dialog`)
@@ -159,7 +159,7 @@ Illustration + **Add New Session** CTA.
 Same `Dialog` prefilled with current values.
 
 ### Deleting a session
-Session removed from list immediately; appears on Trash **Sessions** tab with 7-day countdown. Optional undo toast.
+`AlertDialog` confirms before soft-delete. On confirm, session removed from list and appears on Trash **Sessions** tab with 7-day countdown.
 
 ### Loading
 Skeleton `Card` placeholders in grid layout while sessions load.
@@ -181,7 +181,7 @@ Inline error or `Toast` if create/edit/delete fails; list state unchanged.
 | Credits | Sidebar → Credits |
 | Home | Sidebar → Home |
 
-**Entry paths:** Active Campaigns **Resume** button, campaign card body click, or Home hero **Open Campaign** CTA — all land on this screen (sessions list only; no deep-link to last scene).
+**Entry paths:** Active Campaigns **Resume** / **Start** button, or Home hero **Resume** CTA — all land on this screen (sessions list only; no deep-link to last scene).
 
 **Retired:** gear icon → Arcane Settings — settings live in sidebar **Credits** / **Trash** only.
 

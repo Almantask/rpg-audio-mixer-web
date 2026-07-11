@@ -2,7 +2,7 @@
 
 **Canonical reference** for app shell, navigation, destructive actions, pickers, scene lists, Active Scene audio behavior, and Category Composer rules. Screen-specific layouts live in sibling `*-design.md` files.
 
-**Open questions resolved:** [platform-wide.md](open-questions/platform-wide.md) (PW-01–PW-50, F-67–F-72)
+**Open questions resolved:** [platform-wide.md](answered-questions-dont-refer/platform-wide.md) (PW-01–PW-50, F-67–F-72)
 
 ---
 
@@ -71,8 +71,9 @@ Screens one level below a sidebar destination use a **← Back** text link to th
 
 | Screen | Back link |
 |---|---|
-| Campaign Sessions | ← **Active Campaigns** |
 | Category Composer | ← **Library** |
+
+**Campaign Sessions** uses **browser back only** — no explicit ← Active Campaigns link ([F-CS-03](answered-questions-dont-refer/campaign-sessions.md)).
 
 ### Drill-down — uppercase breadcrumb
 
@@ -85,7 +86,7 @@ Breadcrumb segments are tappable where they represent a navigable parent.
 
 ### Hero & campaign re-entry (PW-09, PW-32, PW-33)
 
-- Home hero CTA: **Resume** → active campaign's **Sessions list** (**PW-09** per [home.md](open-questions/home.md); **PW-32**).
+- Home hero CTA: **Resume** → active campaign's **Sessions list** (**PW-09** per [home.md](answered-questions-dont-refer/home.md); **PW-32**).
 - Campaign list cards use **Resume** (≥1 session) or **Start** (0 sessions) — see [`campaigns-design.md`](campaigns-design.md).
 - **Resume Journey** is **not** shown on Home — extra navigation step accepted (**PW-33**).
 
@@ -133,9 +134,16 @@ Thematic flavor belongs in subtitles and illustrations — not primary labels.
 
 ### Confirmation (PW-17)
 
-- **Soft-delete from lists:** **No confirmation dialog** — item moves to Trash immediately; optional **undo** `Sonner` toast.
-- **Permanent purge** (Trash Purge / Empty Trash): **destructive `AlertDialog`** required.
-- **Session unlink** and **remove from scene** are **not** soft-delete — see exclusions below.
+Entity-specific rules ([campaign-sessions.md](answered-questions-dont-refer/campaign-sessions.md), [scenes-list.md](answered-questions-dont-refer/scenes-list.md)):
+
+| Entity / action | Confirm before soft-delete? |
+|---|---|
+| Campaign, soundscape category, FX track | **No** — optional undo `Sonner` toast |
+| **Session** | **Yes** — always `AlertDialog` before Trash |
+| Scene (no session links) | **No** — optional undo toast |
+| Scene (linked to sessions) | **Yes** — warning dialog about unlink + Trash ([SL-07](answered-questions-dont-refer/scenes-list.md)) |
+| Session unlink / remove from scene | N/A — not soft-delete ([PW-18](answered-questions-dont-refer/platform-wide.md#pw-18)) |
+| **Permanent purge** (Trash Purge / Empty Trash) | **Yes** — destructive `AlertDialog` |
 
 ### Exclusions — does not go to Trash (PW-18)
 
@@ -173,7 +181,7 @@ Shared pattern for **ADD SOUNDSCAPE** and **Add Sound** modals:
 
 | Picker | Import in modal? |
 |---|---|
-| FX picker (Add Sound) | **Yes** — **Import FX** |
+| FX picker (Add Sound) | **No** — Library page only ([FX-13](answered-questions-dont-refer/active-scene-soundboard.md#fx-13)) |
 | Category picker (ADD SOUNDSCAPE) | **No** — use Library or Composer |
 | Track picker (Composer Add track) | **Yes** — **Import** in composer track modal |
 
@@ -194,7 +202,7 @@ Shared pattern for **ADD SOUNDSCAPE** and **Add Sound** modals:
 |---|---|
 | List play button (**PW-29**) | **No ▶ on scene list cards** — open-only entry; playback starts on Active Scene screen only |
 | Last Active (**PW-30**) | **Required MVP** on **Session Scenes** list only — pulsing badge on most recently **played** linked scene; pinned to top |
-| After create scene (**PW-31**) | **Stay on Scenes list** — new row visible; GM opens scene manually |
+| After create scene (**PW-31**) | ⏳ **Recommended:** stay on Scenes list — new row visible; GM opens scene manually. **PO pending** ([scenes-list.md](answered-questions-dont-refer/scenes-list.md)) |
 | Delete on global Scenes list | 🗑 soft-delete → Trash; no confirm; optional undo toast |
 
 **Specs:** [`scenes-list-design.md`](scenes-list-design.md), [`session-scenes-design.md`](session-scenes-design.md)
@@ -245,7 +253,7 @@ Session Lock does **not** apply on Session Scenes list — only on Active Scene.
 | Rule | Detail |
 |---|---|
 | Legacy features (**PW-42**) | Deprecate legacy `compose_soundscape` scenarios — **level-first Composer** is source of truth |
-| Track picker (**PW-43**) | **Distinct** from category picker — scoped to one intensity level; see [`soundscape-category-composer-design.md`](soundscape-category-composer-design.md) |
+| Track picker (**PW-43**) | **Distinct** from category picker — scoped to one intensity level; see [`audio-library-soundscape-tracks-modal-design.md`](audio-library-soundscape-tracks-modal-design.md) |
 | Remove track (**PW-44**) | **Detach from level only** — does not delete library asset or send to Trash |
 | Duplicate tracks (**PW-45**) | **Allowed across levels**; **blocked within the same level** |
 | Intensity levels (**PW-46**, **CC-05**) | **Fixed three levels** — **Level I · II · III** always visible; no add/remove level controls (composer-specific; supersedes generic PW-46 append-only I–V) |
@@ -259,7 +267,7 @@ Design authoring notes — not implementation scope:
 | ID | Decision |
 |---|---|
 | PW-47 | Split/replace unified `search_sounds.feature` into tab-specific filter features |
-| PW-48 | Rewrite stale gear/Vault/+ scenarios in same pass as design sync |
+| PW-48 | ⏳ **Still open** — delete stale gear/Vault/+ scenarios vs `@deprecated` migration |
 | PW-49 | ⚠️ **Unresolved** — see [Conflicts](#unresolved-conflicts) |
 | PW-50 | **ASCII + markdown** sufficient for MVP kickoff; HTML prototypes P2 |
 
@@ -282,18 +290,22 @@ Design authoring notes — not implementation scope:
 
 | Document | Option A names |
 |---|---|
-| [platform-wide.md](open-questions/platform-wide.md) | **`campaign_crud.feature`** |
-| [campaigns.md](open-questions/campaigns.md) | **`manage_campaigns.feature`** |
+| [platform-wide.md](answered-questions-dont-refer/platform-wide.md) | **`campaign_crud.feature`** |
+| [campaigns.md](answered-questions-dont-refer/campaigns.md) | **`manage_campaigns.feature`** |
 
 **Do not merge or deprecate either file** until Product Owner picks one canonical source.
 
-### PW-17 — Session soft-delete confirmation
+### PW-09 — Home hero CTA label
 
-`open-questions/trash.md` TR-02 previously recorded a **session-delete confirmation exception**. Design docs follow **PW-17 Option A** — no routine confirm on any entity soft-delete (including sessions); optional undo toast only. Reconcile `trash.md` when Gherkin is rewritten.
+[home.md](answered-questions-dont-refer/home.md) records **Resume**; [campaign-sessions.md](answered-questions-dont-refer/campaign-sessions.md) sign-off still references "Open Campaign". Design docs use **Resume** on Home per home.md.
 
-### platform-wide.md summary table vs question blocks
+### PW-31 — Post-create navigation
 
-The Principal QA summary table at the bottom of `platform-wide.md` **swaps Option A/B text** for some IDs (e.g. PW-06, PW-17, PW-31) relative to the individual question sections above it. **This document follows the individual question Option A (Recommended) blocks** and decided ANSWER lines.
+Recommended Option A is **stay on Scenes list**; PO answer still pending. [`scenes-list-design.md`](scenes-list-design.md) follows the recommendation provisionally.
+
+### F-PW-01 / F-PW-02 — Gherkin structure
+
+Still open — no PO answer. Screen Transitions section above documents **intent** for F-PW-01 (modal/sheet Z-Axis).
 
 ---
 
@@ -310,5 +322,6 @@ The Principal QA summary table at the bottom of `platform-wide.md` **swaps Optio
 | Active Scene — Soundboard | [`active-scene-soundboard-design.md`](active-scene-soundboard-design.md) |
 | Library | [`audio-library-design.md`](audio-library-design.md) |
 | Category Composer | [`soundscape-category-composer-design.md`](soundscape-category-composer-design.md) |
+| Composer track picker | [`audio-library-soundscape-tracks-modal-design.md`](audio-library-soundscape-tracks-modal-design.md) |
 | Credits | [`credits-design.md`](credits-design.md) |
 | Trash | [`trash-design.md`](trash-design.md) |

@@ -13,11 +13,11 @@ The Sound Effects **picker modal** lets the GM select FX tracks from the library
 
 For browsing, importing, buying, previewing, and editing the global FX catalogue, use the **Library page** — [`audio-library-design.md`](audio-library-design.md).
 
-For adding FX to the active scene soundboard, this modal provides filters, **Import FX**, card grid, preview-on-click, **multi-select checkboxes**, and a footer **Add Selected** button.
+This modal provides filters, card grid, preview-on-click, **multi-select checkboxes**, and a footer **Add Selected** button.
 
 **No Detail button.** Per-card **+** is replaced by selection checkboxes.
 
-**Import FX** is available in the picker (**PW-24**). **Buy More** / **Free Tracks** remain on the Library page only.
+**No Import in scene picker** — import via Library page only (**FX-13**, **PW-24**). **Buy More** / **Free Tracks** remain on the Library page only.
 
 **Not used for:** Sidebar → Library (that route is the full Library page).
 
@@ -80,9 +80,6 @@ Filters apply to the modal grid in real time (debounced search).
 - **Title:** **Sound Effects** — large gold serif
 - **Subtitle:** "Select effects for this scene's soundboard."
 
-### Action Buttons
-- **Import FX** — outline + upload; browser file picker → new tracks appear in grid (**PW-24**)
-
 ### Search Bar
 - Full-width `Input` below the subtitle
 - Magnifying-glass icon; placeholder: **Search effects…**
@@ -134,7 +131,6 @@ Filters apply to the modal grid in real time (debounced search).
 | Click playing card again | Stops preview |
 | Toggle checkbox | Adds/removes track from selection |
 | Click **Add Selected (N)** | Adds all checked tracks to the scene soundboard in **selection order**; clears selection on success; modal **stays open**; **Sonner toast** — e.g. "2 effects added" (**PW-25**) |
-| Click **Import FX** | Opens browser file picker; new tracks appear in grid (**PW-24**) |
 | Type in **Search** bar | Filters grid by track name and tags (debounced) |
 | Adjust **Base Intensity** slider | Filters grid to matching intensity tracks; preview volume unaffected |
 | Use sidebar search/filters | Same filter state as main search bar; filters grid in real time |

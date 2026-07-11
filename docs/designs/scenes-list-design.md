@@ -5,7 +5,7 @@
 - **Scene screen (after open):** [`active-scene-soundscapes-design.md`](active-scene-soundscapes-design.md), [`active-scene-soundboard-design.md`](active-scene-soundboard-design.md) — same layout for new and existing scenes
 - **Session variant (filtered list):** [`session-scenes-design.md`](session-scenes-design.md) — same list UI, scoped to one session
 - **Trash recovery:** [`trash-design.md`](trash-design.md) — soft-deleted scenes appear on the **Scenes** tab
-- **Resolved decisions:** [`open-questions/scenes-list.md`](open-questions/scenes-list.md), [`open-questions/platform-wide.md`](open-questions/platform-wide.md) (PW-15, PW-16, PW-17, PW-29, PW-31)
+- **Resolved decisions:** [`answered-questions-dont-refer/scenes-list.md`](answered-questions-dont-refer/scenes-list.md), [`answered-questions-dont-refer/platform-wide.md`](answered-questions-dont-refer/platform-wide.md) (PW-15, PW-16, PW-17, PW-29, PW-31)
 
 ---
 
@@ -85,7 +85,7 @@ Shared FE layout for **Arcanum Audio** (left sidebar navigation). See [`platform
 | **Description** | No | Optional text describing the place |
 | **Background image** | No | Optional cover art via browser image upload |
 
-- **Create** adds the scene, inserts a new row in the list, and **keeps the GM on the Scenes list** — no auto-navigation to Scene screen (**PW-31**); GM opens the new row manually when ready
+- **Create** adds the scene, inserts a new row in the list, and **keeps the GM on the Scenes list** — no auto-navigation to Scene screen (**PW-31**, recommended Option A — PO pending); GM opens the new row manually when ready
 - **Cancel** dismisses without changes
 - Tags are **not** collected here — add later via **Edit** if needed
 
@@ -176,7 +176,7 @@ Modal `Dialog` triggered by **New Scene**:
 3. **Background image** — optional; **Choose image** opens browser file picker
 4. **Create** / **Cancel** actions
 
-On success: new row appears in the list; GM **remains on Scenes list** (**PW-31**). Opening the row lands on the empty Scene screen when the GM chooses.
+On success: new row appears in the list; GM **remains on Scenes list** (**PW-31**, recommended — PO pending). Opening the row lands on the empty Scene screen when the GM chooses.
 
 ### Search — no matches
 Search field remains visible; list area shows inline "No scenes match" message; **New Scene** row still available at bottom.

@@ -6,7 +6,7 @@
 - **Prototype:** ASCII + markdown sufficient for MVP — no HTML prototype required (PW-50)
 - **Acceptance criteria:** `manage_campaigns.feature` is the canonical source of truth; merge unique scenarios from `campaign_crud.feature` then deprecate it (PW-49, C-F-07). ⚠️ This conflicts with `platform-wide.md` PW-49 Option A, which names `campaign_crud.feature` as canonical — reconcile with PO before merging or deprecating either file.
 
-**Open questions:** [campaigns.md](open-questions/campaigns.md) — all items resolved; decisions integrated below.
+**Open questions:** [campaigns.md](answered-questions-dont-refer/campaigns.md) — all items resolved; decisions integrated below.
 
 ---
 
@@ -112,7 +112,7 @@ Cards stack vertically with consistent gap; **no horizontal grid** (C-06).
 |---|---|
 | Click **Resume** or **Start** on a card | Navigate to that campaign's **Sessions list** only — no deep-link to last session/scene (PW-32, C-02); updates most-recently-played sort order (C-04); Container Transform animation on drill-down (C-F-08) — ⚠️ see [Known conflicts](#known-conflicts) |
 | Click campaign card body | **No navigation** — body is non-interactive except cover (C-F-01) |
-| Click **🗑 Trash** icon or swipe-right (touch) | Soft-delete campaign → Trash **Campaigns** tab; sessions orphaned/hidden from active UI (PW-16, C-F-05, [TR-03](open-questions/trash.md#tr-03)); **no** confirmation dialog on routine soft-delete — optional undo toast per platform rule (PW-17 Option A via [TR-02](open-questions/trash.md#tr-02)) |
+| Click **🗑 Trash** icon or swipe-right (touch) | Soft-delete campaign → Trash **Campaigns** tab; sessions orphaned/hidden from active UI (PW-16, C-F-05, [TR-03](answered-questions-dont-refer/trash.md#tr-03)); **no** confirmation dialog on routine soft-delete — optional undo toast per platform rule (PW-17 Option A via [TR-02](answered-questions-dont-refer/trash.md#tr-02)) |
 | Click **Create Campaign** | Open create-campaign dialog (C-F-09) |
 
 ### Sorting
@@ -125,7 +125,7 @@ Campaigns sorted by **most recently played**, descending (C-04). Tapping **Resum
 
 ### Soft-delete & Trash
 - Campaign soft-delete moves the card to Trash **Campaigns** tab with **7-day retention** (PW-16, C-F-05)
-- Associated sessions are **orphaned/hidden** from active UI until the campaign is restored ([TR-03](open-questions/trash.md#tr-03), [PW-19](open-questions/platform-wide.md#pw-19))
+- Associated sessions are **orphaned/hidden** from active UI until the campaign is restored ([TR-03](answered-questions-dont-refer/trash.md#tr-03), [PW-19](answered-questions-dont-refer/platform-wide.md#pw-19))
 - Restore from Trash returns the campaign and its sessions to active lists
 
 ### Cover Art

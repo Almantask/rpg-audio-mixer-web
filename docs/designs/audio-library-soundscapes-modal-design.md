@@ -4,7 +4,7 @@
 - **Browse mode (Library page):** [`audio-library-design.md`](audio-library-design.md) — Soundscapes tab
 - **Parallel pattern:** [`audio-library-fx-modal-design.md`](audio-library-fx-modal-design.md)
 - **Launched from scene:** [`active-scene-soundscapes-design.md`](active-scene-soundscapes-design.md) — **ADD SOUNDSCAPE**
-- **Composer track picker (distinct):** [`soundscape-category-composer-design.md`](soundscape-category-composer-design.md) — **Add FX** title (PW-43)
+- **Composer track picker (distinct):** [`audio-library-soundscape-tracks-modal-design.md`](audio-library-soundscape-tracks-modal-design.md) — **Add track** (PW-43)
 
 ---
 
@@ -22,7 +22,7 @@ This modal provides filters, buy/free actions, card grid, preview-on-click, **mu
 
 **Not used for:** Sidebar → Library (that route is the full Library page).
 
-> **Naming:** UI title **Add Soundscape** (this modal — category picker) vs **Add FX** (Composer track picker, PW-43). Do not use "Track Picker" for category selection.
+> **Naming:** UI title **Add Soundscape** (this modal — category picker) vs **Add track** (Composer track picker, PW-43).
 
 ---
 

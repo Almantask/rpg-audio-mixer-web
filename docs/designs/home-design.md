@@ -5,7 +5,7 @@
 - **Platform shell:** [`platform-design.md`](platform-design.md)
 - **Prototype:** ASCII + markdown sufficient for MVP (no HTML prototype required)
 
-**Open questions:** [home.md](open-questions/home.md) — all items resolved; decisions integrated below.
+**Open questions:** [home.md](answered-questions-dont-refer/home.md) — all items resolved; decisions integrated below.
 
 ---
 
@@ -216,7 +216,7 @@ Hero plus Top Soundscape and Top FX cards populated with live data.
 
 ## Resolved decisions
 
-All open questions from [home.md](open-questions/home.md) are decided. Key references:
+All open questions from [home.md](answered-questions-dont-refer/home.md) are decided. Key references:
 
 | ID | Decision |
 |---|---|
