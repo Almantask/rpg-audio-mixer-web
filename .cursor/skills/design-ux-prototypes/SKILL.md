@@ -62,7 +62,7 @@ Common tasks: UX flows, wireframes, shadcn component selection, accessibility re
 
 Acceptance criteria as Gherkin compatible with **Playwright + Cucumber**.
 
-**File location:** `features/<feature_name>.feature`
+**File location:** `features/<screen>/<feature_name>.feature` (one folder per screen)
 
 | Scenario type | Required? |
 |---|---|

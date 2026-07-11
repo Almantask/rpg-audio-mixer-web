@@ -70,7 +70,6 @@ Shared FE layout for **Arcanum Audio** (left sidebar navigation). See [`platform
 │  │ [x] ⏳ 2 days│ │ [ ] ⚠ 1 day  │ │ [x] ⏳ 5 days│                 │
 │  │ Shadows of   │ │ Session 12   │ │ Whispering   │                 │
 │  │ the Underdark│ │              │ │ Depths       │                 │
-│  │ CAMPAIGN     │ │ SESSION      │ │ SOUNDSCAPE   │                 │
 │  │ Deleted 5d   │ │ Deleted 6d   │ │ Deleted 2d   │                 │
 │  │ [Restore][×] │ │ [Restore][×] │ │ [Restore][×] │                 │
 │  └──────────────┘ └──────────────┘ └──────────────┘                 │
@@ -125,7 +124,6 @@ Five tabs organize Trash by entity type ([TR-10](answered-questions-dont-refer/t
 | Type icon | Circular icon — banner (Campaign), scroll (Session), frame (Scene), note (Soundscape), bolt (FX) |
 | Countdown | "N days left" — **urgent styling at 1 day left** (red text + warning indicator; in-app only, no email — [PW-22](answered-questions-dont-refer/platform-wide.md#pw-22)) |
 | Title | Item name in white serif |
-| Type `Badge` | CAMPAIGN (amber), SESSION (teal), SCENE (blue), SOUNDSCAPE (gold), FX (purple) |
 | Deletion timestamp | "Deleted N days ago" — subdued grey |
 | **Restore** | Text `Button` with counter-clockwise arrow → restores this item only |
 | **Purge** | Text `Button` with × icon in red → permanently deletes this item |
@@ -136,10 +134,10 @@ Selected cards show a gold border or tint.
 
 | Type | Restore destination |
 |---|---|
-| CAMPAIGN | Active Campaigns list; orphaned sessions auto-restored with campaign ([PW-19](answered-questions-dont-refer/platform-wide.md#pw-19)) |
-| SESSION | Parent campaign's sessions list |
-| SCENE | Scenes list; all prior session links intact — restore as-is, no re-link prompt ([TR-06](answered-questions-dont-refer/trash.md#tr-06)) |
-| SOUNDSCAPE | Audio Library soundscapes |
+| Campaign | Active Campaigns list; orphaned sessions auto-restored with campaign ([PW-19](answered-questions-dont-refer/platform-wide.md#pw-19)) |
+| Session | Parent campaign's sessions list |
+| Scene | Scenes list; all prior session links intact — restore as-is, no re-link prompt ([TR-06](answered-questions-dont-refer/trash.md#tr-06)) |
+| Soundscape | Audio Library soundscapes |
 | FX | Audio Library FX |
 
 ### Name Collision on Restore ([PW-21](answered-questions-dont-refer/platform-wide.md#pw-21))
@@ -246,7 +244,6 @@ Inline error message or toast if Trash list fails to load; retry action availabl
 - Primary accents: gold `#D4AF37` / `#EAB308`
 - Destructive: red for Purge, Purge Selected, Empty Trash, urgent countdown (1 day left)
 - Selection: gold border/tint on selected cards
-- Type badges: colour-coded outlines per item category (CAMPAIGN amber, SESSION teal, SCENE blue, SOUNDSCAPE gold, FX purple)
 - Active tab: gold underline or tint per `Tabs` pattern in `home-design.md`
 
 ---
@@ -256,10 +253,10 @@ Inline error message or toast if Trash list fails to load; retry action availabl
 | Destination | Trigger |
 |---|---|
 | Home | Sidebar → Home |
-| Active Campaigns | Restore CAMPAIGN card |
-| Campaign sessions list | Restore SESSION card |
-| Scenes | Restore SCENE card |
-| Audio Library (soundscapes) | Restore SOUNDSCAPE card |
+| Active Campaigns | Restore campaign card |
+| Campaign sessions list | Restore session card |
+| Scenes | Restore scene card |
+| Audio Library (soundscapes) | Restore soundscape card |
 | Audio Library (FX) | Restore FX card |
 | Credits | Sidebar → Credits |
 | Other sidebar sections | Sidebar navigation |

@@ -1,5 +1,6 @@
-@iter11 @core
 Feature: Campaign portability
+
+# Out of scope
 
   As a GM
   I want to export and import campaigns as portable archive files

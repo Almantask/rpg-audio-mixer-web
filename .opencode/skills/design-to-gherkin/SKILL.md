@@ -18,7 +18,7 @@ Orchestrate Gherkin refinement only. Delegate via Task subagents; do not substit
 
 | Input | Location |
 |---|---|
-| Feature files | `features/*.feature` (user-specified) |
+| Feature files | `features/<screen>/*.feature` (user-specified) |
 | Design specs | `docs/designs/*-design.md`, `docs/designs/platform-design.md` |
 | **Excluded** | `docs/designs/answered-questions-dont-refer/` — never use as source of truth |
 

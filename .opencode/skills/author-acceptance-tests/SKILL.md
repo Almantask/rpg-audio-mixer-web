@@ -29,7 +29,9 @@ Act as a **senior Quality Assurance Engineer** focused on BDD and browser-based 
 
 Before a developer touches the code, translate PO design requirements into testable Gherkin scenarios.
 
-- Place files in `features/<feature_name>.feature`
+- Place files under `features/<screen>/` — one folder per screen (e.g. `features/home/`, `features/active-scene/soundscapes/`)
+- Scene add modals live under `features/active-scene/soundboard/add-modal/` and `features/active-scene/soundscapes/add-modal/` (one file per modal action)
+- One distinct functionality per file; split when a feature covers multiple concerns
 - Use Given/When/Then structure
 - Re-use existing feature files when modifying a domain
 

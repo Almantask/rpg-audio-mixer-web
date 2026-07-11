@@ -9,7 +9,7 @@
 
 ## Purpose
 
-The **Credits** screen provides app info, support links, and community portals — version, legal links, and ways to support development.
+The **Credits** screen provides app info, support actions, and legal resources — version, support links, and in-app legal pages.
 
 **Sidebar nav item:** Credits (active on this screen). User-facing label is **Credits** only — no "Behind the Screen" or "Arcane Settings" naming anywhere in the UI.
 
@@ -28,12 +28,12 @@ Shared FE layout for **Arcanum Audio** (left sidebar navigation). See [`platform
 
 ## Layout — Main Content
 
-Wide viewport (`≥ lg`) — Community and Legal columns side-by-side:
+Wide viewport (`≥ lg`) — Support cards side-by-side; Legal links below:
 
 ```
 ┌──────────────────────────────────────────────────────────────────────┐
 │  Credits                                                             │
-│  App info, support links, and community.                             │
+│  App info, support links, and legal.                                 │
 │                                                                      │
 │  Support -------------------------------------------------           │
 │  ┌─ Support Development ─┐  ┌─ Leave a Review ──────────────────┐   │
@@ -41,22 +41,21 @@ Wide viewport (`≥ lg`) — Community and Legal columns side-by-side:
 │  │ [Buy the Devs a Coffee ☕]│  │ [Leave a Review ✍️]         │   │
 │  └──────────────────────────┘  └─────────────────────────────────┘   │
 │                                                                      │
-│  Community                    Legal                                  │
-│  💬 Discord                   Terms of Service                       │
-│  📧 Support Email             Privacy Policy                         │
-│  </> GitHub Repository       Attributions                            │
-│  📜 Patch Notes                                                      │
+│  Legal                                                               │
+│  Terms of Service                                                    │
+│  Privacy Policy                                                      │
+│  Attributions                                                        │
 │                                                                      │
 │  © {year} Arcanum Audio. V {version}.                                │
 └──────────────────────────────────────────────────────────────────────┘
 ```
 
-Narrow viewport (`< lg`) — Community stacked above Legal; Support cards stack vertically:
+Narrow viewport (`< lg`) — Support cards and Legal section stack vertically:
 
 ```
 ┌──────────────────────────────────────┐
 │  Credits                             │
-│  App info, support links, and …      │
+│  App info, support links, and legal. │
 │                                      │
 │  Support -------------------------   │
 │  ┌─ Support Development ─────────┐   │
@@ -65,11 +64,6 @@ Narrow viewport (`< lg`) — Community stacked above Legal; Support cards stack 
 │  ┌─ Leave a Review ──────────────┐   │
 │  │ [Leave a Review ✍️]           │   │
 │  └───────────────────────────────┘   │
-│                                      │
-│  Community                           │
-│  💬 Discord                          │
-│  📧 Support Email                    │
-│  …                                   │
 │                                      │
 │  Legal                               │
 │  Terms of Service                    │
@@ -86,7 +80,7 @@ Narrow viewport (`< lg`) — Community stacked above Legal; Support cards stack 
 
 ### Page Header
 - **Title:** "Credits" — large white serif
-- **Subtitle:** "App info, support links, and community."
+- **Subtitle:** "App info, support links, and legal."
 
 ### Support Section *(MVP required)*
 Section heading with horizontal rule extension. Both cards ship in v1.
@@ -101,20 +95,8 @@ Section heading with horizontal rule extension. Both cards ship in v1.
 - Body copy encouraging product reviews
 - **Leave a Review** — secondary dark `Button` with scroll/quill icon → external review URL (**new tab**)
 
-### Community (`Card`)
-Clickable link rows with external-link arrow. All community/support URLs open in a **new browser tab**:
-
-| Link | Icon |
-|---|---|
-| Discord | Blue chat bubble |
-| Support Email | @ / envelope |
-| GitHub Repository | Code brackets |
-| Patch Notes | Document |
-
-External URL targets are supplied via **environment config** (one variable per URL) so links can change without redeploying copy.
-
 ### Legal Links
-Text links in the Legal column (or Legal section when stacked). Each navigates to an **in-app route** in the **same tab**:
+Text links in the Legal section. Each navigates to an **in-app route** in the **same tab**:
 
 | Link | Route | Content |
 |---|---|---|
@@ -146,7 +128,6 @@ Rendered from markdown or static content; no external navigation required.
 |---|---|
 | Click **Buy the Devs a Coffee** | Open tip/donation URL in a **new browser tab** |
 | Click **Leave a Review** | Open external review URL in a **new browser tab** |
-| Click community portal row | Open URL in a **new browser tab** |
 | Click **Terms of Service** | Navigate to `/legal/terms` (same tab) |
 | Click **Privacy Policy** | Navigate to `/legal/privacy` (same tab) |
 | Click **Attributions** | Navigate to `/credits/attributions` (same tab) |
@@ -157,7 +138,7 @@ Rendered from markdown or static content; no external navigation required.
 ## States
 
 ### Normal
-Full content visible. No loading or empty states needed.
+Full content visible. No loading or empty states needed on the main Credits screen.
 
 ### Attributions page
 - **Loading:** `Skeleton` blocks for both attribution sections while content loads
@@ -170,8 +151,8 @@ Full content visible. No loading or empty states needed.
 
 | Viewport | Layout |
 |---|---|
-| `< lg` (mobile / narrow tablet) | Support cards stack vertically; **Community** section above **Legal** section (single column) |
-| `≥ lg` (desktop / wide tablet) | Support cards side-by-side; **Community** and **Legal** in two columns |
+| `< lg` (mobile / narrow tablet) | Support cards stack vertically; **Legal** section below Support (single column) |
+| `≥ lg` (desktop / wide tablet) | Support cards side-by-side; **Legal** section below Support |
 | Sidebar collapsed | Main content expands; hamburger reveals sidebar overlay |
 
 ---
@@ -179,9 +160,9 @@ Full content visible. No loading or empty states needed.
 ## Accessibility
 
 - Page title uses semantic `<h1>`; section headings `<h2>`
-- External links: visible external-link icon + `aria-label` indicating opens in new tab
+- External support links: visible external-link icon + `aria-label` indicating opens in new tab
 - In-app legal links: standard link styling; no new-tab indicator
-- Minimum touch target 44×44 px on support buttons and link rows
+- Minimum touch target 44×44 px on support buttons and legal links
 - Version footer: plain text (not colour-only)
 
 ---
@@ -190,7 +171,7 @@ Full content visible. No loading or empty states needed.
 
 | Destination | Trigger |
 |---|---|
-| External browser (new tab) | Buy Coffee, Leave a Review, community portal rows |
+| External browser (new tab) | Buy Coffee, Leave a Review |
 | Terms of Service | Credits → Legal → Terms (in-app, same tab) |
 | Privacy Policy | Credits → Legal → Privacy (in-app, same tab) |
 | Attributions | Credits → Legal → Attributions (in-app, same tab) |
