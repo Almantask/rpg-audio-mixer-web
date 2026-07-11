@@ -1,4 +1,4 @@
-@iter0 @iter11
+@iter0
 Feature: Sidebar navigation
 
   As a GM

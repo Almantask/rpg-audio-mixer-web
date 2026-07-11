@@ -1,4 +1,3 @@
-@iter5 @iter11
 Feature: Edit FX in library
 
   As a GM
@@ -27,7 +26,7 @@ Feature: Edit FX in library
     And it is no longer visible in the FX library
     And the local copy of the audio file is retained for 7 days
 
-  @integration
+@iter5
   Scenario: Deleting an FX track removes it from scenes that used it
     Given "Wolf Howl" is assigned to the "Forest Ambush" scene's soundboard
     When I delete "Wolf Howl" from the FX library

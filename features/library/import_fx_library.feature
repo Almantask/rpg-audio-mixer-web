@@ -1,4 +1,4 @@
-@iter5 @iter11
+@iter5
 Feature: Import FX to library
 
   As a GM

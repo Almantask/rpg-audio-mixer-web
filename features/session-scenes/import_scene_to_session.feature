@@ -1,4 +1,4 @@
-@iter3 @iter11
+@iter3
 Feature: Import scene to session
 
   As a GM

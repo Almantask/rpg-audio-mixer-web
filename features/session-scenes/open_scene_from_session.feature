@@ -1,4 +1,4 @@
-@iter3 @iter11
+@iter3
 Feature: Open scene from session
 
   As a GM

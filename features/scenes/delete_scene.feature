@@ -1,4 +1,4 @@
-@iter3 @iter11
+@iter3
 Feature: Delete scene
 
   As a GM

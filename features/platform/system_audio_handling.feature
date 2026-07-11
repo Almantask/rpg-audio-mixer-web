@@ -1,4 +1,3 @@
-@iter10 @iter11
 Feature: System audio handling
 
   As a GM
@@ -11,7 +10,7 @@ Feature: System audio handling
     Then all playing audio in the app pauses immediately
     And the app visually reflects the paused state on the active playing cards
 
-  @audio-boundary
+@iter10
   Scenario Outline: Audio resumes automatically when interruption ends within 3 minutes
     Given the app is playing audio loops on the Active Scene screen
     When an audio interruption lasts for <duration>

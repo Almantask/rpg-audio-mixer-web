@@ -1,4 +1,4 @@
-@iter8 @iter11
+@iter8
 Feature: Search and filter FX library
 
   As a GM

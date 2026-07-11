@@ -1,4 +1,4 @@
-@iter8 @iter11
+@iter8
 Feature: Restore from Trash
 
   As a GM

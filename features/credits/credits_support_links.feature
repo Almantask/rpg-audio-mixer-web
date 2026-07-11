@@ -1,4 +1,4 @@
-@iter0 @iter8 @iter11
+@iter8
 Feature: Credits support links
 
   As a GM

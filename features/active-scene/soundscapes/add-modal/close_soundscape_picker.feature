@@ -1,4 +1,4 @@
-@iter4 @iter11
+@iter4
 Feature: Close soundscape picker
 
   As a GM

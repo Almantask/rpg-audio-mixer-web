@@ -1,4 +1,4 @@
-@iter7 @iter11 @core
+@iter7 @core
 Feature: Home loading and error states
 
   As a GM

@@ -1,4 +1,4 @@
-@iter3 @iter11
+@iter3
 Feature: View created scenes
 
   As a GM

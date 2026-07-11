@@ -1,4 +1,4 @@
-@iter3 @iter11
+@iter3
 Feature: Preview soundscape category in library
 
   As a GM

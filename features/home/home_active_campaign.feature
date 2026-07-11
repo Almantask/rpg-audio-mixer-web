@@ -1,4 +1,4 @@
-@iter7 @iter11 @core
+@iter7 @core
 Feature: Home active campaign hero
 
   As a GM

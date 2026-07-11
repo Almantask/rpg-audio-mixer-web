@@ -1,4 +1,4 @@
-@iter5 @iter11
+@iter5
 Feature: Open FX picker on Active Scene
 
   As a GM

@@ -1,4 +1,4 @@
-@iter2 @iter11
+@iter2
 Feature: Delete session
 
   As a GM

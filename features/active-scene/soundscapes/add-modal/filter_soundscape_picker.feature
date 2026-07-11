@@ -1,4 +1,4 @@
-@iter4 @iter11
+@iter4
 Feature: Filter soundscape picker
 
   As a GM

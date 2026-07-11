@@ -1,4 +1,4 @@
-@iter4 @iter11
+@iter4
 Feature: Commit soundscape selection to scene
 
   As a GM

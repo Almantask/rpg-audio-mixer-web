@@ -1,4 +1,4 @@
-@iter4 @iter11
+@iter4
 Feature: Preview soundscape in picker
 
   As a GM

@@ -1,4 +1,4 @@
-@iter3 @iter11
+@iter3
 Feature: Unlink scene from session
 
   As a GM

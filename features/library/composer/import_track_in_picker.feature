@@ -1,4 +1,4 @@
-@iter3 @iter11 @core
+@iter3 @core
 Feature: Import track in Category Composer picker
 
   As a GM

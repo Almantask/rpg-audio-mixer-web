@@ -1,4 +1,4 @@
-@iter10 @iter11
+@iter10
 Feature: Scene cloning
 
   As a GM

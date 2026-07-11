@@ -1,4 +1,4 @@
-@iter3 @iter11
+@iter3
 Feature: View session scenes
 
   As a GM

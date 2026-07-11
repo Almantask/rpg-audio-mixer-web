@@ -1,4 +1,4 @@
-@iter2 @core @iter11
+@iter2 @core
 Feature: Delete campaign
 
   As a GM

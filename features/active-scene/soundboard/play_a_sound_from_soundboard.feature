@@ -1,4 +1,4 @@
-@iter6 @core @iter11
+@iter6 @core
 Feature: Soundboard playback
 
   As a GM

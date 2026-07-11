@@ -1,5 +1,4 @@
-@iter6
-@core
+@iter6 @core
 Feature: Play mixed track loops and sounds
 
   As a GM

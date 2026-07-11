@@ -1,4 +1,4 @@
-@iter3 @iter11 @core
+@iter3 @core
 Feature: Compose soundscape category
 
   As a GM

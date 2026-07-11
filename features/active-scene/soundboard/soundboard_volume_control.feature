@@ -1,4 +1,4 @@
-@iter6 @iter11
+@iter6
 Feature: Soundboard volume control
 
   As a GM

@@ -1,4 +1,4 @@
-@iter4 @iter11
+@iter4
 Feature: Open soundscape picker on Active Scene
 
   As a GM

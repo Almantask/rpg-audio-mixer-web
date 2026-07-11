@@ -1,4 +1,4 @@
-@iter3 @iter11
+@iter3
 Feature: User-owned scenes are fully editable
 
   As a GM

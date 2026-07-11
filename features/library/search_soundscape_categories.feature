@@ -1,4 +1,4 @@
-@iter8 @iter11
+@iter8
 Feature: Search and filter soundscape categories
 
   As a GM

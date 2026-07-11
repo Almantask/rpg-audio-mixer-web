@@ -1,4 +1,4 @@
-@iter7 @core @iter11
+@iter7 @core
 Feature: Play scene
 
   As a GM

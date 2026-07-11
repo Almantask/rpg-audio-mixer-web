@@ -1,4 +1,4 @@
-@iter6 @iter11
+@iter6
 Feature: Play soundscape category
 
   As a GM
