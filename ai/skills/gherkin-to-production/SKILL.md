@@ -1,6 +1,6 @@
 ---
 name: gherkin-to-production
-description: Implements production code from existing Cucumber feature files and scene design specs using the Double BDD loop — features define behavior, designs define looks. Use when the user says /gherkin-to-production, specs and designs already exist, or shipped UI must match Gherkin without rewriting features.
+description: Implements production code from existing Cucumber feature files and scene design specs using the Double BDD loop — features define behavior, designs define looks. Use when specs and designs already exist, or shipped UI must match Gherkin without rewriting features.
 ---
 
 # Gherkin to Production
