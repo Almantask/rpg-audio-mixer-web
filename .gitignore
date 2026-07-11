@@ -1,0 +1,7 @@
+# ai/ mirrors: only git symlinks are tracked, not junction-expanded copies (Windows).
+.cursor/**
+!/.cursor
+.opencode/agents/**
+!/.opencode/agents
+.opencode/skills/**
+!/.opencode/skills

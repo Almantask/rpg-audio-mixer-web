@@ -17,28 +17,40 @@ function Add-GitSymlink {
     Write-Host "Indexed symlink $Path -> $Target"
 }
 
-$symlinks = @(
-    @{ Path = ".cursor"; Target = "ai" },
-    @{ Path = ".opencode/agents"; Target = "../ai/agents" },
-    @{ Path = ".opencode/skills"; Target = "../ai/skills" }
+$mirrorPaths = @(
+    ".cursor",
+    ".opencode/agents",
+    ".opencode/skills"
 )
 
-foreach ($link in $symlinks) {
-    if (git ls-files --stage $link.Path 2>$null) {
-        git rm -r --cached -f $link.Path | Out-Null
-    }
+$tracked = git ls-files
+$toRemove = $tracked | Where-Object {
+    $_ -eq ".cursor" -or $_ -like ".cursor/*" -or
+    $_ -eq ".opencode/agents" -or $_ -like ".opencode/agents/*" -or
+    $_ -eq ".opencode/skills" -or $_ -like ".opencode/skills/*"
 }
 
-foreach ($link in $symlinks) {
-    Add-GitSymlink -Path $link.Path -Target $link.Target
+foreach ($path in $toRemove) {
+    git rm --cached -f $path | Out-Null
 }
+
+Add-GitSymlink -Path ".cursor" -Target "ai"
+Add-GitSymlink -Path ".opencode/agents" -Target "../ai/agents"
+Add-GitSymlink -Path ".opencode/skills" -Target "../ai/skills"
 
 Write-Host "`nGit symlink entries:"
 git ls-files -s .cursor .opencode/agents .opencode/skills
+
+$remaining = git ls-files | Where-Object {
+    $_ -like ".cursor/*" -or $_ -like ".opencode/agents/*" -or $_ -like ".opencode/skills/*"
+}
+if ($remaining) {
+    Write-Error "Expanded mirror files remain in the index: $($remaining -join ', ')"
+}
 
 $addedExpanded = git diff --cached --name-status | Where-Object {
     $_ -match '^A\s+(\.cursor/|\.opencode/agents/|\.opencode/skills/)'
 }
 if ($addedExpanded) {
-    Write-Error "Expanded mirror files are staged as additions. Re-run this script instead of git add on junction paths."
+    Write-Error "Expanded mirror files are staged as additions. Do not git add junction paths on Windows."
 }
