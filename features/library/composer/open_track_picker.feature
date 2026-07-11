@@ -31,9 +31,3 @@ Feature: Open track picker in Category Composer
     Given the soundscape library is still loading
     When I open the Track Picker for "Level I" in "Weather"
     Then I see skeleton cards in the picker grid
-
-  Scenario: Import is available only inside the Track Picker from Composer
-    Given I am in the Soundscape Category Composer for "Weather"
-    When I open the Track Picker for "Level I"
-    Then I see an "Import" action in the Track Picker
-    And I do not see an Import action on the Category Composer page

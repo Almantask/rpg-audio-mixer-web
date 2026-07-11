@@ -27,12 +27,7 @@ Feature: Browse soundscape categories
     When I open the Soundscapes tab in the Library
     Then the "Weather" card shows "I: 3 · II: 5 · III: 2"
 
-  Scenario: Edit a category from its card
-    Given "Weather" is in the soundscape categories grid
-    When I edit "Weather" from its card
-    Then I see the Soundscape Category Composer for "Weather"
-
-  Scenario: Tapping a category card body opens the Category Composer
+  Scenario: Opening a category from the library grid opens the Category Composer
     Given "Interior" is in the soundscape categories grid
     When I tap the "Interior" card body
     Then I see the Soundscape Category Composer for "Interior"

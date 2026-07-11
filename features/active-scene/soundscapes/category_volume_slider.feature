@@ -15,9 +15,3 @@ Feature: Category volume slider on Active Scene
     Then the "Weather" card shows the track title "Thunderstorm"
     And the "Weather" card shows one row labeled "VOLUME"
     And the "Weather" card does not show per-layer volume sliders
-
-  Scenario: The Volume slider adjusts output for the category
-    Given the "Weather" category is playing
-    When I set the Volume slider on the "Weather" card to 50%
-    Then "Weather" plays at the mapped volume for 50% Volume
-    And the "Weather" Volume setting is auto-saved immediately

@@ -5,12 +5,6 @@ Feature: Delete session
   I want to delete sessions from a campaign
   So that I can remove play nights I no longer need.
 
-  Scenario: Deleting a session shows a confirmation dialog before removal
-    Given I have session "Session 1" in "Curse of Strahd"
-    And I am on the Campaign Sessions screen for "Curse of Strahd"
-    When I tap Trash on the "Session 1" card
-    Then I see a confirmation dialog before the session is deleted
-
   Scenario Outline: Deleting a session requires confirmation before Trash
     Given I have session "Session 1" in "Curse of Strahd"
     And I am on the Campaign Sessions screen for "Curse of Strahd"

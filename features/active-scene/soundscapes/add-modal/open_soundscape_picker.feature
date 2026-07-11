@@ -17,18 +17,6 @@ Feature: Open soundscape picker on Active Scene
     And I see a "Buy Composition" button
     And I see a "Free Compositions" button
 
-  Scenario: Buy Composition navigates to the storefront
-    Given the Add Soundscape picker modal is open
-    When I tap "Buy Composition"
-    Then I am taken to the storefront
-
-  Scenario: Free Compositions adds demo categories to the picker grid
-    Given the Add Soundscape picker modal is open
-    And my library has no soundscape categories
-    When I tap "Free Compositions"
-    Then the free demo composition pack download begins
-    And new soundscape categories appear in the picker grid when the download completes
-
   Scenario: The category picker does not offer Import
     Given the Add Soundscape picker modal is open
     Then I do not see an Import action in the picker

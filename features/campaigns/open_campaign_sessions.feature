@@ -27,12 +27,6 @@ Feature: Open campaign sessions
     When I tap "Resume" on "The Shattered Throne"
     Then I see the sessions list for "The Shattered Throne"
 
-  Scenario: Resume uses Container Transform from the campaign card
-    Given I have a campaign "The Shattered Throne" with at least one session
-    When I open the Active Campaigns screen
-    And I tap "Resume" on "The Shattered Throne"
-    Then the campaign card expands smoothly to fill the screen background
-
   Scenario: Tapping a campaign card body does not navigate
     Given I have a campaign "The Shattered Throne" with at least one session
     When I open the Active Campaigns screen

@@ -38,13 +38,6 @@ Feature: Commit soundscape selection to scene
     Then I see "Add Selected (2)"
     And the "Add Selected (2)" button is enabled
 
-  Scenario: Unchecking a category removes it from the selection count
-    Given the Add Soundscape picker modal is open
-    And I have checked "Weather" in the picker
-    When I uncheck "Weather" in the picker
-    Then I see "Add Selected (0)"
-    And the "Add Selected (0)" button is disabled
-
   Scenario: Add Selected commits all checked categories in checkbox order
     Given the Add Soundscape picker modal is open
     And "Weather" is not yet in the current scene

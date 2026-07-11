@@ -22,14 +22,10 @@ Feature: Delete scene
     Then no delete confirmation dialog is shown
     And "Old Scene" is moved to Trash on the Scenes tab
 
-  Scenario: Deleting a scene linked to sessions shows a warning
+  Scenario: Deleting a scene linked to sessions shows a warning and moves it to Trash when confirmed
     Given a scene named "Linked Scene" linked to 2 sessions exists
     When I delete the "Linked Scene" scene
     Then I see a warning that the scene is linked to 2 sessions and will be unlinked and moved to Trash
-
-  Scenario: Confirming linked-scene delete moves it to Trash
-    Given a scene named "Linked Scene" linked to 2 sessions exists
-    And I have opened the delete confirmation for "Linked Scene"
     When I confirm the delete
     Then "Linked Scene" is moved to Trash on the Scenes tab
     And I do not see "Linked Scene" in Scenes

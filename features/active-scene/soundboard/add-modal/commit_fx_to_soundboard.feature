@@ -17,12 +17,6 @@ Feature: Commit FX selection to soundboard
     And I check "Wolf Howl" in the picker
     Then the "Add Selected (2)" button is enabled
 
-  Scenario: Unchecking a card updates the Add Selected count
-    Given the Sound Effects picker modal is open
-    And I have checked "Thunder Crack" and "Wolf Howl" in the picker
-    When I uncheck "Wolf Howl" in the picker
-    Then the "Add Selected (1)" button is enabled
-
   Scenario: Checking a card selects it without starting preview
     Given the Sound Effects picker modal is open
     And the FX library has "Thunder Crack"

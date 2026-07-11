@@ -5,7 +5,7 @@ Feature: Screen transitions
   I want smooth, consistent animated transitions between screens
   So that the app feels cohesive and polished during play.
 
-  # Hierarchical Resume expand animation is owned by home_screen.feature (Resume hero scenarios).
+  # Hierarchical Resume expand animation is owned by home_active_campaign.feature (Resume hero scenarios).
 
   @iter9
   Scenario: Lateral sidebar navigation animates content in and out
@@ -13,6 +13,7 @@ Feature: Screen transitions
     When I tap "Scenes" in the sidebar
     Then the Home content fades and slides out horizontally
     And the Scenes screen fades and slides in horizontally
+    And I can interact with the Scenes screen content immediately after the transition completes
 
   @iter9
   Scenario: Modal and sheet presentation animates scale and fade
@@ -20,12 +21,6 @@ Feature: Screen transitions
     When I tap "Add Soundscape"
     Then the outgoing screen fades out and scales up slightly
     And the Add Soundscape modal fades in and scales up from slightly smaller
-
-  @iter9
-  Scenario: Lateral navigation to Scenes does not block interaction
-    Given I am on the Home screen
-    When I tap "Scenes" in the sidebar
-    Then I can interact with the Scenes screen content immediately after the transition completes
 
   @iter9
   Scenario: The mini player slides up on entrance

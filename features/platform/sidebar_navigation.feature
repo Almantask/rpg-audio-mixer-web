@@ -42,18 +42,16 @@ Feature: Sidebar navigation
     Then I see the "Credits" screen title
     And I do not see "Behind the Screen" or Arcane Settings copy
 
-  Scenario: The active sidebar item is visually highlighted
-    Given I am on the Scenes screen
-    Then the "Scenes" sidebar item appears highlighted in gold
+  Scenario Outline: The active sidebar item is visually highlighted
+    Given I am on the <screen>
+    Then the "<item>" sidebar item appears highlighted in gold
     And the other sidebar items appear inactive
 
-  Scenario: Credits sidebar item highlights on the Credits screen
-    Given I am on the Credits screen
-    Then the "Credits" sidebar item appears highlighted in gold
-
-  Scenario: Trash sidebar item highlights on the Trash screen
-    Given I am on the Trash screen
-    Then the "Trash" sidebar item appears highlighted in gold
+    Examples:
+      | screen        | item    |
+      | Scenes screen | Scenes  |
+      | Credits screen| Credits |
+      | Trash screen  | Trash   |
 
   Scenario: Campaign session drill-down keeps Home highlighted in the sidebar
     Given I am viewing the Session Scenes list for "Curse of Strahd"

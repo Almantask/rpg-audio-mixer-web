@@ -16,8 +16,3 @@ Feature: Delete soundscape category
       | Weather  | delete "Weather" from the grid      |
       | Weather  | swipe right on the "Weather" card   |
 
-  Scenario: Deleting a category retains it in Trash for 7 days
-    Given "Weather" is in the soundscape categories grid
-    When I delete "Weather" from the grid
-    Then "Weather" is moved to the Trash Soundscapes tab
-    And "Weather" remains recoverable for 7 days

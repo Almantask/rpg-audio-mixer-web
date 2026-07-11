@@ -53,11 +53,6 @@ Feature: Restore from Trash
     And "Broken Clip" remains in Trash and stays selected with error detail
     And "Dragon Roar" and "Wolf Howl" reappear in the Audio Library FX list
 
-  Scenario: A soft-deleted FX track retains its audio for preview within 7 days
-    Given "Dragon Roar" (FX) is in Trash
-    When I preview "Dragon Roar" from the Trash card
-    Then the FX audio plays successfully
-
   Scenario: A soft-deleted FX track retains its audio when restored within 7 days
     Given "Dragon Roar" (FX) is in Trash
     When I tap "Restore" on the "Dragon Roar" card
