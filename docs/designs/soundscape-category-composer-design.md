@@ -2,7 +2,7 @@
 
 **Design References:**
 - **Parent screen:** [`audio-library-design.md`](audio-library-design.md) — Soundscapes tab
-- **Add track modal:** Soundscapes modal (track picker — browse library + import)
+- **Add track modal:** [`audio-library-soundscape-tracks-modal-design.md`](audio-library-soundscape-tracks-modal-design.md) — track picker (browse library + import)
 - **New source of truth:** FE sidebar layout screenshots (Jul 2026 redesign)
 
 ---
@@ -11,22 +11,33 @@
 
 The **Category Composer** is where the GM organizes **tracks** into **intensity levels** for a soundscape category. Each level is a pool of tracks the Scene screen picks from at random when that intensity is active.
 
-- Categories start with **one** intensity level
-- GM can add up to **five** levels total
+- Every category has exactly **three** fixed intensity levels: **Level I**, **Level II**, **Level III** — always visible; no add/remove level controls (**CC-05**, **F-CC-01**)
+- **Level-first model** — assign tracks to levels; no MIX sliders, elemental balance cards, or drag-to-reorder in composer (**PW-42**)
 - **No volume mixing** here — balance is handled on the Scene screen (Master Volume × per-category Volume)
-- Changes save **globally** — any scene using this category reflects updates immediately
+- Changes **auto-save** globally — any scene using this category reflects updates immediately
+- **Duplicate tracks:** allowed **across** levels; **blocked within the same level** (**PW-45**)
 
 **Sidebar nav item:** Library (Category Composer is a drill-down from Soundscapes tab)
 
 ---
 
+## Information Architecture
+
+| Item | Detail |
+|---|---|
+| **Route** | `/library/soundscapes/:categoryId/compose` — deep-linkable; browser back returns to Library Soundscapes grid |
+| **Entry** | Library → Soundscapes tab → category card / **New Composition** |
+| **Back** | ← **Library** returns to Soundscapes tab (no unsaved-changes discard prompt — auto-save) |
+
+---
+
 ## App Shell
 
-Shared FE layout for **Arcanum Audio** (left sidebar navigation). See `home-design.md` for full shell spec.
+Shared FE layout for **Arcanum Audio** (left sidebar navigation). See [`platform-design.md`](platform-design.md) for shell spec.
 
 - **FE sidebar navigation only (no tab bar)**
 - **Sidebar:** Library active
-- Main content may use a lighter off-white panel (`#F5F5F0`) contrasting the dark sidebar
+- **Dark-first** main content — same theme as the rest of the app (no light `#F5F5F0` panel exception)
 
 ---
 
@@ -41,10 +52,10 @@ Shared FE layout for **Arcanum Audio** (left sidebar navigation). See `home-desi
 │  ┌─ Level I ──────────────────────────────────────────────── [▼] ─┐ │
 │  │  [ + Add track ]                                                 │ │
 │  │  ┌ Thunderous Downpour ──────────────────────────────── [×] ─┐  │ │
-│  │  │ Continuous · Wide Stereo · 3:42                            │  │ │
+│  │  │ MP3 · Stereo · 3:42                                         │  │ │
 │  │  └────────────────────────────────────────────────────────────┘  │ │
 │  │  ┌ Distant Rolling Thunder ──────────────────────────── [×] ─┐  │ │
-│  │  │ Ambient · Stereo · 2:15                                    │  │ │
+│  │  │ WAV · Wide Stereo · 2:15                                    │  │ │
 │  │  └────────────────────────────────────────────────────────────┘  │ │
 │  └──────────────────────────────────────────────────────────────────┘ │
 │                                                                      │
@@ -52,13 +63,13 @@ Shared FE layout for **Arcanum Audio** (left sidebar navigation). See `home-desi
 │  │  (collapsed — 0 tracks)                                          │ │
 │  └──────────────────────────────────────────────────────────────────┘ │
 │                                                                      │
-│  ┌ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - + │
-│  │              +  Add intensity level                              │ │
-│  └ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - + │
+│  ┌─ Level III ────────────────────────────────────────────── [▶] ─┐ │
+│  │  (collapsed — 0 tracks)                                          │ │
+│  └──────────────────────────────────────────────────────────────────┘ │
 └──────────────────────────────────────────────────────────────────────┘
 ```
 
-*(One intensity level per row. Expanded rows show **Add track** at the top of the track list, then tracks with **×** remove. Collapsed rows show level label + track count.)*
+*(Exactly three intensity level rows — **Level I · II · III**. Expanded rows show **Add track** at the top of the track list, then tracks with **×** remove. No **Add intensity level** control.)*
 
 ---
 
@@ -69,51 +80,46 @@ Shared FE layout for **Arcanum Audio** (left sidebar navigation). See `home-desi
 - **Category name** — gold serif (e.g. *Meteorological*)
 - **Title:** "Category Composer"
 - **Subtitle:** "Assign tracks to intensity levels for this category."
-- **Save Composition** — gold `Button` (top right)
+- **Save Composition** — gold `Button` (top right); shows success `Toast` ("Composition saved") and user **remains on Composer**
+- **No rename/delete** in composer header (pending decision — see Open Questions)
 
-### Intensity Level Row (`Card` — repeating, **one per row**)
+### Intensity Level Row (`Card` — repeating, **three rows**)
 
-Vertical stack of levels — **Level I** through **Level V** (roman numerals).
+Vertical stack of **Level I**, **Level II**, and **Level III** (roman numerals).
 
 | Element | Description |
 |---|---|
-| Level label | **Level I**, **Level II**, … **Level V** |
+| Level label | **Level I** · **Level II** · **Level III** |
 | Track count | e.g. **2 tracks** when collapsed |
 | Expand / collapse | Chevron **[▼]** expanded / **[▶]** collapsed — toggles track list visibility |
 | Track list | Shown when expanded (see below) |
 
-- New categories start with **Level I** only (expanded or collapsed — default **expanded** when empty)
-- Levels are ordered I → V; Scene screen intensity toggles mirror levels that exist on the category
+- All three levels are **always present** — no add/remove level UI
+- Scene screen intensity toggles mirror all three levels; empty levels **grey out** on Scene screen
 
 ### Track List (inside expanded level)
 
 | Element | Description |
 |---|---|
-| **Add track** | Full-width or prominent `Button` at the **top** of the list — opens **Soundscapes modal** (track picker) scoped to this intensity level |
-| Track row | Track title + optional subtitle (format, duration); **×** remove `Button` on the trailing edge |
-| Empty state | Only **Add track** visible — no placeholder tracks |
+| **Add track** | Full-width or prominent `Button` at the **top** of the list — opens **Track Picker modal** scoped to this intensity level |
+| Track row | Track title + subtitle (**format · channel · duration** from imported file metadata); **×** remove `Button` on the trailing edge |
+| Empty state | Only **Add track** visible — no placeholder tracks, no direct Import on empty row |
 
-**Not in composer:** per-track volume sliders, MIX sliders, drag-to-reorder (unless added later), tier balance sliders.
+**Not in composer (MVP):** per-track volume sliders, MIX sliders, drag-to-reorder, tier/elemental balance sliders, per-track intensity controls, duplicate-track action, inline ▶ preview (deferred to P2).
 
-### Add track → Soundscapes modal
+### Add track → Track Picker modal
 
-Opens the **Soundscapes modal** (track picker):
+Opens **Track Picker modal** (distinct from category picker — **PW-43**; full spec in [`audio-library-soundscape-tracks-modal-design.md`](audio-library-soundscape-tracks-modal-design.md) when authored):
 
-- Browse existing soundscape **tracks** in the library and/or **Import Soundscape** (browser file picker — audio only)
-- Selected tracks are added to the **current intensity level**
-- Modal may support multi-select + confirm (same **Add Selected** pattern as other pickers)
+- Browse existing soundscape **tracks** in the library
+- **Import** reaches composer **only** via **Add track → Track Picker modal → Import** (browser file picker inside modal — audio only); no direct file picker from composer or empty level row
+- Multi-select + **Add Selected** adds chosen tracks to the **current intensity level**
 - ← back returns to Category Composer with the same level still expanded
 
-### Add intensity level (`Button` / dashed row)
-- Full-width dashed row at the **bottom** of all level rows
-- Label: **+ Add intensity level**
-- Adds the next level in sequence (**Level II** after I, then III, IV, V)
-- **Hidden or disabled** when the category already has **5** levels
-- New level starts **empty**; GM adds tracks via **Add track**
-
 ### Remove track (**×**)
-- Removes the track from **this intensity level** only (not global library delete)
-- Confirmation optional if track exists only in this level
+- **Detaches** the track from **this intensity level only**
+- File **remains** in library/storage until explicitly deleted from Library
+- No storage purge on composer remove; confirmation optional
 
 ---
 
@@ -122,11 +128,10 @@ Opens the **Soundscapes modal** (track picker):
 | Interaction | Result |
 |---|---|
 | Click expand/collapse chevron | Shows or hides track list for that level |
-| Click **Add track** | Opens Soundscapes modal; adds chosen tracks to this level |
-| Click **×** on track | Removes track from this intensity level |
-| Click **Add intensity level** | Appends next level (max 5); empty until tracks added |
-| Click **Save Composition** | Persists level + track assignments globally |
-| Click ← **Library** | Back to Soundscapes tab (unsaved-changes prompt if dirty) |
+| Click **Add track** | Opens Track Picker modal; **Add Selected** adds tracks to this level |
+| Click **×** on track | Detaches track from this intensity level only; file stays in library (**PW-44**) |
+| Click **Save Composition** | Persists composition; success `Toast` "Composition saved"; **stay on Composer** |
+| Click ← **Library** | Back to Soundscapes tab (auto-save — no discard-changes prompt) |
 
 Changes apply globally — no per-scene versioning.
 
@@ -134,32 +139,38 @@ Changes apply globally — no per-scene versioning.
 
 | Rule | Detail |
 |---|---|
-| Starting count | **1** level (**Level I**) on new category |
-| Maximum | **5** levels |
-| Labels | Roman numerals **I** – **V** |
-| Scene screen | Only levels with **≥ 1 track** are selectable; empty levels greyed out |
+| Count | **3** fixed levels — **Level I · II · III** always visible |
+| Labels | Roman numerals **I**, **II**, **III** |
+| Scene screen | Levels with **≥ 1 track** are selectable; **empty levels greyed out** |
 | Playback | Scene screen picks **at random** from tracks in the active level |
+
+### Duplicate tracks (**PW-45**)
+
+| Rule | Detail |
+|---|---|
+| Same level | **Blocked** — a track cannot appear twice on one level |
+| Across levels | **Allowed** — same library track may appear on multiple levels |
 
 ---
 
 ## States
 
 ### New category
-Single **Level I** row; expanded; **Add track** as primary CTA; **Add intensity level** at bottom.
+All three level rows present; **Level I** expanded by default; **Add track** as primary CTA.
 
-### One level, populated
-Level I expanded with track rows and **×** remove buttons.
+### One level populated
+Expanded level with track rows and **×** detach buttons; other levels may be collapsed and empty.
 
-### Multiple levels
-Stack of rows; any mix of expanded/collapsed; **Add intensity level** hidden at 5 levels.
+### Multiple levels populated
+All three rows visible; any mix of expanded/collapsed.
 
-### Maximum levels (5)
-**Add intensity level** control not shown.
+### Auto-save
+Changes persist automatically; navigate away without discard `AlertDialog`.
 
-### Unsaved changes
-Navigate away shows discard-changes `AlertDialog`.
+### Save Composition
+Explicit save shows success `Toast`; user remains on Composer.
 
-### Soundscapes modal open
+### Track Picker modal open
 Composer visible behind modal; ← back restores expanded level context.
 
 ---
@@ -169,8 +180,8 @@ Composer visible behind modal; ← back restores expanded level context.
 | Destination | Trigger |
 |---|---|
 | Library — Soundscapes tab | ← Library |
-| Soundscapes modal (track picker) | **Add track** on any level |
-| Browser file picker | Import path inside Soundscapes modal |
+| Track Picker modal | **Add track** on any level |
+| Browser file picker | **Import** inside Track Picker modal only |
 | Credits | Sidebar → Credits |
 | Trash | Sidebar → Trash |
 
@@ -181,5 +192,15 @@ Composer visible behind modal; ← back restores expanded level context.
 | Screen | Relationship |
 |---|---|
 | [`audio-library-design.md`](audio-library-design.md) | Parent grid; card click opens this composer |
-| [`active-scene-soundscapes-design.md`](active-scene-soundscapes-design.md) | Scene playback uses levels + random track from active level |
-| [`audio-library-soundscapes-modal-design.md`](audio-library-soundscapes-modal-design.md) | Category picker for Scene screen — distinct from composer **track** picker (same modal pattern family) |
+| [`active-scene-soundscapes-design.md`](active-scene-soundscapes-design.md) | Scene playback uses levels + random track from active level; empty levels grey out |
+| [`audio-library-soundscapes-modal-design.md`](audio-library-soundscapes-modal-design.md) | **Category** picker for Scene screen — distinct from composer **track** picker |
+| [`audio-library-soundscape-tracks-modal-design.md`](audio-library-soundscape-tracks-modal-design.md) | **Track** picker launched from **Add track** on a level row |
+
+---
+
+## Open Questions
+
+### CC-12 — Category rename/delete from composer header (P2)
+**Option B recorded:** Rename/delete only from Library grid — no composer-header rename/delete in MVP if **B** is chosen.
+
+**Pending PO answer.**

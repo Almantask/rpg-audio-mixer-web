@@ -5,7 +5,7 @@
 - **Picker mode:** [`audio-library-soundscapes-modal-design.md`](audio-library-soundscapes-modal-design.md) — ADD SOUNDSCAPE
 - **Picker mode:** [`audio-library-fx-modal-design.md`](audio-library-fx-modal-design.md) — Add Sound
 - **Drill-down:** [`soundscape-category-composer-design.md`](soundscape-category-composer-design.md)
-- **Shared shell:** [`home-design.md`](home-design.md)
+- **Shared shell:** [`platform-design.md`](platform-design.md)
 
 ---
 
@@ -19,18 +19,13 @@ This document covers **browse mode** — a full main-content **page**, not a mod
 
 **Sidebar nav item:** Library (active on this screen)
 
-**Routes:**
-- `/library` — defaults to Soundscapes tab
-- `/library/soundscapes` — Soundscapes tab (deep link)
-- `/library/fx` — Sound Effects tab (deep link)
-
-Tab choice persists in the URL so browser back/forward and bookmarks work.
+**Route:** `/library` — single route; tab choice is **client-only state** (no `/library/soundscapes` or `/library/fx` URL segments). Browser back/forward does not restore tab selection.
 
 ---
 
 ## App Shell
 
-Shared FE layout for **Arcanum Audio** (left sidebar navigation). See `home-design.md` for full shell spec.
+Shared FE layout for **Arcanum Audio** (left sidebar navigation). See [`platform-design.md`](platform-design.md) for shell spec.
 
 - **Top bar:** hamburger — "Arcanum Audio"
 - **Sidebar:** Library active (gold bar + tint)
@@ -51,15 +46,14 @@ When Library is active, the **sidebar footer** hosts tab-scoped filter controls 
 │  Library │  — or —                                                      │
 │  (active)│  [ Import FX ] [ Buy More ] [ Free Tracks ]    ← FX tab only│
 │          │  🔍  Search compositions… / Search effects…                  │
-│  Search  │                                                              │
-│  Type    │  ┌──────────────┐ ┌──────────────┐ ┌──────────────┐       │
-│  Sort    │  │ 🌧 Weather   │ │ 🍺 Tavern    │ │ ✨ Ethereal   │       │
-│  (+ FX   │  │ 12 tracks    │ │ 8 tracks     │ │ 6 tracks     │       │
-│  filters │  │ 3 layers     │ │ 2 layers     │ │ 1 layer      │       │
+│  Type    │                                                              │
+│  Sort    │  ┌──────────────┐ ┌──────────────┐ ┌──────────────┐       │
+│  (+ FX   │  │ 🌧 Weather   │ │ 🍺 Tavern    │ │ ✨ Ethereal   │       │
+│  filters │  │ I:3·II:5·III:2│ │ I:2·II:4·III:0│ │ I:1·II:0·III:0│       │
 │  on FX   │  └──────────────┘ └──────────────┘ └──────────────┘       │
 │  tab)    │  ┌ - - - - - - - ┐  ← Soundscapes tab only                 │
-│          │  │ + New         │                                          │
-│          │  │ Composition   │                                          │
+│          │  │ + Add         │                                          │
+│          │  │ Soundscape    │                                          │
 │          │  └ - - - - - - - - ┘                                          │
 │          │  ─────────────────────────────────────────────────────────  │
 │          │  FX mini-player (Sound Effects tab only)                    │
@@ -72,27 +66,27 @@ When Library is active, the **sidebar footer** hosts tab-scoped filter controls 
 
 Two tabs only — same underline pattern as Active Scene:
 
-| Tab | Label | Route suffix |
-|---|---|---|
-| **Soundscapes** | Soundscapes | `/library/soundscapes` |
-| **Sound Effects** | Sound Effects | `/library/fx` |
+| Tab | Label |
+|---|---|
+| **Soundscapes** | Soundscapes |
+| **Sound Effects** | Sound Effects |
 
 - Active tab: gold text + gold underline
 - Inactive tab: muted text, no underline
 - Switching tabs preserves sidebar filter **category** (search text may clear or persist — persist is preferred)
 - Each tab has its own action bar, search placeholder, grid card type, and sidebar filter set
+- Tab state is **not** reflected in the URL
 
 ---
 
 ## Sidebar Filter Panel
 
-Anchored in the **sidebar footer** while Library is active. Controls change with the active tab.
+Anchored in the **sidebar footer** while Library is active. Controls change with the active tab. **No search field in the sidebar** — search lives in main content only.
 
 ### Soundscapes tab
 
 | Control | Component | Description |
 |---|---|---|
-| Search | `Input` | Placeholder: "Search compositions…" |
 | Category Type | `Select` | e.g. "All Types" |
 | Sort Order | `Select` | e.g. "Recently Added" |
 
@@ -100,12 +94,11 @@ Anchored in the **sidebar footer** while Library is active. Controls change with
 
 | Control | Component | Description |
 |---|---|---|
-| Search | `Input` | Placeholder: "Search effects…" |
 | FX Types | `Select` | e.g. "All Types" |
-| Base Intensity | `Slider` | Horizontal slider with speaker icons |
+| Base Intensity | `Slider` | **Filter** — show tracks with base intensity **≤** selected value (inclusive ceiling). Stops: **I**, **II**, **III** only |
 | Sort Order | `Select` | e.g. "Recently Added" |
 
-Filters apply to the active tab's grid in real time (debounced). The main-content search bar shares the same filter state as sidebar search when both are visible.
+Filters apply to the active tab's grid in real time (debounced). The main-content search bar is the **only** text search control.
 
 ---
 
@@ -120,10 +113,10 @@ Filters apply to the active tab's grid in real time (debounced). The main-conten
 | Button | Style | Action |
 |---|---|---|
 | **Buy Composition** | gold + cart | Storefront |
-| **Free Compositions** | outline + external-link | Download free demo pack |
+| **Free Compositions** | outline + external-link | Download variable-size demo pack (progress UI; not a fixed track count) |
 
 ### Search Bar
-- Full-width `Input` below action buttons
+- Full-width `Input` below action buttons — **only** search control on this tab
 - Placeholder: **Search compositions…**
 - Debounced filter on category name
 
@@ -133,14 +126,14 @@ Filters apply to the active tab's grid in real time (debounced). The main-conten
 |---|---|
 | Thumbnail / icon | Thematic artwork |
 | Category name | Gold serif (e.g. *Meteorological*) |
-| Track count | e.g. **12 tracks** |
-| Layer summary | e.g. **12 tracks**; intensity level counts (**I – V**) dimmed when zero |
+| Intensity breakdown | **`I: 3 · II: 5 · III: 2`** on every card — per-level track counts; dim segments when zero |
 | **▶ preview** | Optional small control on card — previews a sample track without leaving the grid |
 | **✏️ edit** | Opens **Category Composer** for this category |
+| **🗑 delete** | Web/tablet — soft-deletes category to Trash **Soundscapes** tab (7-day retention) |
 
 **Not on cards:** checkboxes, Detail (⋯), per-card **+** (browse mode).
 
-**Playing state:** gold border + **● PLAYING** on thumbnail; one preview at a time.
+**Playing state:** gold border + **● PLAYING** on thumbnail; one preview at a time. **Inline card preview only** — no sticky mini player on the Soundscapes tab.
 
 ### Add Soundscape Card
 - Dashed border tile at end of grid: **+ Add Soundscape**
@@ -150,14 +143,19 @@ Filters apply to the active tab's grid in real time (debounced). The main-conten
 
 | Interaction | Result |
 |---|---|
-| Click **▶** on card | Previews sample from category |
+| Click **▶** on card | Previews sample from category (inline) |
 | Click playing card / **▶** again | Stops preview |
 | Click card body or **✏️** | Opens **Category Composer** |
+| Click **🗑** (web/tablet) or **swipe** (touch) | Soft-deletes category → Trash **Soundscapes** tab; recoverable 7 days; no routine confirm dialog |
 | Click **Buy Composition** | Storefront |
-| Click **Free Compositions** | Demo download; new categories appear in grid |
-| Click **Add Soundscape** | Name prompt → Category Composer |
+| Click **Free Compositions** | Demo download with progress; new categories appear in grid when complete |
+| Click **+ Add Soundscape** | Name prompt → Category Composer |
 
 > Remove **"The Archivist's Choice"** section if present — out of scope.
+
+### Category delete — Composer path
+
+From **Category Composer** header: **Delete** soft-deletes the whole category to Trash **Soundscapes** tab (same 7-day retention as grid delete). No routine confirm dialog.
 
 ---
 
@@ -172,7 +170,7 @@ Filters apply to the active tab's grid in real time (debounced). The main-conten
 |---|---|---|
 | **Import FX** | outline + upload | Browser file picker → track added to library |
 | **Buy More** | gold + cart | Storefront |
-| **Free Tracks** | outline + external-link | Demo FX pack download |
+| **Free Tracks** | outline + external-link | Download variable-size demo FX pack (progress UI; not a fixed track count) |
 
 ### Search Bar
 - Placeholder: **Search effects…**
@@ -185,7 +183,7 @@ Filters apply to the active tab's grid in real time (debounced). The main-conten
 | Thumbnail | Square artwork |
 | Title + duration + intensity | e.g. "Thunder Strike" — 0:04 · **II** |
 | Tags | `Badge` chips (IMPACT, COMBAT, UI, MAGIC, etc.) |
-| **✏️ edit** | Opens track edit (name, tags, delete) |
+| **✏️ edit** | **Inline edit** on card — name, tags, delete (no separate edit screen or route) |
 
 **Not on cards:** checkboxes, heart/favourite, ⋮ menu (use ✏️ edit instead).
 
@@ -205,9 +203,24 @@ Preview volume uses each track's saved default with **Cubic ($x^3$) mapping**.
 |---|---|
 | Click card body / thumbnail | Previews track (updates mini player) |
 | Click playing card again | Stops preview |
-| Click **✏️** | Track edit screen |
+| Click **✏️** | Opens inline edit on card (name, tags, delete) |
+| Delete via inline edit | Soft-deletes track → Trash **FX** tab; **audio file retained** 7 days until Trash purge; recoverable |
 | Click **Import FX** | File picker; new track in grid |
-| Click **Buy More** / **Free Tracks** | Storefront / demo download |
+| Click **Buy More** / **Free Tracks** | Storefront / demo download with progress |
+
+---
+
+## Soft-delete & Trash
+
+All Library deletes are **soft-delete** with **7-day retention** on the matching Trash tab ([`trash-design.md`](trash-design.md)):
+
+| Entity | Delete affordance | Trash tab |
+|---|---|---|
+| Soundscape category | 🗑 on card (web/tablet) or swipe (touch); Composer header delete | **Soundscapes** |
+| FX track | Inline edit → delete | **FX** |
+
+- **No routine confirm dialog** on soft-delete (Purge/Empty Trash still confirm)
+- FX soft-delete **retains the audio blob** until Trash purge or restore
 
 ---
 
@@ -217,7 +230,7 @@ Shared UI components; behaviour differs by launch context:
 
 | Aspect | Browse (this page) | Picker (modal from Active Scene) |
 |---|---|---|
-| Container | Full page at `/library/…` | Modal / full-screen sheet |
+| Container | Full page at `/library` | Modal / full-screen sheet |
 | Back control | — | ← Back to Active Scene |
 | Checkboxes | **No** | **Yes** |
 | Footer CTA | **No** Add Selected | **Add Selected (N)** |
@@ -240,13 +253,14 @@ Tab-appropriate cards in responsive grid (2–4 columns by viewport).
 Centred illustration + tab action buttons as primary CTAs.
 
 ### Filtered empty
-"No compositions match your filters" / "No effects match your filters" with clear-filters action.
+**"No compositions match your filters"** / **"No effects match your filters"** with clear-filters action.
 
 ### Loading
 `Skeleton` cards until library data resolves.
 
-### Playback (FX tab)
-One card **● PLAYING**; mini player visible. Leaving Library stops preview.
+### Playback
+- **Soundscapes tab:** one card **● PLAYING**; inline preview only; no mini player
+- **FX tab:** one card **● PLAYING**; mini player visible. Leaving Library stops preview.
 
 ---
 
@@ -254,10 +268,16 @@ One card **● PLAYING**; mini player visible. Leaving Library stops preview.
 
 | Interaction | Result |
 |---|---|
-| Click sidebar **Library** | Navigate to `/library/soundscapes` (or last visited tab) |
-| Switch tab | Update route; swap action bar, filters, grid, mini player visibility |
-| Type in search (main or sidebar) | Filter active tab grid (debounced, synced) |
-| Click other sidebar item | Leave Library; FX preview stops |
+| Click sidebar **Library** | Navigate to `/library` (restores last visited tab in client state) |
+| Switch tab | Swap action bar, filters, grid, mini player visibility (client state only) |
+| Type in main search bar | Filter active tab grid (debounced) |
+| Click other sidebar item | Leave Library; FX preview stops and mini player hides |
+
+---
+
+## Out of scope (P2)
+
+- **Scene filter** — "sounds used in Scene X" is deferred; not in Library MVP browse
 
 ---
 
@@ -265,12 +285,11 @@ One card **● PLAYING**; mini player visible. Leaving Library stops preview.
 
 | Destination | Trigger |
 |---|---|
-| Category Composer | Soundscapes card click or Add Soundscape |
-| Track edit | FX card ✏️ |
+| Category Composer | Soundscapes card click or + Add Soundscape |
+| Trash (restore) | Sidebar → Trash — **Soundscapes** or **FX** tab |
 | Storefront | Buy / Free action buttons |
 | Active Scene pickers | Not from this page — use ADD SOUNDSCAPE / Add Sound |
 | Credits | Sidebar → Credits |
-| Trash | Sidebar → Trash |
 | Home / Campaign / Scenes | Sidebar |
 
 ---
