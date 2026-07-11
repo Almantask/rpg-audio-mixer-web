@@ -1,0 +1,25 @@
+#!/bin/sh
+# Prevent Windows junctions from being committed as expanded copies under ai/ mirrors.
+
+blocked=0
+
+for path in .cursor .opencode/agents .opencode/skills; do
+  mode=$(git ls-files -s -- "$path" | awk '{print $1}')
+  if [ -n "$mode" ] && [ "$mode" != "120000" ]; then
+    echo "pre-commit: $path must be a git symlink (mode 120000), not regular files." >&2
+    blocked=1
+  fi
+done
+
+if git diff --cached --name-status | grep -Eq '^A[[:space:]](\.cursor/|\.opencode/agents/|\.opencode/skills/)'; then
+  git diff --cached --name-status | grep -E '^A[[:space:]](\.cursor/|\.opencode/agents/|\.opencode/skills/)' >&2
+  echo "pre-commit: refuse to commit expanded mirror files under ai/ mirrors." >&2
+  echo "pre-commit: run scripts/fix-ai-git-symlinks.ps1 and edit files only under ai/." >&2
+  blocked=1
+fi
+
+if [ "$blocked" -ne 0 ]; then
+  exit 1
+fi
+
+exit 0
