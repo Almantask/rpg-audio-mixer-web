@@ -1,6 +1,6 @@
 ---
 name: design-to-gherkin
-description: Translates design specs into refined Cucumber feature files through design alignment, a single BDD best-practices review, and applied improvements. Use when the user says /design-to-gherkin, wants Gherkin updated to match designs, or asks to cross-check .feature files against docs/designs.
+description: Translates design specs into refined Cucumber feature files through design alignment, a single BDD best-practices review, and applied improvements. Use when the user wants Gherkin updated to match designs.
 ---
 
 # Design to Gherkin
