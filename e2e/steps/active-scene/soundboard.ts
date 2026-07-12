@@ -119,7 +119,7 @@ Given('the FX library has {string}', async ({ page }, name: string) => {
 })
 
 Given(
-  'the FX library has {string} tagged {string} and {string} tagged {string}',
+  'the FX library has {string} tagged {word} and {string} tagged {word}',
   async ({ page }, first: string, firstTag: string, second: string, secondTag: string) => {
     await mergeE2EData(
       page,
@@ -135,7 +135,7 @@ Given(
 )
 
 Given(
-  'the FX library has type {string} track {string} and type {string} track {string}',
+  'the FX library has type {word} track {string} and type {word} track {string}',
   async ({ page }, type1: string, name1: string, type2: string, name2: string) => {
     await mergeE2EData(
       page,
@@ -151,7 +151,7 @@ Given(
 )
 
 Given(
-  'the FX library has {string} at base intensity {string} and {string} at base intensity {string}',
+  'the FX library has {string} at base intensity {word} and {string} at base intensity {word}',
   async ({ page }, soft: string, softIntensity: string, loud: string, loudIntensity: string) => {
     await mergeE2EData(
       page,
@@ -275,7 +275,7 @@ When('I type {string} in the picker search bar', async ({ page }, query: string)
   await page.locator('[data-fx-picker-search]').fill(query)
 })
 
-When('I set the FX Types filter to {string} in the picker', async ({ page }, fxType: string) => {
+When('I set the FX Types filter to {word} in the picker', async ({ page }, fxType: string) => {
   await page.locator('[data-fx-picker-filter-type]').selectOption(fxType)
 })
 
@@ -518,4 +518,12 @@ Then('{string} previews at its saved default volume', async ({ page }, name: str
       : undefined
   }, name)
   expect(volume).toBeDefined()
+})
+
+Then('{string} is still previewing in the picker', async ({ page }, name: string) => {
+  await expect(page.locator(`[data-fx-picker-preview-state="${name}"]`)).toHaveAttribute('data-state', 'playing')
+})
+
+Given('{string} is visible in the picker grid', async ({ page }, name: string) => {
+  await expect(page.locator(`[data-fx-picker-item="${name}"]`)).toBeVisible()
 })

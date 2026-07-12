@@ -39,7 +39,7 @@ Given('I have imported {string}, {string}, {string}', async ({ page }, a, b, c) 
 })
 
 Given(
-  '{string} is in the FX library with duration {string} and base intensity {string}',
+  '{string} is in the FX library with duration {} and base intensity {}',
   async ({ page }, name: string, duration: string, intensity: string) => {
     await mergeFxTrack(
       page,

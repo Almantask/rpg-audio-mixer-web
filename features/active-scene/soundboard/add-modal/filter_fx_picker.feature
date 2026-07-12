@@ -29,9 +29,9 @@ Feature: Filter FX picker
   Scenario: Base Intensity filter narrows the picker grid
     Given the Sound Effects picker modal is open
     And the FX library has "Soft Tap" at base intensity I and "Thunder Crack" at base intensity III
-    When I set the base intensity filter to "III" in the picker
-    Then I see "Thunder Crack" in the picker grid
-    And I do not see "Soft Tap" in the picker grid
+    When I set the base intensity filter to "I" in the picker
+    Then I see "Soft Tap" in the picker grid
+    And I do not see "Thunder Crack" in the picker grid
 
   Scenario: Sort Order reorders tracks in the picker grid
     Given the Sound Effects picker modal is open

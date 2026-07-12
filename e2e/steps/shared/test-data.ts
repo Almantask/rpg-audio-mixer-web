@@ -425,6 +425,7 @@ export async function linkSceneToSession(
   sessionLabel: string,
   campaignName = DEFAULT_CAMPAIGN_NAME,
 ) {
+  await ensureDefaultSession(page, sessionLabel, campaignName)
   const sessionId = sessionIdForLabel(sessionLabel, campaignName)
   const sceneId = sceneIdForName(sceneName)
   const link = buildSessionSceneLink(sessionId, sceneId)

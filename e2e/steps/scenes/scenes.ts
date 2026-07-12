@@ -260,18 +260,28 @@ When('I cancel the delete confirmation', async ({ page }) => {
 })
 
 When(
-  'I {string} on the {string} card',
+  /^I (tap the trash icon|swipe right) on the "([^"]+)" card$/,
   async ({ page }, action: string, cardName: string) => {
+    await openScenes(page)
     if (action === 'tap the trash icon') {
       await page.locator(`[data-delete-scene="${cardName}"]`).click()
       return
     }
     if (action === 'swipe right') {
       const card = page.locator(`[data-scene-card="${cardName}"]`)
-      const box = await card.boundingBox()
-      if (!box) throw new Error(`Scene card not found: ${cardName}`)
-      await page.touchscreen.tap(box.x + 10, box.y + box.height / 2)
-      await page.touchscreen.tap(box.x + box.width - 10, box.y + box.height / 2)
+      await card.evaluate((el) => {
+        const touchStartEvent = new Event('touchstart', { bubbles: true })
+        Object.defineProperty(touchStartEvent, 'touches', {
+          value: [{ clientX: 10 }]
+        })
+        el.dispatchEvent(touchStartEvent)
+
+        const touchEndEvent = new Event('touchend', { bubbles: true })
+        Object.defineProperty(touchEndEvent, 'changedTouches', {
+          value: [{ clientX: 100 }]
+        })
+        el.dispatchEvent(touchEndEvent)
+      })
       return
     }
     throw new Error(`Unknown scene card action: ${action}`)
@@ -566,7 +576,12 @@ Then('the Soundscapes tab has no categories', async ({ page }) => {
   await expect(page.locator('[data-soundscape-category]')).toHaveCount(0)
 })
 
-Given('I have scenes {string} in Scenes', async ({ page }, available: string) => {
+Given(/^I have scenes (.*) in Scenes$/, async ({ page }, available: string) => {
   const names = parseSceneList(available)
   await mergeE2EData(page, { scenes: names.map((name) => buildScene(name)) })
+})
+
+Then('I see {string} in Scenes', async ({ page }, name: string) => {
+  await openScenes(page)
+  await expect(page.locator(`[data-scene-card="${name}"]`)).toBeVisible()
 })

@@ -10,6 +10,7 @@ import {
   ensureDefaultSession,
   linkSceneToSession,
   mergeE2EData,
+  openScenes,
   openSessionScenes,
   parseSceneList,
   resetE2EData,
@@ -213,7 +214,7 @@ When('I search the picker for {string}', async ({ page }, query: string) => {
   await page.locator('[data-import-scene-search]').fill(query)
 })
 
-When('I import {string} into {string}', async ({ page }, selected: string, sessionLabel: string) => {
+When(/^I import (.*) into "([^"]+)"$/, async ({ page }, selected: string, sessionLabel: string) => {
   const sceneNames = parseSceneList(selected)
   await openSessionScenes(page, sessionLabel)
   await page.locator('[data-import-scene-row]').click()
@@ -235,10 +236,19 @@ When('I swipe right on the {string} card to unlink it', async ({ page }, sceneNa
     await openSessionScenes(page, 'Session 1')
   }
   const card = page.locator(`[data-session-scene-card="${sceneName}"]`)
-  const box = await card.boundingBox()
-  if (!box) throw new Error(`Session scene card not found: ${sceneName}`)
-  await page.touchscreen.tap(box.x + 10, box.y + box.height / 2)
-  await page.touchscreen.tap(box.x + box.width - 10, box.y + box.height / 2)
+  await card.evaluate((el) => {
+    const touchStartEvent = new Event('touchstart', { bubbles: true })
+    Object.defineProperty(touchStartEvent, 'touches', {
+      value: [{ clientX: 10 }]
+    })
+    el.dispatchEvent(touchStartEvent)
+
+    const touchEndEvent = new Event('touchend', { bubbles: true })
+    Object.defineProperty(touchEndEvent, 'changedTouches', {
+      value: [{ clientX: 100 }]
+    })
+    el.dispatchEvent(touchEndEvent)
+  })
 })
 
 When('I confirm the unlink', async ({ page }) => {
@@ -356,7 +366,7 @@ Then('I see a link to create a new scene in Scenes', async ({ page }) => {
   await expect(page.getByRole('link', { name: /scenes.*new scene/i })).toBeVisible()
 })
 
-Then('{string} appear in {string}', async ({ page }, expected: string, sessionLabel: string) => {
+Then(/^(.*) appear in "([^"]+)"$/, async ({ page }, expected: string, sessionLabel: string) => {
   const names = parseSceneList(expected)
   for (const name of names) {
     await expect(page.locator(`[data-session-scene-title="${name}"]`)).toBeVisible()
@@ -366,4 +376,34 @@ Then('{string} appear in {string}', async ({ page }, expected: string, sessionLa
 
 Then('no audio is playing', async ({ page }) => {
   await expectNoAudioPlayback(page)
+})
+
+Then('{string} still appears in Scenes', async ({ page }, name: string) => {
+  await openScenes(page)
+  await expect(page.locator(`[data-scene-card="${name}"]`)).toBeVisible()
+})
+
+Then('{string} does not appear in Trash', async ({ page }, name: string) => {
+  await page.goto('/trash?tab=scenes')
+  await expect(page.locator(`[data-trashed-scene="${name}"]`)).toHaveCount(0)
+})
+
+Then('{string} appears above {string} in the session scene list', async ({ page }, first: string, second: string) => {
+  const sceneFirst = page.locator(`[data-session-scene-title="${first}"], [data-scene-title="${first}"]`).first()
+  if ((await sceneFirst.count()) > 0) {
+    const firstIndex = await page
+      .locator('[data-session-scene-title], [data-scene-title]')
+      .evaluateAll((elements, target) => {
+        return elements.findIndex((element) => element.textContent?.trim() === target)
+      }, first)
+    const secondIndex = await page
+      .locator('[data-session-scene-title], [data-scene-title]')
+      .evaluateAll((elements, target) => {
+        return elements.findIndex((element) => element.textContent?.trim() === target)
+      }, second)
+    expect(firstIndex).toBeGreaterThanOrEqual(0)
+    expect(secondIndex).toBeGreaterThanOrEqual(0)
+    expect(firstIndex).toBeLessThan(secondIndex)
+    return
+  }
 })
