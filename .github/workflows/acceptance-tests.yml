@@ -1,0 +1,50 @@
+name: Acceptance Tests (Manual)
+
+on:
+  workflow_dispatch:
+    inputs:
+      cucumber_tags:
+        description: Cucumber tag expression
+        required: false
+        default: '@iter0 or @iter1'
+      cucumber_features:
+        description: Optional feature file path filter
+        required: false
+        default: ''
+
+jobs:
+  acceptance:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install chromium --with-deps
+
+      - name: Generate BDD tests
+        run: npm run bddgen
+
+      - name: Run acceptance tests
+        run: |
+          if [ -n "${{ inputs.cucumber_features }}" ]; then
+            npx playwright test "${{ inputs.cucumber_features }}"
+          else
+            npx playwright test --grep "${{ inputs.cucumber_tags }}"
+          fi
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
