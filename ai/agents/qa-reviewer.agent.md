@@ -1,7 +1,6 @@
 ---
 name: qa-reviewer
-description: 'Senior QA Code Reviewer. Use when: reviewing Cucumber feature files, Playwright step definitions, and E2E suites against BDD Discovery and BDD Formulation practices.'
-argument-hint: 'Describe the feature or PR to review from a BDD quality perspective.'
+description: 'Senior QA Code Reviewer. Use when reviewing Cucumber feature files, Playwright step definitions, and E2E suites against BDD Discovery and BDD Formulation practices.'
 ---
 
 # QA Code Reviewer

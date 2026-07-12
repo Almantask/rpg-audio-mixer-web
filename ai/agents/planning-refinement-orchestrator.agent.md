@@ -1,9 +1,6 @@
 ---
 name: planning-refinement-orchestrator
 description: 'Strategy orchestrator for planning and refinement workflows on the Arcanum Audio web app.'
-argument-hint: 'Describe the feature to plan or refine'
-tools: [read, search, execute, agent]
-user-invocable: true
 ---
 
 # Planning & Refinement Orchestrator

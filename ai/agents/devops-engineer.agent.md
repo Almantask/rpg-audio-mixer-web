@@ -1,7 +1,6 @@
 ---
 name: devops-engineer
-description: 'Senior DevOps Engineer. Use when: managing pnpm/npm, Vite/Next.js builds, CI/CD (GitHub Actions), deployment, or CI failures.'
-argument-hint: 'Describe the infrastructure task, build issue, or release requirement.'
+description: 'Senior DevOps Engineer. Use when managing pnpm/npm, Vite/Next.js builds, CI/CD (GitHub Actions), deployment, or CI failures.'
 ---
 
 # DevOps Engineer

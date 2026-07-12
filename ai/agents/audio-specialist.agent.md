@@ -1,7 +1,6 @@
 ---
 name: audio-specialist
-description: 'Senior Audio Engineer. Use when: implementing Web Audio logic, managing latency, handling autoplay policy, mixing tracks, optimizing assets, or reviewing browser audio pipelines.'
-argument-hint: 'Describe the audio challenge, playback issue, or feature requirement.'
+description: 'Senior Audio Engineer. Use when implementing Web Audio logic, managing latency, handling autoplay policy, mixing tracks, optimizing assets, or reviewing browser audio pipelines.'
 ---
 
 # Audio Specialist

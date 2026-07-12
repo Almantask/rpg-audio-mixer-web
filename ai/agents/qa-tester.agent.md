@@ -1,7 +1,6 @@
 ---
 name: qa-tester
-description: 'Senior QA Tester. Use when: generating Cucumber Gherkin scenarios, writing Playwright step definitions, executing E2E tests, or reporting failures.'
-argument-hint: 'Describe the feature spec, feature file, or problem to test.'
+description: 'Senior QA Tester. Use when generating Cucumber Gherkin scenarios, writing Playwright step definitions, executing E2E tests, or reporting failures.'
 ---
 
 # QA Tester

@@ -1,7 +1,6 @@
 ---
 name: fe-developer
-description: 'Senior Frontend Engineer. React (Next.js or Vite), Tailwind CSS, shadcn/ui. Use when: implementing UI, client logic, or unit/component tests via TDD; bootstrapping the web app; or fixing frontend test failures.'
-argument-hint: 'Describe the screen, component, hook, or bug to implement or fix.'
+description: 'Senior Frontend Engineer. React (Next.js or Vite), Tailwind CSS, shadcn/ui. Use when implementing UI, client logic, or unit/component tests via TDD; bootstrapping the web app; or fixing frontend test failures.'
 ---
 
 # Frontend Engineer
