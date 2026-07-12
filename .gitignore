@@ -7,8 +7,9 @@
 !/.opencode/skills
 
 # Local AI tool mirrors (not versioned; edit under ai/ instead)
-.agents/**
+.agents/agents/**
 !/.agents/agents
+.agents/skills/**
 !/.agents/skills
 .gemini/
 
