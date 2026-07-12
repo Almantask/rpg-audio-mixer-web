@@ -1,7 +1,7 @@
 export interface PlayingTrackSnapshot {
   id: string
   name: string
-  source: 'soundboard' | 'soundscape' | 'library' | 'picker'
+  source: 'soundboard' | 'soundscape' | 'library' | 'picker' | 'home'
   slotId?: string
   categoryName?: string
 }
@@ -15,7 +15,7 @@ export interface ArcanumAudioVolumes {
 export interface ArcanumAudioState {
   isPlaying: boolean
   trackName?: string
-  source?: 'library' | 'picker' | 'soundboard' | 'soundscape'
+  source?: 'library' | 'picker' | 'soundboard' | 'soundscape' | 'home'
   previewVolume?: number
   playingTracks?: PlayingTrackSnapshot[]
   volumes?: ArcanumAudioVolumes

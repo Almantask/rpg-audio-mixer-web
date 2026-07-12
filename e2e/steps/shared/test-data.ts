@@ -32,7 +32,7 @@ export interface E2EAppData extends AppData {
 export interface PlayingTrackSnapshot {
   id: string
   name: string
-  source: 'soundboard' | 'soundscape' | 'library' | 'picker'
+  source: 'soundboard' | 'soundscape' | 'library' | 'picker' | 'home'
   slotId?: string
   categoryName?: string
 }
@@ -46,7 +46,7 @@ export interface ArcanumAudioVolumes {
 export interface ArcanumAudioState {
   isPlaying: boolean
   trackName?: string
-  source?: 'library' | 'picker' | 'soundboard' | 'soundscape'
+  source?: 'library' | 'picker' | 'soundboard' | 'soundscape' | 'home'
   previewVolume?: number
   playingTracks?: PlayingTrackSnapshot[]
   volumes?: ArcanumAudioVolumes
@@ -72,6 +72,7 @@ export const EMPTY_E2E_APP_DATA: E2EAppData = {
   soundscapeCategories: [],
   soundscapeTracks: [],
   lastActiveSceneBySession: {},
+  playStats: { soundscapeCategories: {}, fxTracks: {} },
 }
 
 export const DEFAULT_SCENE_NAME = 'Untitled Scene'
@@ -367,7 +368,7 @@ export function buildWeatherCategoryWithTracks() {
   const lightRain = buildSoundscapeTrack('Light Rain')
   const drizzle = buildSoundscapeTrack('Drizzle')
   const lightRainAlt = buildSoundscapeTrack('Light Rain Alt')
-  const storm = buildSoundscapeTrack('Storm')
+  const storm = buildSoundscapeTrack('Thunderstorm')
   const category = buildSoundscapeCategory('Weather', {
     trackCount: 4,
     levels: {
@@ -763,6 +764,7 @@ export async function mergeE2EData(page: Page, partial: Partial<E2EAppData>, opt
       soundscapeCategories: [],
       soundscapeTracks: [],
       lastActiveSceneBySession: {},
+      playStats: { soundscapeCategories: {}, fxTracks: {} },
     }
 
     const raw = localStorage.getItem('arcanum-audio-data')
@@ -803,6 +805,16 @@ export async function mergeE2EData(page: Page, partial: Partial<E2EAppData>, opt
       lastActiveSceneBySession: {
         ...current.lastActiveSceneBySession,
         ...next.lastActiveSceneBySession,
+      },
+      playStats: {
+        soundscapeCategories: {
+          ...(current.playStats?.soundscapeCategories ?? {}),
+          ...(next.playStats?.soundscapeCategories ?? {}),
+        },
+        fxTracks: {
+          ...(current.playStats?.fxTracks ?? {}),
+          ...(next.playStats?.fxTracks ?? {}),
+        },
       },
     }
 
@@ -971,6 +983,43 @@ export function tableCellValues(dataTable: { rows: () => string[][] }): string[]
 
 export function tableRows(dataTable: { rows: () => string[][] }): string[][] {
   return dataTable.rows().map((row) => row.map((cell) => cell?.trim() ?? ''))
+}
+
+export function buildOminousChantCategory(defaultTrackId?: string) {
+  const track = buildSoundscapeTrack('Ominous Chant Loop')
+  const category = buildSoundscapeCategory('Ominous Chant', {
+    trackCount: 1,
+    defaultTrackId: defaultTrackId ?? track.id,
+    levels: { I: [], II: [track.id], III: [] },
+  })
+  return { category, tracks: [track] }
+}
+
+export async function openHomeScreen(page: Page) {
+  await page.goto('/')
+  await page.waitForLoadState('networkidle')
+  const errorOverlay = page.locator('[data-home-error-overlay]')
+  if ((await errorOverlay.count()) > 0) {
+    await expect(errorOverlay).toBeVisible()
+    return
+  }
+  await expect(page.locator('[data-screen="Home screen"]')).toBeVisible()
+}
+
+export async function seedHomeTopStats(page: Page) {
+  const campaign = buildCampaign('Shadows of the Underdark')
+  const { category, tracks } = buildOminousChantCategory()
+  const dragonRoar = buildFxTrack('Dragon Roar')
+  await mergeE2EData(page, {
+    campaigns: [campaign],
+    soundscapeCategories: [category],
+    soundscapeTracks: tracks,
+    fxTracks: [dragonRoar],
+    playStats: {
+      soundscapeCategories: { [category.id]: 42 },
+      fxTracks: { [dragonRoar.id]: 128 },
+    },
+  })
 }
 
 export { parseRelativeDate } from '../../../src/lib/dateFormat'

@@ -39,6 +39,7 @@ export interface SoundscapeCategory {
   name: string
   trackCount: number
   deletedAt?: string
+  defaultTrackId?: string
   levels?: {
     I: string[]
     II: string[]

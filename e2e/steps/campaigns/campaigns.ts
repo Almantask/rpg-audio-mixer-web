@@ -176,6 +176,10 @@ When('I tap {string}', async ({ page }, label: string) => {
     await page.locator('[data-stop-all]').click()
     return
   }
+  if (label === 'Play Scene') {
+    await page.locator('[data-play-scene]').click()
+    return
+  }
   await page.getByRole('button', { name: label, exact: true }).click()
 })
 

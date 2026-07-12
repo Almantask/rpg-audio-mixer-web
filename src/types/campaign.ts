@@ -31,6 +31,11 @@ export interface Session {
   deletedAt?: string
 }
 
+export interface PlayStats {
+  soundscapeCategories: Record<string, number>
+  fxTracks: Record<string, number>
+}
+
 export interface AppData {
   campaigns: Campaign[]
   sessions: Session[]
@@ -47,6 +52,7 @@ export interface AppData {
   soundscapeTracks: SoundscapeTrack[]
   /** sessionId → sceneId of most recently played scene */
   lastActiveSceneBySession: Record<string, string>
+  playStats: PlayStats
 }
 
 export type TrashTab = 'campaigns' | 'sessions' | 'scenes' | 'soundscapes' | 'fx'
@@ -58,10 +64,17 @@ export interface E2EControls {
   fxLibraryState: 'ready' | 'loading' | 'error'
   soundscapeLibraryState?: 'ready' | 'loading' | 'error'
   sessionScenesListState: Record<string, 'ready' | 'loading' | 'error'>
+  homeScreenState?: 'ready' | 'loading' | 'error' | 'offline'
+  homeHasCachedData?: boolean
   createSessionFails: boolean
   saveSessionFails: boolean
   invalidAudioImport?: boolean
   sessionLocked?: boolean
+}
+
+export const EMPTY_PLAY_STATS: PlayStats = {
+  soundscapeCategories: {},
+  fxTracks: {},
 }
 
 export const EMPTY_APP_DATA: AppData = {
@@ -78,6 +91,7 @@ export const EMPTY_APP_DATA: AppData = {
   soundscapeCategories: [],
   soundscapeTracks: [],
   lastActiveSceneBySession: {},
+  playStats: { ...EMPTY_PLAY_STATS },
 }
 
 

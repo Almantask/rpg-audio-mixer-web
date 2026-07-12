@@ -33,6 +33,25 @@ export function pickRandomTrackId(pool: string[], excludeId?: string): string | 
   return candidates[Math.floor(Math.random() * candidates.length)]
 }
 
+export type PlaySceneSlotAction = 'skip-playing' | 'skip-empty' | 'resume' | 'start'
+
+export function resolvePlaySceneSlotAction(input: {
+  playing: boolean
+  paused: boolean
+  trackIds: string[]
+}): PlaySceneSlotAction {
+  if (input.playing && !input.paused) {
+    return 'skip-playing'
+  }
+  if (input.trackIds.length === 0) {
+    return 'skip-empty'
+  }
+  if (input.paused) {
+    return 'resume'
+  }
+  return 'start'
+}
+
 export interface SoundscapeTrackRef {
   id: string
   name: string
@@ -125,6 +144,7 @@ export class SceneAudioManager {
   private soundscapeMasterVolume = 100
   private soundscapeMuted = false
   private disposed = false
+  private currentSceneId: string | null = null
 
   constructor() {
     this.ctx = getAudioContext()
@@ -401,7 +421,74 @@ export class SceneAudioManager {
     slot.config.currentTrackId = nextTrackId
     if (slot.playing && !slot.paused) {
       await this.crossfadeSoundscapeToTrack(slot, nextTrackId)
+    } else {
+      this.enforceSoundscapeConcurrency(slotId)
+      await this.startSoundscapeTrack(slot, nextTrackId, false)
     }
+    this.notify()
+  }
+
+  async playScene(): Promise<void> {
+    for (const [slotId, slot] of this.soundscapeSlots) {
+      const action = resolvePlaySceneSlotAction({
+        playing: slot.playing,
+        paused: slot.paused,
+        trackIds: slot.config.trackIds,
+      })
+      if (action === 'skip-playing' || action === 'skip-empty') {
+        continue
+      }
+      if (action === 'resume') {
+        await this.playSoundscape(slotId)
+        continue
+      }
+      if (!slot.config.currentTrackId) {
+        const trackId = pickRandomTrackId(slot.config.trackIds)
+        if (!trackId) {
+          continue
+        }
+        slot.config.currentTrackId = trackId
+      }
+      await this.playSoundscape(slotId)
+    }
+  }
+
+  async switchScene(nextSceneId: string): Promise<void> {
+    if (this.currentSceneId === nextSceneId) {
+      return
+    }
+    const now = this.ctx.currentTime
+    const fadeEnd = now + CROSSFADE_SECONDS
+
+    this.soundboardMasterBus.gain.cancelScheduledValues(now)
+    this.soundboardMasterBus.gain.setValueAtTime(this.soundboardMasterBus.gain.value, now)
+    this.soundboardMasterBus.gain.linearRampToValueAtTime(0, fadeEnd)
+
+    this.soundscapeMasterBus.gain.cancelScheduledValues(now)
+    this.soundscapeMasterBus.gain.setValueAtTime(this.soundscapeMasterBus.gain.value, now)
+    this.soundscapeMasterBus.gain.linearRampToValueAtTime(0, fadeEnd)
+
+    await new Promise<void>((resolve) => {
+      window.setTimeout(resolve, CROSSFADE_SECONDS * 1000)
+    })
+
+    for (const slotId of [...this.soundscapeSlots.keys()]) {
+      this.removeSoundscapeSlot(slotId)
+    }
+    for (const instance of [...this.soundboardInstances]) {
+      try {
+        instance.source.stop()
+      } catch {
+        // ignore
+      }
+      this.removeSoundboardInstance(instance.instanceId, false)
+    }
+
+    this.soundboardMasterBus.gain.cancelScheduledValues(this.ctx.currentTime)
+    this.soundscapeMasterBus.gain.cancelScheduledValues(this.ctx.currentTime)
+    this.applySoundboardMasterVolume()
+    this.applySoundscapeMasterVolume()
+    this.currentSceneId = nextSceneId
     this.notify()
   }
 
@@ -803,4 +890,13 @@ export function buildSoundscapeTrackPool(
   intensity: SoundscapeIntensity,
 ): string[] {
   return categoryLevels?.[intensity] ?? []
+}
+
+let sharedSceneAudioManager: SceneAudioManager | null = null
+
+export function getSharedSceneAudioManager(): SceneAudioManager {
+  if (!sharedSceneAudioManager) {
+    sharedSceneAudioManager = new SceneAudioManager()
+  }
+  return sharedSceneAudioManager
 }

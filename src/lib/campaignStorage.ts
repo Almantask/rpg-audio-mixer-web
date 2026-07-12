@@ -31,6 +31,7 @@ export function loadAppData(): AppData {
       soundscapeCategories: parsed.soundscapeCategories ?? [],
       soundscapeTracks: parsed.soundscapeTracks ?? [],
       lastActiveSceneBySession: parsed.lastActiveSceneBySession ?? {},
+      playStats: parsed.playStats ?? { soundscapeCategories: {}, fxTracks: {} },
     }
   } catch {
     return { ...EMPTY_APP_DATA }

@@ -20,6 +20,7 @@ import { useCampaignData } from '@/context/CampaignDataContext'
 import {
   SceneAudioManager,
   buildSoundscapeTrackPool,
+  getSharedSceneAudioManager,
   type ScenePlaybackState,
   type SoundscapeTrackRef,
 } from '@/lib/audio/sceneAudioManager'
@@ -31,6 +32,7 @@ interface SceneAudioContextValue {
   playSoundscape: (slotId: string) => Promise<void>
   pauseSoundscape: (slotId: string) => void
   rollSoundscapeRandom: (slotId: string) => Promise<void>
+  playScene: () => Promise<void>
   stopAll: () => void
   setSoundboardMasterVolume: (volume: number) => void
   setSoundscapeMasterVolume: (volume: number) => void
@@ -41,6 +43,7 @@ interface SceneAudioContextValue {
   hasLoadedSoundscapeTrack: (slotId: string) => boolean
   isSoundboardPlaying: (fxTrackId: string) => boolean
   getSoundscapeTileState: (slotId: string) => ScenePlaybackState['soundscapes'][string] | undefined
+  setFocusedSoundscapeSlot: (slotId: string) => void
 }
 
 const SceneAudioContext = createContext<SceneAudioContextValue | null>(null)
@@ -72,22 +75,21 @@ function tracksForCategory(
   return map
 }
 
+let previousActiveSceneId: string | null = null
+
 export function SceneAudioProvider({ sceneId, children }: SceneAudioProviderProps) {
   const {
     data,
     updateSoundboardSettings,
     updateSoundscapeSettings,
     updateSoundscapeSlot,
+    recordSoundscapePlay,
+    recordFxPlay,
   } = useCampaignData()
 
-  const managerRef = useRef<SceneAudioManager | null>(null)
-  const [playback, setPlayback] = useState<ScenePlaybackState>(() => ({
-    soundboard: {},
-    soundscapes: {},
-    soundboardMasterVolume: 85,
-    soundscapeMasterVolume: 100,
-    soundscapeMuted: false,
-  }))
+  const managerRef = useRef<SceneAudioManager>(getSharedSceneAudioManager())
+  const focusedSlotIdRef = useRef<string | null>(null)
+  const [playback, setPlayback] = useState<ScenePlaybackState>(() => managerRef.current.getState())
 
   const soundboardSettings = useMemo(
     () => data.sceneSoundboardSettings.find((item) => item.sceneId === sceneId),
@@ -112,9 +114,16 @@ export function SceneAudioProvider({ sceneId, children }: SceneAudioProviderProp
     [data.sceneSoundscapeSlots, sceneId],
   )
 
+  const slotCategoryMap = useMemo(() => {
+    const map = new Map<string, string>()
+    for (const slot of slots) {
+      map.set(slot.id, slot.categoryId)
+    }
+    return map
+  }, [slots])
+
   useEffect(() => {
-    const manager = new SceneAudioManager()
-    managerRef.current = manager
+    const manager = managerRef.current
     let rafId: number | undefined
     let pendingState: ScenePlaybackState | null = null
     const flushPlayback = () => {
@@ -130,13 +139,12 @@ export function SceneAudioProvider({ sceneId, children }: SceneAudioProviderProp
         rafId = requestAnimationFrame(flushPlayback)
       }
     })
+
     return () => {
       if (rafId !== undefined) {
         cancelAnimationFrame(rafId)
       }
       unsubscribe()
-      manager.dispose()
-      managerRef.current = null
     }
   }, [sceneId])
 
@@ -151,34 +159,90 @@ export function SceneAudioProvider({ sceneId, children }: SceneAudioProviderProp
 
   useEffect(() => {
     const manager = managerRef.current
-    if (!manager) {
+    let cancelled = false
+
+    void (async () => {
+      const fromSceneId = previousActiveSceneId
+      const switchingScene = fromSceneId !== null && fromSceneId !== sceneId
+      if (switchingScene) {
+        await manager.switchScene(sceneId)
+        if (cancelled) {
+          return
+        }
+      }
+
+      const slotIds = new Set(slots.map((slot) => slot.id))
+      for (const slot of slots) {
+        const category = data.soundscapeCategories.find((item) => item.id === slot.categoryId)
+        const intensity = slot.intensity ?? 'II'
+        const trackIds = buildSoundscapeTrackPool(category?.levels, intensity)
+        manager.configureSoundscapeSlot({
+          slotId: slot.id,
+          categoryId: slot.categoryId,
+          categoryName: category?.name ?? slot.categoryId,
+          intensity,
+          volume: slot.volume ?? 100,
+          currentTrackId: slot.currentTrackId,
+          trackIds,
+          tracksById: tracksForCategory(category, data.soundscapeTracks ?? []),
+        })
+      }
+
+      const configuredIds = Object.keys(manager.getState().soundscapes)
+      for (const configuredId of configuredIds) {
+        if (!slotIds.has(configuredId)) {
+          manager.removeSoundscapeSlot(configuredId)
+        }
+      }
+
+      if (switchingScene && slots.length > 0) {
+        await manager.playScene()
+        if (cancelled) {
+          return
+        }
+      }
+
+      previousActiveSceneId = sceneId
+    })()
+
+    return () => {
+      cancelled = true
+    }
+  }, [sceneId, data.soundscapeCategories, data.soundscapeTracks, slots])
+
+  useEffect(() => {
+    if (!('mediaSession' in navigator)) {
       return
     }
 
-    const slotIds = new Set(slots.map((slot) => slot.id))
-    for (const slot of slots) {
-      const category = data.soundscapeCategories.find((item) => item.id === slot.categoryId)
-      const intensity = slot.intensity ?? 'II'
-      const trackIds = buildSoundscapeTrackPool(category?.levels, intensity)
-      manager.configureSoundscapeSlot({
-        slotId: slot.id,
-        categoryId: slot.categoryId,
-        categoryName: category?.name ?? slot.categoryId,
-        intensity,
-        volume: slot.volume ?? 100,
-        currentTrackId: slot.currentTrackId,
-        trackIds,
-        tracksById: tracksForCategory(category, data.soundscapeTracks ?? []),
-      })
-    }
-
-    const configuredIds = Object.keys(manager.getState().soundscapes)
-    for (const configuredId of configuredIds) {
-      if (!slotIds.has(configuredId)) {
-        manager.removeSoundscapeSlot(configuredId)
+    const handleNextTrack = () => {
+      const manager = managerRef.current
+      const state = manager.getState()
+      const focusedSlotId = focusedSlotIdRef.current
+      const focusedPlaying =
+        focusedSlotId && state.soundscapes[focusedSlotId]?.playing
+          ? focusedSlotId
+          : undefined
+      const firstPlaying = Object.values(state.soundscapes).find((tile) => tile.playing)?.slotId
+      const slotId = focusedPlaying ?? firstPlaying
+      if (slotId) {
+        void manager.rollSoundscapeRandom(slotId)
       }
     }
-  }, [data.soundscapeCategories, data.soundscapeTracks, slots])
+
+    navigator.mediaSession.setActionHandler('nexttrack', handleNextTrack)
+    if (typeof window !== 'undefined') {
+      window.__ARCANUM_MEDIA_NEXT__ = handleNextTrack
+    }
+    return () => {
+      navigator.mediaSession.setActionHandler('nexttrack', null)
+      delete window.__ARCANUM_MEDIA_NEXT__
+    }
+  }, [])
+
+  const setFocusedSoundscapeSlot = useCallback((slotId: string) => {
+    focusedSlotIdRef.current = slotId
+  }, [])
 
   const setSoundboardMasterVolume = useCallback(
     (volume: number) => {
@@ -223,9 +287,17 @@ export function SceneAudioProvider({ sceneId, children }: SceneAudioProviderProp
     [data.soundscapeCategories, slots, updateSoundscapeSlot],
   )
 
-  const triggerSoundboard = useCallback(async (entry: SceneSoundboardEntry & { track: FxTrack }) => {
-    await managerRef.current?.triggerSoundboard(entry.fxTrackId, entry.track.audioUrl, entry.track.name)
-  }, [])
+  const triggerSoundboard = useCallback(
+    async (entry: SceneSoundboardEntry & { track: FxTrack }) => {
+      await managerRef.current?.triggerSoundboard(
+        entry.fxTrackId,
+        entry.track.audioUrl,
+        entry.track.name,
+      )
+      recordFxPlay(entry.fxTrackId)
+    },
+    [recordFxPlay],
+  )
 
   const stopSoundboardFx = useCallback((fxTrackId: string) => {
     managerRef.current?.stopSoundboardFx(fxTrackId)
@@ -241,19 +313,55 @@ export function SceneAudioProvider({ sceneId, children }: SceneAudioProviderProp
     [updateSoundscapeSlot],
   )
 
-  const playSoundscape = useCallback(async (slotId: string) => {
-    await managerRef.current?.playSoundscape(slotId)
-    persistCurrentTrack(slotId)
-  }, [persistCurrentTrack])
+  const maybeRecordSoundscapePlay = useCallback(
+    (slotId: string, wasPlaying: boolean) => {
+      const nowPlaying = managerRef.current?.getState().soundscapes[slotId]?.playing ?? false
+      if (!wasPlaying && nowPlaying) {
+        const categoryId = slotCategoryMap.get(slotId)
+        if (categoryId) {
+          recordSoundscapePlay(categoryId)
+        }
+      }
+    },
+    [recordSoundscapePlay, slotCategoryMap],
+  )
+
+  const playSoundscape = useCallback(
+    async (slotId: string) => {
+      const wasPlaying = managerRef.current?.getState().soundscapes[slotId]?.playing ?? false
+      await managerRef.current?.playSoundscape(slotId)
+      persistCurrentTrack(slotId)
+      maybeRecordSoundscapePlay(slotId, wasPlaying)
+    },
+    [maybeRecordSoundscapePlay, persistCurrentTrack],
+  )
 
   const pauseSoundscape = useCallback((slotId: string) => {
     managerRef.current?.pauseSoundscape(slotId)
   }, [])
 
-  const rollSoundscapeRandom = useCallback(async (slotId: string) => {
-    await managerRef.current?.rollSoundscapeRandom(slotId)
-    persistCurrentTrack(slotId)
-  }, [persistCurrentTrack])
+  const rollSoundscapeRandom = useCallback(
+    async (slotId: string) => {
+      setFocusedSoundscapeSlot(slotId)
+      const wasPlaying = managerRef.current?.getState().soundscapes[slotId]?.playing ?? false
+      await managerRef.current?.rollSoundscapeRandom(slotId)
+      persistCurrentTrack(slotId)
+      maybeRecordSoundscapePlay(slotId, wasPlaying)
+    },
+    [maybeRecordSoundscapePlay, persistCurrentTrack, setFocusedSoundscapeSlot],
+  )
+
+  const playScene = useCallback(async () => {
+    const manager = managerRef.current
+    const prior = new Map(
+      slots.map((slot) => [slot.id, manager.getState().soundscapes[slot.id]?.playing ?? false]),
+    )
+    await manager.playScene()
+    for (const slot of slots) {
+      persistCurrentTrack(slot.id)
+      maybeRecordSoundscapePlay(slot.id, prior.get(slot.id) ?? false)
+    }
+  }, [maybeRecordSoundscapePlay, persistCurrentTrack, slots])
 
   const stopAll = useCallback(() => {
     managerRef.current?.stopAll()
@@ -285,6 +393,7 @@ export function SceneAudioProvider({ sceneId, children }: SceneAudioProviderProp
       playSoundscape,
       pauseSoundscape,
       rollSoundscapeRandom,
+      playScene,
       stopAll,
       setSoundboardMasterVolume,
       setSoundscapeMasterVolume,
@@ -295,6 +404,7 @@ export function SceneAudioProvider({ sceneId, children }: SceneAudioProviderProp
       hasLoadedSoundscapeTrack,
       isSoundboardPlaying,
       getSoundscapeTileState,
+      setFocusedSoundscapeSlot,
     }),
     [
       playback,
@@ -303,6 +413,7 @@ export function SceneAudioProvider({ sceneId, children }: SceneAudioProviderProp
       playSoundscape,
       pauseSoundscape,
       rollSoundscapeRandom,
+      playScene,
       stopAll,
       setSoundboardMasterVolume,
       setSoundscapeMasterVolume,
@@ -313,6 +424,7 @@ export function SceneAudioProvider({ sceneId, children }: SceneAudioProviderProp
       hasLoadedSoundscapeTrack,
       isSoundboardPlaying,
       getSoundscapeTileState,
+      setFocusedSoundscapeSlot,
     ],
   )
 
@@ -328,3 +440,9 @@ export function useSceneAudio() {
 }
 
 export type { SceneSoundboardSettings, SceneSoundscapeSettings, SceneSoundscapeSlot }
+
+declare global {
+  interface Window {
+    __ARCANUM_MEDIA_NEXT__?: () => void
+  }
+}

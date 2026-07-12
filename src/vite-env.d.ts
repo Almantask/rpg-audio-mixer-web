@@ -3,7 +3,7 @@
 interface PlayingTrackSnapshot {
   id: string
   name: string
-  source: 'soundboard' | 'soundscape' | 'library' | 'picker'
+  source: 'soundboard' | 'soundscape' | 'library' | 'picker' | 'home'
   slotId?: string
   categoryName?: string
 }
@@ -17,7 +17,7 @@ interface ArcanumAudioVolumes {
 interface ArcanumAudioState {
   isPlaying: boolean
   trackName?: string
-  source?: 'library' | 'picker' | 'soundboard' | 'soundscape'
+  source?: 'library' | 'picker' | 'soundboard' | 'soundscape' | 'home'
   previewVolume?: number
   playingTracks?: PlayingTrackSnapshot[]
   volumes?: ArcanumAudioVolumes
@@ -26,6 +26,7 @@ interface ArcanumAudioState {
 declare global {
   interface Window {
     __ARCANUM_AUDIO_STATE__?: ArcanumAudioState
+    __ARCANUM_MEDIA_NEXT__?: () => void
   }
 }
 

@@ -32,12 +32,21 @@ function SoundscapeMasterControls() {
     playback,
     setSoundscapeMasterVolume,
     setSoundscapeMuted,
+    playScene,
   } = useSceneAudio()
 
   return (
     <Card className="mb-6 border-white/10">
       <CardContent className="flex flex-col gap-4 p-4 md:flex-row md:items-center">
-        <Button type="button" variant="outline" disabled aria-label="Play Scene">
+        <Button
+          type="button"
+          variant="outline"
+          aria-label="Play Scene"
+          data-play-scene
+          onClick={() => {
+            void playScene()
+          }}
+        >
           Play Scene
         </Button>
         <Button
@@ -86,6 +95,7 @@ function SoundscapeCategoryCard({
     updateSlotVolume,
     updateSlotIntensity,
     canPlaySoundscape,
+    setFocusedSoundscapeSlot,
   } = useSceneAudio()
 
   const tile = getSoundscapeTileState(slot.id)
@@ -153,6 +163,7 @@ function SoundscapeCategoryCard({
               data-soundscape-d20={categoryName}
               disabled={d20Disabled}
               onClick={() => {
+                setFocusedSoundscapeSlot(slot.id)
                 void rollSoundscapeRandom(slot.id)
               }}
             >
@@ -178,6 +189,7 @@ function SoundscapeCategoryCard({
                 data-soundscape-play={categoryName}
                 disabled={playDisabled}
                 onClick={() => {
+                  setFocusedSoundscapeSlot(slot.id)
                   void playSoundscape(slot.id)
                 }}
               >

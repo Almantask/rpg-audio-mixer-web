@@ -1,10 +1,23 @@
-import { useState, type ReactNode } from 'react'
-import { Outlet } from 'react-router-dom'
+import { useState, type ReactNode, useEffect } from 'react'
+import { Outlet, useLocation } from 'react-router-dom'
 import { Sidebar, TopBar } from './Sidebar'
 import { cn } from '@/lib/utils'
+import { homePreview } from '@/lib/homePreview'
 
 export function AppShell() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const location = useLocation()
+
+  useEffect(() => {
+    if (location.pathname !== '/') {
+      homePreview.stop()
+    }
+  }, [location.pathname])
+
+  const handleNavigate = () => {
+    homePreview.stop()
+    setSidebarOpen(false)
+  }
 
   return (
     <div className="flex min-h-screen bg-charcoal">
@@ -17,7 +30,7 @@ export function AppShell() {
         />
       ) : null}
 
-      <Sidebar open={sidebarOpen} onNavigate={() => setSidebarOpen(false)} />
+      <Sidebar open={sidebarOpen} onNavigate={handleNavigate} />
 
       <div className="flex min-h-screen flex-1 flex-col">
         <TopBar onMenuToggle={() => setSidebarOpen((open) => !open)} />

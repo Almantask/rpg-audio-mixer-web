@@ -73,6 +73,7 @@ import {
 } from '@/lib/sceneStorage'
 
 import { formatTodayIso } from '@/lib/dateFormat'
+import { getTopFxTrack, getTopSoundscapeCategory, incrementFxPlayCount, incrementSoundscapePlayCount } from '@/lib/playStats'
 
 
 
@@ -280,6 +281,14 @@ interface CampaignDataContextValue {
   resetAll: () => void
 
   setE2EControls: (controls: Partial<E2EControls>) => void
+
+  recordSoundscapePlay: (categoryId: string) => void
+
+  recordFxPlay: (fxTrackId: string) => void
+
+  getTopSoundscapeStat: () => ReturnType<typeof getTopSoundscapeCategory>
+
+  getTopFxStat: () => ReturnType<typeof getTopFxTrack>
 
 }
 
@@ -2056,6 +2065,8 @@ export function CampaignDataProvider({ children }: { children: ReactNode }) {
 
           partial.lastActiveSceneBySession ?? current.lastActiveSceneBySession,
 
+        playStats: partial.playStats ?? current.playStats,
+
       }
 
       next.sessions = syncSessionSceneCounts(next.sessions, next.sessionSceneLinks)
@@ -2097,6 +2108,66 @@ export function CampaignDataProvider({ children }: { children: ReactNode }) {
     })
 
   }, [])
+
+
+
+  const recordSoundscapePlay = useCallback(
+
+    (categoryId: string) => {
+
+      updateData((current) => ({
+
+        ...current,
+
+        playStats: incrementSoundscapePlayCount(current.playStats, categoryId),
+
+      }))
+
+    },
+
+    [updateData],
+
+  )
+
+
+
+  const recordFxPlay = useCallback(
+
+    (fxTrackId: string) => {
+
+      updateData((current) => ({
+
+        ...current,
+
+        playStats: incrementFxPlayCount(current.playStats, fxTrackId),
+
+      }))
+
+    },
+
+    [updateData],
+
+  )
+
+
+
+  const getTopSoundscapeStat = useCallback(
+
+    () => getTopSoundscapeCategory(data.playStats, data.soundscapeCategories),
+
+    [data.playStats, data.soundscapeCategories],
+
+  )
+
+
+
+  const getTopFxStat = useCallback(
+
+    () => getTopFxTrack(data.playStats, data.fxTracks),
+
+    [data.playStats, data.fxTracks],
+
+  )
 
 
 
@@ -2242,6 +2313,14 @@ export function CampaignDataProvider({ children }: { children: ReactNode }) {
 
       setE2EControls,
 
+      recordSoundscapePlay,
+
+      recordFxPlay,
+
+      getTopSoundscapeStat,
+
+      getTopFxStat,
+
     }),
 
     [
@@ -2359,6 +2438,14 @@ export function CampaignDataProvider({ children }: { children: ReactNode }) {
       resetAll,
 
       setE2EControls,
+
+      recordSoundscapePlay,
+
+      recordFxPlay,
+
+      getTopSoundscapeStat,
+
+      getTopFxStat,
 
     ],
 

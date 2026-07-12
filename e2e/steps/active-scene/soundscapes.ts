@@ -502,6 +502,16 @@ Given('the {string} category has a loaded track {string}', async ({ page }, _cat
 Given(
   'the {string} category was playing {string} and is now paused',
   async ({ page }, categoryName: string, trackName: string) => {
+    if (page.url().includes('/active')) {
+      await tapCategoryPlay(page, categoryName)
+      await expect(page.locator(`[data-soundscape-playback-state="${categoryName}"]`)).toHaveAttribute(
+        'data-state',
+        'playing',
+      )
+      await tapCategoryPause(page, categoryName)
+      return
+    }
+
     const sceneId = sceneIdForName(DEFAULT_SCENE_NAME)
     const { category, tracks } = buildWeatherCategoryWithTracks()
     await mergeE2EData(
@@ -979,9 +989,9 @@ Then('a track from Intensity Level {word} plays \\(not from Intensity Level {wor
     .toBe(true)
   const title = await page.locator('[data-soundscape-track-title="Weather"]').textContent()
   if (intensityLabelToLevel(level) === 'II') {
-    expect(title).toContain('Storm')
+    expect(title).toContain('Thunderstorm')
   } else {
-    expect(title).not.toContain('Storm')
+    expect(title).not.toContain('Thunderstorm')
   }
 })
 
@@ -994,7 +1004,7 @@ Then(
     await expect
       .poll(async () => {
         const title = await page.locator('[data-soundscape-track-title="Weather"]').textContent()
-        return intensityLabelToLevel(newLevel) === 'II' ? title?.includes('Storm') : true
+        return intensityLabelToLevel(newLevel) === 'II' ? title?.includes('Thunderstorm') : true
       }, { timeout: 10_000 })
       .toBe(true)
   },
@@ -1168,5 +1178,167 @@ Then('reordering is not available', async ({ page }) => {
 
 Then('a sample track from {string} begins previewing', async ({ page }, name: string) => {
   await expect(page.locator(`[data-sc-picker-preview-state="${name}"]`)).toHaveAttribute('data-state', 'playing')
+})
+
+Given(
+  'the {string} category has tracks at Intensity Level {word}: {string}, {string}',
+  async ({ page }, categoryName: string, level: string, firstTrack: string, secondTrack: string) => {
+    const sceneId = sceneIdForName(DEFAULT_SCENE_NAME)
+    const { category, tracks } = buildSoundscapeCategoryWithNamedTracks(categoryName, {
+      [intensityLabelToLevel(level)]: [firstTrack, secondTrack],
+    })
+    await mergeE2EData(
+      page,
+      {
+        scenes: [buildScene(DEFAULT_SCENE_NAME)],
+        soundscapeCategories: [category],
+        soundscapeTracks: tracks,
+        sceneSoundscapeSlots: [
+          buildSceneSoundscapeSlotWithOptions(sceneId, category.id, 0, {
+            intensity: intensityLabelToLevel(level),
+          }),
+        ],
+      },
+      { navigateHome: false },
+    )
+    await openActiveScene(page, DEFAULT_SCENE_NAME, 'Soundscapes')
+  },
+)
+
+Given('Intensity Level {word} is selected on {string}', async ({ page }, level: string, categoryName: string) => {
+  const button = page
+    .locator(`[data-soundscape-category="${categoryName}"]`)
+    .getByRole('button', { name: intensityLabelToLevel(level), exact: true })
+  if ((await button.getAttribute('aria-pressed')) !== 'true') {
+    await button.click()
+  }
+})
+
+When('I tap the d20 button on {string}', async ({ page }, categoryName: string) => {
+  await page.locator(`[data-soundscape-d20="${categoryName}"]`).click()
+})
+
+Then('one of {string}, {string} begins playing', async ({ page }, firstTrack: string, secondTrack: string) => {
+  await expect
+    .poll(async () => {
+      const title = await page.locator('[data-soundscape-track-title="Weather"]').textContent()
+      const trimmed = title?.trim() ?? ''
+      return trimmed.includes(firstTrack) || trimmed.includes(secondTrack)
+    }, { timeout: 10_000 })
+    .toBe(true)
+})
+
+Then('the d20 button on {string} should be disabled', async ({ page }, categoryName: string) => {
+  await expect(page.locator(`[data-soundscape-d20="${categoryName}"]`)).toBeDisabled()
+})
+
+Given('{string} is playing in the {string} category', async ({ page }, trackName: string, categoryName: string) => {
+  const sceneId = sceneIdForName(DEFAULT_SCENE_NAME)
+  const { category, tracks } = buildWeatherCategoryWithTracks()
+  await mergeE2EData(
+    page,
+    {
+      scenes: [buildScene(DEFAULT_SCENE_NAME)],
+      soundscapeCategories: [category],
+      soundscapeTracks: tracks,
+      sceneSoundscapeSlots: [
+        buildSceneSoundscapeSlotWithOptions(sceneId, category.id, 0, {
+          intensity: 'I',
+          currentTrackId: soundscapeTrackIdForName(trackName),
+        }),
+      ],
+    },
+    { navigateHome: false },
+  )
+  await openActiveScene(page, DEFAULT_SCENE_NAME, 'Soundscapes')
+  await tapCategoryPlay(page, categoryName)
+})
+
+Then('a new random track from {string} begins playing', async ({ page }, categoryName: string) => {
+  await expect
+    .poll(async () => isCategoryLooping(page, categoryName), { timeout: 10_000 })
+    .toBe(true)
+})
+
+Given('{string} has no tracks at Intensity Level {word}', async ({ page }, categoryName: string, level: string) => {
+  const sceneId = sceneIdForName(DEFAULT_SCENE_NAME)
+  const { category, tracks } = buildDungeonCategoryPartialLevels()
+  await mergeE2EData(
+    page,
+    {
+      scenes: [buildScene(DEFAULT_SCENE_NAME)],
+      soundscapeCategories: [{ ...category, name: categoryName, id: categoryIdForName(categoryName) }],
+      soundscapeTracks: tracks,
+      sceneSoundscapeSlots: [
+        buildSceneSoundscapeSlotWithOptions(sceneId, categoryIdForName(categoryName), 0, {
+          intensity: intensityLabelToLevel(level),
+        }),
+      ],
+    },
+    { navigateHome: false },
+  )
+  await openActiveScene(page, DEFAULT_SCENE_NAME, 'Soundscapes')
+})
+
+Given(
+  '{string} and {string} categories are both playing in the active scene',
+  async ({ page }, first: string, second: string) => {
+    const sceneId = sceneIdForName(DEFAULT_SCENE_NAME)
+    const firstCategory = buildSoundscapeCategory(first)
+    const secondCategory = buildSoundscapeCategory(second)
+    await mergeE2EData(
+      page,
+      {
+        scenes: [buildScene(DEFAULT_SCENE_NAME)],
+        soundscapeCategories: [firstCategory, secondCategory],
+        soundscapeTracks: [
+          ...buildSoundscapeTracksForCategory(first),
+          ...buildSoundscapeTracksForCategory(second),
+        ],
+        sceneSoundscapeSlots: [
+          buildSceneSoundscapeSlotWithOptions(sceneId, firstCategory.id, 0, {
+            intensity: 'I',
+            currentTrackId: firstCategory.levels?.I?.[0],
+          }),
+          buildSceneSoundscapeSlotWithOptions(sceneId, secondCategory.id, 1, {
+            intensity: 'II',
+            currentTrackId: secondCategory.levels?.II?.[0],
+          }),
+        ],
+      },
+      { navigateHome: false },
+    )
+    await openActiveScene(page, DEFAULT_SCENE_NAME, 'Soundscapes')
+    await tapCategoryPlay(page, first)
+    await tapCategoryPlay(page, second)
+  },
+)
+
+Given('the {string} category is the media session focus', async ({ page }, categoryName: string) => {
+  await page.locator(`[data-soundscape-d20="${categoryName}"]`).click()
+})
+
+When('I invoke Media Session {string}', async ({ page }, action: string) => {
+  if (action === 'Next Track') {
+    await page.evaluate(() => {
+      window.__ARCANUM_MEDIA_NEXT__?.()
+    })
+  }
+})
+
+Then(
+  'a new random track begins playing for {string} at its current intensity level',
+  async ({ page }, categoryName: string) => {
+    await expect
+      .poll(async () => isCategoryLooping(page, categoryName), { timeout: 10_000 })
+      .toBe(true)
+  },
+)
+
+Then('the track playing in {string} is unchanged', async ({ page }, categoryName: string) => {
+  await expect(page.locator(`[data-soundscape-playback-state="${categoryName}"]`)).toHaveAttribute(
+    'data-state',
+    'playing',
+  )
 })
 

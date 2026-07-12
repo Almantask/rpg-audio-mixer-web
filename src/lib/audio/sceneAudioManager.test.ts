@@ -3,6 +3,7 @@ import {
   computeSoundboardGain,
   computeSoundscapeGain,
   pickRandomTrackId,
+  resolvePlaySceneSlotAction,
 } from './sceneAudioManager'
 
 describe('sceneAudioManager helpers', () => {
@@ -27,5 +28,20 @@ describe('sceneAudioManager helpers', () => {
 
   it('returns undefined when pool is empty', () => {
     expect(pickRandomTrackId([])).toBeUndefined()
+  })
+
+  it('resolves play scene slot actions', () => {
+    expect(
+      resolvePlaySceneSlotAction({ playing: true, paused: false, trackIds: ['a'] }),
+    ).toBe('skip-playing')
+    expect(
+      resolvePlaySceneSlotAction({ playing: false, paused: false, trackIds: [] }),
+    ).toBe('skip-empty')
+    expect(
+      resolvePlaySceneSlotAction({ playing: false, paused: true, trackIds: ['a'] }),
+    ).toBe('resume')
+    expect(
+      resolvePlaySceneSlotAction({ playing: false, paused: false, trackIds: ['a'] }),
+    ).toBe('start')
   })
 })
