@@ -8,6 +8,8 @@ import { formatFxDuration } from '@/lib/sceneStorage'
 
 import { audioPreview } from '@/lib/audioPreview'
 
+import { cn } from '@/lib/utils'
+
 import { Badge } from '@/components/ui/badge'
 
 import { Button } from '@/components/ui/button'
@@ -145,11 +147,11 @@ export function FxCard({
   return (
 
     <Card
-
       {...cardAttrs}
-
-      className={playing ? 'border-gold ring-1 ring-gold/40' : 'border-white/10'}
-
+      className={cn(
+        'min-w-0 overflow-hidden',
+        playing ? 'border-gold ring-1 ring-gold/40' : 'border-white/10',
+      )}
     >
 
       <CardContent className="p-3">
@@ -185,15 +187,11 @@ export function FxCard({
           </div>
 
           <p
-
-            className="font-medium text-white"
-
+            className="truncate font-medium text-white"
             data-fx-card-title={mode === 'browse' ? track.name : undefined}
-
+            title={track.name}
           >
-
             {track.name}
-
           </p>
 
           <p className="text-sm text-muted" data-fx-card-meta={mode === 'browse' ? true : undefined}>

@@ -57,7 +57,9 @@ export function TopFxCard({
       <Card data-top-fx-card data-top-fx-name={track.name} className="border-purple-500/40">
         <CardContent className="space-y-4 p-6">
           <div>
-            <h3 className="font-serif text-xl text-purple-300">{track.name}</h3>
+            <h3 className="truncate font-serif text-xl text-purple-300" title={track.name}>
+              {track.name}
+            </h3>
             <div className="mt-2 flex flex-wrap gap-2">
               <span className="rounded border border-purple-500/50 px-2 py-0.5 text-xs uppercase tracking-widest text-purple-300">
                 FX

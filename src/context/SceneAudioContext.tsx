@@ -195,13 +195,6 @@ export function SceneAudioProvider({ sceneId, children }: SceneAudioProviderProp
         }
       }
 
-      if (switchingScene && slots.length > 0) {
-        await manager.playScene()
-        if (cancelled) {
-          return
-        }
-      }
-
       previousActiveSceneId = sceneId
     })()
 

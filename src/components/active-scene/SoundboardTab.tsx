@@ -50,7 +50,7 @@ function SoundboardTile({
       data-soundboard-tile-state={entry.track.name}
       data-state={playing ? 'playing' : 'idle'}
       className={cn(
-        'border-white/10 transition-shadow',
+        'min-w-0 overflow-hidden border-white/10 transition-shadow',
         playing && 'border-gold/60 shadow-[0_0_16px_rgba(212,175,55,0.35)]',
       )}
       onDragOver={onDragOver}
@@ -79,13 +79,10 @@ function SoundboardTile({
             <Trash2 className="h-4 w-4" />
           </Button>
         </div>
-        <div
-          className="mb-2 flex w-full flex-col items-center"
-          role="presentation"
-        >
+        <div className="mb-2 flex w-full min-w-0 flex-col items-center overflow-hidden" role="presentation">
           <button
             type="button"
-            className="mb-2 flex w-full flex-col items-center"
+            className="mb-2 flex w-full min-w-0 flex-col items-center overflow-hidden"
             aria-label={`Play ${entry.track.name}`}
             onClick={onPlay}
           >
@@ -96,7 +93,12 @@ function SoundboardTile({
                 <Play className="mx-auto h-6 w-6 text-muted" />
               )}
             </span>
-            <p className="truncate text-center text-sm text-white">{entry.track.name}</p>
+            <p
+              className="w-full min-w-0 truncate text-center text-sm text-white"
+              title={entry.track.name}
+            >
+              {entry.track.name}
+            </p>
           </button>
           {playing ? (
             <Button
@@ -184,7 +186,7 @@ export function SoundboardTab({ sceneId, entries, onRemove, onAddSound, locked =
         </p>
       ) : null}
 
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4" data-soundboard-grid>
+      <div className="grid min-w-0 grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4" data-soundboard-grid>
         {entries.map((entry, index) => {
           const hotkey = getHotkeyLabel(index)
           const playing = isSoundboardPlaying(entry.fxTrackId)
