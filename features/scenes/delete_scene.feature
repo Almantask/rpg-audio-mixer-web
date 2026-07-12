@@ -7,7 +7,7 @@ Feature: Delete scene
 
   Scenario Outline: Soft-deleting a scene moves it to Trash
     Given a scene named "Old Scene" exists
-    When I <action> on the "Old Scene" card
+    When I <action> on the "Old Scene" scene card
     Then "Old Scene" is moved to Trash on the Scenes tab
     And I do not see "Old Scene" in Scenes
 

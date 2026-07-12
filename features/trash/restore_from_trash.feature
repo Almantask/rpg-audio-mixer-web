@@ -7,7 +7,7 @@ Feature: Restore from Trash
 
   Scenario Outline: Restoring an item returns it to its original location
     Given "<name>" (<type>) is in Trash
-    When I tap "Restore" on the "<name>" card
+    When I tap "Restore" on the "<name>" trashed item card
     Then "<name>" is removed from Trash
     And <restore_destination>
 
@@ -28,7 +28,7 @@ Feature: Restore from Trash
   Scenario: Restoring an item with a name collision auto-renames it
     Given "Dragon Roar" (FX) is in Trash
     And a live FX track named "Dragon Roar" already exists
-    When I tap "Restore" on the "Dragon Roar" card
+    When I tap "Restore" on the "Dragon Roar" trashed FX card
     Then the restored item appears as "Dragon Roar (restored)" in the Audio Library FX list
 
   Scenario: Restore Selected restores checked items on the active tab
@@ -55,5 +55,5 @@ Feature: Restore from Trash
 
   Scenario: A soft-deleted FX track retains its audio when restored within 7 days
     Given "Dragon Roar" (FX) is in Trash
-    When I tap "Restore" on the "Dragon Roar" card
+    When I tap "Restore" on the "Dragon Roar" trashed FX card
     Then the restored FX track plays successfully in the Audio Library FX list

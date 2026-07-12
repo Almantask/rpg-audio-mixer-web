@@ -15,7 +15,7 @@ Feature: Import FX to library
     Given I am on the Sound Effects tab in the Library
     When I tap "Free Tracks"
     Then I see download progress for the demo FX pack
-    And new FX tracks appear in the card grid when the download completes
+    And new FX tracks appear in the FX library card grid when the download completes
 
   Scenario: Buy More opens the storefront
     Given I am on the Sound Effects tab in the Library

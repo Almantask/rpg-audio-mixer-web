@@ -5,10 +5,10 @@ Feature: Edit FX in library
   I want to edit and delete FX tracks inline
   So that I can keep my library metadata accurate.
 
-  Scenario: Edit an FX track from its card
+  Scenario: Edit an FX track from its FX card
     Given "Wolf Howl" is in the FX library
-    When I edit "Wolf Howl" from its card
-    Then I see inline edit on the "Wolf Howl" card with fields for Name and Tags
+    When I edit "Wolf Howl" from its FX card
+    Then I see inline edit on the "Wolf Howl" FX card with fields for Name and Tags
 
   Scenario: Edit the name of an FX track inline
     Given I am editing "wolf_howl.mp3" inline on its FX card
@@ -18,7 +18,7 @@ Feature: Edit FX in library
   Scenario: Add tags to an FX track inline
     Given I am editing "Wolf Howl" inline on its FX card
     When I add the tag "Combat" to "Wolf Howl" from the predefined list and save
-    Then "Wolf Howl" shows the "Combat" tag chip on its card
+    Then "Wolf Howl" shows the "Combat" tag chip on its FX card
 
   Scenario: Delete an FX track via inline edit
     Given I am editing "Wolf Howl" inline on its FX card

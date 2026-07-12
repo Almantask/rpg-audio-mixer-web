@@ -55,9 +55,9 @@ Feature: View campaign sessions
       | number     | name              | date  | scenes |
       | Session 14 | The Howling Crags | Mar 12 | 4      |
     When I open "Curse of Strahd"
-    Then I see "Session 14" on the session card
-    And I see "The Howling Crags" on the session card
-    And I see "Mar 12 · 4 Scenes" on the session card
+    Then I see "Session 14" on the "Session 14" session card
+    And I see "The Howling Crags" on the "Session 14" session card
+    And I see "Mar 12 · 4 Scenes" on the "Session 14" session card
 
   Scenario: Sessions are sorted by date, most recent first
     Given I have sessions "Session 1" dated last month and "Session 2" dated today in "Curse of Strahd"
@@ -68,8 +68,8 @@ Feature: View campaign sessions
     Given I have a campaign "Curse of Strahd" with sessions "Session 1" and "Session 2"
     And I most recently opened session "Session 1"
     When I view the Campaign Sessions screen for "Curse of Strahd"
-    Then the "Session 1" card shows a "Last Active" badge
-    And the "Session 2" card does not show a "Last Active" badge
+    Then the "Session 1" session card shows a "Last Active" badge
+    And the "Session 2" session card does not show a "Last Active" badge
 
   Scenario: Sessions list shows loading skeletons while data loads
     Given sessions for "Curse of Strahd" are still loading
@@ -85,6 +85,6 @@ Feature: View campaign sessions
   Scenario: Tapping Edit on a session card does not navigate to scenes
     Given I have session "Session 1" in "Curse of Strahd"
     And I am on the Campaign Sessions screen for "Curse of Strahd"
-    When I tap Edit on the "Session 1" card
+    When I tap Edit on the "Session 1" session card
     Then I see the session edit dialog
     And I remain on the Campaign Sessions screen

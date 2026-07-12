@@ -17,6 +17,7 @@ import {
   sceneIdForName,
   setE2EControls,
 } from '../shared/test-data'
+import { swipeRight } from '../shared/gestures'
 
 const { Given, When, Then } = createBdd()
 
@@ -120,7 +121,7 @@ Given('the mini player is showing and {string} is paused', async ({ page }, name
 })
 
 Given(
-  'the {string} card is previewing with a playing preview state',
+  'the {string} FX card is previewing with a playing preview state',
   async ({ page }, name: string) => {
     await mergeFxTrack(page, buildFxTrack(name))
     await openLibraryFxTab(page)
@@ -150,7 +151,7 @@ When('I open the Sound Effects tab in the Library', async ({ page }) => {
   await openLibraryFxTab(page)
 })
 
-When('I edit {string} from its card', async ({ page }, name: string) => {
+When('I edit {string} from its FX card', async ({ page }, name: string) => {
   await page.locator(`[data-fx-edit="${name}"]`).click()
 })
 
@@ -203,46 +204,41 @@ When('I open the FX import file picker', async ({ page }) => {
   await page.locator('[data-fx-import-input]').click({ force: true })
 })
 
-When('I tap the {string} card body', async ({ page }, name: string) => {
+When('I tap the {string} FX card body', async ({ page }, name: string) => {
   if (!page.url().includes('/library')) {
     await openLibraryFxTab(page)
   }
-  const fxBody = page.locator(`[data-fx-card-body="${name}"]`)
-  if (await fxBody.count() > 0) {
-    await fxBody.click()
-  } else {
-    await page.locator(`[data-sc-card-body="${name}"]`).click()
-  }
+  await page.locator(`[data-fx-card-body="${name}"]`).click()
 })
 
-When('I tap the {string} card thumbnail', async ({ page }, name: string) => {
+When('I tap the {string} soundscape category card body', async ({ page }, name: string) => {
+  await page.locator(`[data-sc-card-body="${name}"]`).click()
+})
+
+When('I tap the {string} FX card thumbnail', async ({ page }, name: string) => {
   if (!page.url().includes('/library')) {
     await openLibraryFxTab(page)
   }
-  const fxThumb = page.locator(`[data-fx-card-thumb="${name}"]`)
-  if (await fxThumb.count() > 0) {
-    await fxThumb.click()
-  } else {
-    await page.locator(`[data-sc-card-thumb="${name}"]`).click()
-  }
+  await page.locator(`[data-fx-card-thumb="${name}"]`).click()
 })
 
-When('I preview {string} from its card', async ({ page }, name: string) => {
-  const isSoundscapes = page.url().includes('tab=soundscapes') || (await page.locator('[data-library-tab="Soundscapes"]').getAttribute('aria-selected')) === 'true'
-  if (isSoundscapes) {
-    await page.locator(`[data-sc-preview="${name}"]`).click()
-  } else {
-    if (!page.url().includes('/library')) {
-      await openLibraryFxTab(page)
-    }
-    await page.locator(`[data-fx-card-body="${name}"]`).click()
+When('I preview {string} from its FX card', async ({ page }, name: string) => {
+  if (!page.url().includes('/library')) {
+    await openLibraryFxTab(page)
   }
+  await page.locator(`[data-fx-card-body="${name}"]`).click()
+})
+
+When('I preview {string} from its soundscape category card', async ({ page }, name: string) => {
+  await page.locator(`[data-sc-preview="${name}"]`).click()
 })
 
 When(
-  'I preview {string} from its card while {string} is playing',
+  'I preview {string} from its FX card while {string} is playing',
   async ({ page }, nextTrack: string) => {
-    await mergeFxTrack(page, buildFxTrack(nextTrack), { openLibrary: true })
+    if (!page.url().includes('/library')) {
+      await openLibraryFxTab(page)
+    }
     await page.locator(`[data-fx-card-body="${nextTrack}"]`).click()
   },
 )
@@ -255,7 +251,7 @@ When('I tap the play button in the mini player', async ({ page }) => {
   await page.locator('[data-mini-player-play]').click()
 })
 
-When('I tap the {string} card body again', async ({ page }, name: string) => {
+When('I tap the {string} FX card body again', async ({ page }, name: string) => {
   await page.locator(`[data-fx-card-body="${name}"]`).click()
 })
 
@@ -267,21 +263,22 @@ When('I switch to the Soundscapes tab in the Library', async ({ page }) => {
   await page.locator('[data-library-tab="Soundscapes"]').click()
 })
 
-Then('I see all three tracks as cards in the grid', async ({ page }) => {
+Then('I see all three tracks as FX cards in the grid', async ({ page }) => {
   await expect(page.locator('[data-fx-card]')).toHaveCount(3)
 })
 
-Then('the {string} card shows the title {string}', async ({ page }, name, title) => {
+Then('the {string} FX card shows the title {string}', async ({ page }, name, title) => {
   await expect(page.locator(`[data-fx-card-title="${name}"]`)).toHaveText(title)
 })
 
-Then('the card shows duration {string} and base intensity {string}', async ({ page }, duration, intensity) => {
-  await expect(page.locator('[data-fx-card-meta]').first()).toContainText(duration)
-  await expect(page.locator('[data-fx-card-meta]').first()).toContainText(intensity)
+Then('the {string} FX card shows duration {string} and base intensity {string}', async ({ page }, name, duration, intensity) => {
+  const card = page.locator(`[data-fx-card="${name}"]`)
+  await expect(card.locator('[data-fx-card-meta]')).toContainText(duration)
+  await expect(card.locator('[data-fx-card-meta]')).toContainText(intensity)
 })
 
 Then(
-  'the {string} card shows {string} and {string} tag chips',
+  'the {string} FX card shows {string} and {string} tag chips',
   async ({ page }, name, tag1, tag2) => {
     const card = page.locator(`[data-fx-card="${name}"]`)
     await expect(card.locator(`[data-fx-tag="${tag1}"]`)).toBeVisible()
@@ -310,11 +307,11 @@ Then('I see a {string} button', async ({ page }, label: string) => {
   await expect(page.getByRole('button', { name: label })).toBeVisible()
 })
 
-Then('the {string} card has no checkbox', async ({ page }, name: string) => {
+Then('the {string} FX card has no checkbox', async ({ page }, name: string) => {
   await expect(page.locator(`[data-fx-card="${name}"] [data-fx-checkbox]`)).toHaveCount(0)
 })
 
-Then('I see inline edit on the {string} card with fields for Name and Tags', async ({ page }, name) => {
+Then('I see inline edit on the {string} FX card with fields for Name and Tags', async ({ page }, name) => {
   const card = page.locator(`[data-fx-card="${name}"]`)
   await expect(card.locator('[data-fx-inline-name]')).toBeVisible()
   await expect(card.locator('[data-fx-tag-input]')).toBeVisible()
@@ -324,7 +321,7 @@ Then('the track appears as {string} in the FX library card grid', async ({ page 
   await expect(page.locator(`[data-fx-card-title="${name}"]`)).toBeVisible()
 })
 
-Then('{string} shows the {string} tag chip on its card', async ({ page }, name, tag) => {
+Then('{string} shows the {string} tag chip on its FX card', async ({ page }, name, tag) => {
   await expect(page.locator(`[data-fx-card="${name}"] [data-fx-tag="${tag}"]`)).toBeVisible()
 })
 
@@ -372,7 +369,7 @@ Then('I see download progress for the demo FX pack', async ({ page }) => {
   await expect(page.locator('[data-fx-download-progress]')).toBeVisible()
 })
 
-Then('new FX tracks appear in the card grid when the download completes', async ({ page }) => {
+Then('new FX tracks appear in the FX library card grid when the download completes', async ({ page }) => {
   await expect(page.locator('[data-fx-card]').first()).toBeVisible({ timeout: 15_000 })
 })
 
@@ -409,7 +406,7 @@ Then('{string} begins playing', async ({ page }, name: string) => {
   await expectAudioPlaying(page, name)
 })
 
-Then('the {string} card shows a playing preview state', async ({ page }, name: string) => {
+Then('the {string} FX card shows a playing preview state', async ({ page }, name: string) => {
   await expect(page.locator(`[data-fx-card-preview-state="${name}"]`)).toHaveAttribute('data-state', 'playing')
 })
 
@@ -429,13 +426,12 @@ Then('{string} begins playing again', async ({ page }, name: string) => {
   await expectAudioPlaying(page, name)
 })
 
-Then('the {string} card no longer shows a playing preview state', async ({ page }, name: string) => {
-  const isSoundscapes = page.url().includes('tab=soundscapes') || (await page.locator('[data-library-tab="Soundscapes"]').getAttribute('aria-selected')) === 'true'
-  if (isSoundscapes) {
-    await expect(page.locator(`[data-sc-card-preview-state="${name}"]`)).toHaveAttribute('data-state', 'idle')
-  } else {
-    await expect(page.locator(`[data-fx-card-preview-state="${name}"]`)).toHaveAttribute('data-state', 'idle')
-  }
+Then('the {string} FX card no longer shows a playing preview state', async ({ page }, name: string) => {
+  await expect(page.locator(`[data-fx-card-preview-state="${name}"]`)).toHaveAttribute('data-state', 'idle')
+})
+
+Then('the {string} soundscape category card no longer shows a playing preview state', async ({ page }, name: string) => {
+  await expect(page.locator(`[data-sc-card-preview-state="${name}"]`)).toHaveAttribute('data-state', 'idle')
 })
 
 Then('the mini player is no longer visible', async ({ page }) => {
@@ -543,7 +539,7 @@ Given('{string} has {int} tracks at level I, {int} at level II, and {int} at lev
   }, { navigateHome: false })
 })
 
-Then('the {string} card shows {string}', async ({ page }, catName, text) => {
+Then('the {string} soundscape category card shows {string}', async ({ page }, catName, text) => {
   const card = page.locator(`[data-sc-card="${catName}"]`)
   await expect(card.locator('[data-sc-card-meta]')).toContainText(text)
 })
@@ -573,8 +569,9 @@ Given('{string} is in the soundscape categories grid', async ({ page }, catName)
 })
 
 Then('I see the Soundscape Category Composer for {string}', async ({ page }, catName) => {
-  await expect(page.locator('main h1')).toContainText(catName)
-  await expect(page.locator('main').getByText('Category Composer', { exact: true })).toBeVisible()
+  const composer = page.getByRole('region', { name: 'Category Composer screen' })
+  await expect(composer.getByRole('heading', { name: catName, exact: true })).toBeVisible()
+  await expect(composer.getByText('Category Composer', { exact: true })).toBeVisible()
 })
 
 Given('soundscape library data has not yet resolved', async ({ page }) => {
@@ -617,7 +614,7 @@ When('I create a soundscape category named {string} via Add Soundscape', async (
   await page.locator('[data-sc-add-tile]').click()
 })
 
-Then('the {string} card shows a playing preview state on the thumbnail', async ({ page }, name) => {
+Then('the {string} soundscape category card shows a playing preview state on the thumbnail', async ({ page }, name) => {
   await expect(page.locator(`[data-sc-card-preview-state="${name}"]`)).toHaveAttribute('data-state', 'playing')
 })
 
@@ -650,7 +647,7 @@ Given('the {string} category is previewing a sample track', async ({ page }, cat
   await expect(page.locator(`[data-sc-card-preview-state="${catName}"]`)).toHaveAttribute('data-state', 'playing')
 })
 
-When('I stop the preview on the {string} card', async ({ page }, catName) => {
+When('I stop the preview on the {string} soundscape category card', async ({ page }, catName) => {
   await page.locator(`[data-sc-preview="${catName}"]`).click()
 })
 
@@ -926,10 +923,17 @@ Given('I have added a track to {string} in {string}', async ({ page }, levelName
     soundscapeTracks: [track]
   }, { navigateHome: false })
   await page.goto(`/library/soundscapes/category-${catName.toLowerCase()}/compose`)
-  await page.locator(`[data-sc-level-content="${lvl}"] button:has-text("Add track")`).click()
-  await page.getByRole('checkbox', { name: 'Select Sample Track', exact: true }).check()
-  await page.locator('[data-picker-commit]').click()
-  await page.getByRole('button', { name: '← Category Composer', exact: true }).click()
+  const composer = page.getByRole('region', { name: 'Category Composer screen' })
+  await composer
+    .locator(`[data-sc-level-content="${lvl}"]`)
+    .getByRole('button', { name: 'Add track', exact: true })
+    .click()
+  const picker = page.getByRole('dialog')
+  await picker.getByRole('checkbox', { name: 'Select Sample Track', exact: true }).check()
+  const commit = picker.getByRole('button', { name: 'Add Selected (1)', exact: true })
+  await expect(commit).toBeEnabled()
+  await commit.click()
+  await picker.getByRole('button', { name: '← Category Composer', exact: true }).click()
   await expect(page.getByRole('dialog')).toHaveCount(0)
 })
 
@@ -938,7 +942,7 @@ Then('I return to the Library Soundscapes tab', async ({ page }) => {
 })
 
 Then('I do not see a discard-changes confirmation dialog', async ({ page }) => {
-  await expect(page.locator('role=dialog')).toHaveCount(0)
+  await expect(page.getByRole('dialog')).toHaveCount(0)
 })
 
 When('I reopen the Soundscape Category Composer for {string}', async ({ page }, catName) => {
@@ -1013,15 +1017,15 @@ Given('the soundscape library has {string}', async ({ page }, trackName) => {
   }, { navigateHome: false })
 })
 
-Then('the {string} card displays a selection checkbox', async ({ page }, trackName) => {
+Then('the {string} picker track card displays a selection checkbox', async ({ page }, trackName) => {
   await expect(page.locator(`[data-picker-track="${trackName}"] [data-picker-checkbox="${trackName}"]`)).toBeVisible()
 })
 
-Then('the {string} card shows format, channel, and duration metadata', async ({ page }, trackName) => {
+Then('the {string} picker track card shows format, channel, and duration metadata', async ({ page }, trackName) => {
   await expect(page.locator(`[data-picker-track="${trackName}"]`)).toContainText(/MP3|WAV|Stereo|Mono/)
 })
 
-Then('the {string} card does not display a + button', async ({ page }, trackName) => {
+Then('the {string} picker track card does not display a + button', async ({ page }, trackName) => {
   await expect(page.locator(`[data-picker-track="${trackName}"] button:has-text("+")`)).toHaveCount(0)
 })
 
@@ -1057,7 +1061,7 @@ When('I open the Track Picker for {string} in {string}', async ({ page }, levelN
   await levelContent.getByRole('button', { name: 'Add track', exact: true }).click()
 })
 
-Then('I see skeleton cards in the picker grid', async ({ page }) => {
+Then('I see picker track skeleton cards in the picker grid', async ({ page }) => {
   await expect(page.locator('[data-picker-loading]')).toBeVisible()
 })
 
@@ -1073,7 +1077,7 @@ Then('{string} is checked in the picker', async ({ page }, trackName) => {
   await expect(page.locator(`[data-picker-track="${trackName}"] input[type="checkbox"]`)).toBeChecked()
 })
 
-Then('no track cards are checked', async ({ page }) => {
+Then('no picker track cards are checked', async ({ page }) => {
   const checkboxes = page.locator('[data-picker-grid] input[type="checkbox"]')
   const count = await checkboxes.count()
   for (let i = 0; i < count; i++) {
@@ -1096,8 +1100,15 @@ Then('the Track Picker modal stays open', async ({ page }) => {
   ).toBeVisible()
 })
 
-When('I check {string}', async ({ page }, trackName) => {
+When('I check {string} in the track picker', async ({ page }, trackName) => {
   await page.getByRole('checkbox', { name: `Select ${trackName}`, exact: true }).check()
+})
+
+When('I tap the picker track card body for {string}', async ({ page }, name: string) => {
+  await page
+    .locator(`[data-picker-track="${name}"]`)
+    .getByRole('button', { name: `Preview ${name}`, exact: true })
+    .click()
 })
 
 Given('the soundscape library has {string} and {string}', async ({ page }, t1, t2) => {
@@ -1192,19 +1203,7 @@ When('I delete {string} from the soundscape grid', async ({ page }, catName) => 
 When('I swipe right on the {string} soundscape card', async ({ page }, catName) => {
   const card = page.locator(`[data-sc-card="${catName}"]`)
   const swipeTarget = page.locator('[data-swipe-delete]').filter({ has: card })
-  await swipeTarget.evaluate((element) => {
-    const touchStartEvent = new Event('touchstart', { bubbles: true })
-    Object.defineProperty(touchStartEvent, 'touches', {
-      value: [{ clientX: 10 }]
-    })
-    element.dispatchEvent(touchStartEvent)
-
-    const touchEndEvent = new Event('touchend', { bubbles: true })
-    Object.defineProperty(touchEndEvent, 'changedTouches', {
-      value: [{ clientX: 100 }]
-    })
-    element.dispatchEvent(touchEndEvent)
-  })
+  await swipeRight(swipeTarget)
 })
 
 Then('{string} is moved to the Trash Soundscapes tab', async ({ page }, name) => {

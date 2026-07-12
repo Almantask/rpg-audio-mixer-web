@@ -1,6 +1,6 @@
 import { expect, type Page } from '@playwright/test'
 import { createBdd } from 'playwright-bdd'
-import { E2E_CAMPAIGN_ID, E2E_SESSION_ID, E2E_TAVERN_SCENE_ID } from '../../../src/lib/constants'
+import { E2E_TAVERN_SCENE_ID } from '../../../src/lib/constants'
 
 const { Given, When, Then } = createBdd()
 
@@ -42,16 +42,9 @@ Given('I am on the Trash screen', async ({ page }) => {
   await goToScreen(page, 'Trash screen')
 })
 
-Given(
-  'I am viewing the Session Scenes list for {string}',
-  async ({ page }, campaignName: string) => {
-    await page.goto(`/campaigns/${E2E_CAMPAIGN_ID}/sessions/${E2E_SESSION_ID}/scenes`)
-    await expect(page.locator('[data-campaign-name]', { hasText: campaignName })).toBeVisible()
-  },
-)
-
 When('I tap {string} in the sidebar', async ({ page }, item: string) => {
-  await page.locator(`[data-sidebar-item="${item}"]`).click()
+  const navigation = page.getByRole('navigation', { name: 'Main navigation' })
+  await navigation.getByRole('link', { name: item, exact: true }).click()
 })
 
 When('I open the Active Scene for {string}', async ({ page }, sceneName: string) => {
@@ -111,9 +104,10 @@ Then('I do not see {string} or Arcane Settings copy', async ({ page }, text: str
 Then(
   'the {string} sidebar item appears highlighted in gold',
   async ({ page }, item: string) => {
-    await expect(page.locator(`[data-sidebar-item="${item}"]`)).toHaveAttribute(
-      'data-active',
-      'true',
+    const navigation = page.getByRole('navigation', { name: 'Main navigation' })
+    await expect(navigation.getByRole('link', { name: item, exact: true })).toHaveAttribute(
+      'aria-current',
+      'page',
     )
   },
 )
@@ -124,9 +118,10 @@ Then('the other sidebar items appear inactive', async ({ page }) => {
 })
 
 Then('the {string} sidebar item does not appear highlighted', async ({ page }, item: string) => {
-  await expect(page.locator(`[data-sidebar-item="${item}"]`)).toHaveAttribute(
-    'data-active',
-    'false',
+  const navigation = page.getByRole('navigation', { name: 'Main navigation' })
+  await expect(navigation.getByRole('link', { name: item, exact: true })).not.toHaveAttribute(
+    'aria-current',
+    'page',
   )
 })
 

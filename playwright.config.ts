@@ -6,7 +6,7 @@ const testDir = defineBddConfig({
   steps: 'e2e/steps/**/*.ts',
   outputDir: '.features-gen',
   tags: '@iter0 or @iter1 or @iter2 or @iter3 or @iter4',
-  missingSteps: 'skip-scenario',
+  missingSteps: 'fail-on-gen',
 })
 
 

@@ -21,6 +21,7 @@ import {
   expectNoAudioPlayback,
   tableColumnValues,
 } from '../shared/test-data'
+import { swipeRight } from '../shared/gestures'
 
 const { Given, When, Then, Step } = createBdd()
 
@@ -260,7 +261,7 @@ When('I cancel the delete confirmation', async ({ page }) => {
 })
 
 When(
-  /^I (tap the trash icon|swipe right) on the "([^"]+)" card$/,
+  /^I (tap the trash icon|swipe right) on the "([^"]+)" scene card$/,
   async ({ page }, action: string, cardName: string) => {
     await openScenes(page)
     if (action === 'tap the trash icon') {
@@ -269,19 +270,8 @@ When(
     }
     if (action === 'swipe right') {
       const card = page.locator(`[data-scene-card="${cardName}"]`)
-      await card.evaluate((el) => {
-        const touchStartEvent = new Event('touchstart', { bubbles: true })
-        Object.defineProperty(touchStartEvent, 'touches', {
-          value: [{ clientX: 10 }]
-        })
-        el.dispatchEvent(touchStartEvent)
-
-        const touchEndEvent = new Event('touchend', { bubbles: true })
-        Object.defineProperty(touchEndEvent, 'changedTouches', {
-          value: [{ clientX: 100 }]
-        })
-        el.dispatchEvent(touchEndEvent)
-      })
+      const swipeTarget = page.locator('[data-swipe-delete]').filter({ has: card })
+      await swipeRight(swipeTarget)
       return
     }
     throw new Error(`Unknown scene card action: ${action}`)
@@ -453,8 +443,9 @@ Then('the {string} scene card shows its cover image', async ({ page }, name: str
   await expect(page.locator(`[data-scene-cover="${name}"] img`)).toBeVisible()
 })
 
-Then('no tags are shown on the card', async ({ page }) => {
-  await expect(page.locator('[data-scene-tag]')).toHaveCount(0)
+Then('no tags are shown on the {string} scene card', async ({ page }, sceneName: string) => {
+  const card = page.locator(`[data-scene-card="${sceneName}"]`)
+  await expect(card.locator('[data-scene-tag]')).toHaveCount(0)
 })
 
 Then('I do not see a tags field', async ({ page }) => {

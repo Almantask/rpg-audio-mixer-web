@@ -114,6 +114,17 @@ Given('the FX library has {string} and {string}', async ({ page }, first: string
   )
 })
 
+Given(
+  'the FX library has {string}, {string}, and {string}',
+  async ({ page }, first: string, second: string, third: string) => {
+    await mergeE2EData(
+      page,
+      { fxTracks: [buildFxTrack(first), buildFxTrack(second), buildFxTrack(third)] },
+      { navigateHome: false },
+    )
+  },
+)
+
 Given('the FX library has {string}', async ({ page }, name: string) => {
   await mergeE2EData(page, { fxTracks: [buildFxTrack(name)] }, { navigateHome: false })
 })
@@ -315,16 +326,28 @@ When('I check {string} in the picker', async ({ page }, name: string) => {
   await page.locator(`[data-fx-picker-check="${fxIdForName(name)}"]`).check()
 })
 
-When('I tap the card body for {string}', async ({ page }, name: string) => {
-  const fxBody = page.locator(`[data-fx-picker-body="${name}"]`)
-  if (await fxBody.count() > 0) {
-    await fxBody.click()
-  } else {
-    await page
-      .locator(`[data-picker-track="${name}"]`)
-      .getByRole('button', { name: `Preview ${name}`, exact: true })
-      .click()
-  }
+When('I tap the FX picker card body for {string}', async ({ page }, name: string) => {
+  await page.locator(`[data-fx-picker-body="${name}"]`).click()
+})
+
+When('I tap the soundscape picker card body for {string}', async ({ page }, name: string) => {
+  await page.locator(`[data-sc-picker-body="${name}"]`).click()
+})
+
+When('I tap the soundscape picker card body for {string} again', async ({ page }, name: string) => {
+  await page.locator(`[data-sc-picker-body="${name}"]`).click()
+})
+
+Then('the {string} soundscape picker card shows it is previewing', async ({ page }, name: string) => {
+  await expect(page.locator(`[data-sc-picker-preview-state="${name}"]`)).toHaveAttribute('data-state', 'playing')
+})
+
+Then('the {string} soundscape picker card no longer shows it is previewing', async ({ page }, name: string) => {
+  await expect(page.locator(`[data-sc-picker-preview-state="${name}"]`)).toHaveAttribute('data-state', 'idle')
+})
+
+Then('the {string} soundscape picker card shows {string}', async ({ page }, name: string, text: string) => {
+  await expect(page.locator(`[data-sc-picker-item="${name}"]`)).toContainText(text)
 })
 
 When('I tap the back link {string}', async ({ page }) => {
@@ -565,11 +588,11 @@ Then('{string} begins previewing in the picker', async ({ page }, name: string) 
   ).toHaveAttribute('aria-pressed', 'true')
 })
 
-Then('the {string} card shows a playing state in the picker', async ({ page }, name: string) => {
+Then('the {string} FX picker card shows a playing state in the picker', async ({ page }, name: string) => {
   await expect(page.locator(`[data-fx-picker-preview-state="${name}"]`)).toHaveAttribute('data-state', 'playing')
 })
 
-Then('the {string} card no longer shows a playing state in the picker', async ({ page }, name: string) => {
+Then('the {string} FX picker card no longer shows a playing state in the picker', async ({ page }, name: string) => {
   await expect(page.locator(`[data-fx-picker-preview-state="${name}"]`)).toHaveAttribute('data-state', 'idle')
 })
 

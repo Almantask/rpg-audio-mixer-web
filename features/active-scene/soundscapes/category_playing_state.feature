@@ -13,25 +13,25 @@ Feature: Soundscape category playing state
 
   Scenario: A playing category card shows the playing state
     When I start playback on the "Weather" category
-    Then the "Weather" card shows the playing state
-    And the "Weather" card shows an animating playback progress bar
-    And the "Weather" card shows a pause icon on the play control
+    Then the "Weather" active-scene category card shows the playing state
+    And the "Weather" active-scene category card shows an animating playback progress bar
+    And the "Weather" active-scene category card shows a pause icon on the play control
 
   Scenario: An idle or paused category card does not show the playing state
     Given the "Weather" category is not playing
-    Then the "Weather" card does not show the playing state
-    And the "Weather" card shows a play icon on the play control
-    And the "Weather" card playback progress bar is empty
+    Then the "Weather" active-scene category card does not show the playing state
+    And the "Weather" active-scene category card shows a play icon on the play control
+    And the "Weather" active-scene category card playback progress bar is empty
 
   Scenario: Pausing a category removes its playing state
     Given the "Weather" category is currently playing
     When I tap pause on "Weather"
-    Then the "Weather" card no longer shows the playing state
-    And the "Weather" card playback progress bar is not advancing
+    Then the "Weather" active-scene category card no longer shows the playing state
+    And the "Weather" active-scene category card playback progress bar is not advancing
 
   Scenario: Multiple categories can simultaneously show the playing state
     Given "Weather" and "Interior" are both playing
-    Then both the "Weather" and "Interior" cards show the playing state
+    Then both the "Weather" and "Interior" active-scene category cards show the playing state
 
   Scenario: Pausing one category leaves the other in playing state
     Given "Weather" and "Interior" are both playing

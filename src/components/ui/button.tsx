@@ -9,6 +9,7 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default: 'bg-gold text-charcoal hover:bg-gold/90',
+        outline: 'border border-white/10 bg-transparent hover:bg-white/5',
         ghost: 'hover:bg-white/5 hover:text-gold',
         sidebar: 'w-full justify-start rounded-none px-4 py-3 text-left font-normal',
       },

@@ -27,9 +27,9 @@ Feature: Intensity level of soundscape category
   Scenario: Empty intensity levels are non-interactive and do not change the active level
     Given the "Dungeon" category is currently at Intensity Level I
     And the "Dungeon" category has no tracks at Intensity Level III
-    When I attempt to select Intensity Level III on the "Dungeon" card
+    When I attempt to select Intensity Level III on the "Dungeon" active-scene category card
     Then the active intensity level should remain Intensity Level I
-    And Intensity Level III is unavailable on the "Dungeon" card
+    And Intensity Level III is unavailable on the "Dungeon" active-scene category card
 
   Scenario: Changing intensity on a paused category applies when playback resumes
     Given the "Weather" category was playing at Intensity Level I and is now paused

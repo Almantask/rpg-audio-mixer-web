@@ -16,7 +16,7 @@ Feature: Unlink scene from session
     Examples:
       | gesture                                         |
       | choose to unlink "Tavern" from the session      |
-      | swipe right on the "Tavern" card to unlink it   |
+      | swipe right on the "Tavern" session scene card to unlink it   |
 
   Scenario: Cancelling unlink leaves the scene linked
     Given "Tavern" is linked to "Session 1"

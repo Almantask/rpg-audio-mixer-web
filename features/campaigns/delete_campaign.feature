@@ -7,7 +7,8 @@ Feature: Delete campaign
 
   Scenario Outline: Soft-deleting a campaign moves it to Trash
     Given I have a campaign "Curse of Strahd" with three sessions
-    When I <delete_action> on the "Curse of Strahd" card
+    And I am on the Active Campaigns screen
+    When I <delete_action> on the "Curse of Strahd" campaign card
     Then "Curse of Strahd" is moved to the Trash Campaigns tab
     And its three sessions are hidden from the sessions list
     And no confirmation dialog is shown

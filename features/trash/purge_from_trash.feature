@@ -7,7 +7,7 @@ Feature: Purge from Trash
 
   Scenario: Manually purging an item from Trash permanently destroys it
     Given "Dragon Roar" is in Trash
-    When I tap "Purge" on the "Dragon Roar" card and confirm the destructive action
+    When I tap "Purge" on the "Dragon Roar" trashed FX card and confirm the destructive action
     Then "Dragon Roar" is permanently deleted
     And it can no longer be restored
 

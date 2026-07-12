@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { ChevronDown, ChevronRight, Plus, X, Pause, Play, Upload } from 'lucide-react'
-import { PageHeader, ScreenLandmark } from '@/components/layout/AppShell'
+import { ScreenLandmark } from '@/components/layout/AppShell'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -24,7 +24,6 @@ export function CategoryComposerPage() {
   const {
     data,
     updateSoundscapeCategory,
-    importSoundscapeTrack,
   } = useCampaignData()
 
   const category = useMemo(() => {

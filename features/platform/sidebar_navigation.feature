@@ -54,7 +54,8 @@ Feature: Sidebar navigation
       | Trash screen  | Trash   |
 
   Scenario: Campaign session drill-down keeps Home highlighted in the sidebar
-    Given I am viewing the Session Scenes list for "Curse of Strahd"
+    Given I have session "Session 1" in "Curse of Strahd"
+    And I am viewing Session Scenes for "Session 1"
     Then the "Home" sidebar item appears highlighted in gold
     And the "Campaign" sidebar item does not appear highlighted
 

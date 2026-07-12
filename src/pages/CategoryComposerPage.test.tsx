@@ -92,6 +92,18 @@ describe('CategoryComposerPage track picker', () => {
     vi.clearAllMocks()
   })
 
+  it('renders secondary composer actions with an outline', async () => {
+    const user = userEvent.setup()
+    renderComposer()
+
+    const addTrackButton = screen.getByRole('button', { name: 'Add track' })
+    expect(addTrackButton).toHaveClass('border')
+
+    await user.click(addTrackButton)
+
+    expect(screen.getByRole('button', { name: 'Import' })).toHaveClass('border')
+  })
+
   it('previews from the named track body without selecting it', async () => {
     const user = await openTrackPicker()
     const previewControl = screen.getByRole('button', {

@@ -14,5 +14,5 @@ Feature: Select items in Trash
   Scenario: Select all toggles every item on the active tab
     Given the "Scenes" tab contains 3 deleted scenes
     When I tap "Select all (3)" on the "Scenes" tab
-    Then all 3 scene cards are selected
+    Then all 3 trashed scene cards are selected
     And the selection bar shows "3 selected"

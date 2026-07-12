@@ -21,6 +21,7 @@ import {
   tableColumnValues,
   expectNoAudioPlayback,
 } from '../shared/test-data'
+import { swipeRight } from '../shared/gestures'
 
 const { Given, When, Then } = createBdd()
 
@@ -231,24 +232,13 @@ When('I choose to unlink {string} from the session', async ({ page }, sceneName:
   await page.locator(`[data-unlink-scene="${sceneName}"]`).click()
 })
 
-When('I swipe right on the {string} card to unlink it', async ({ page }, sceneName: string) => {
+When('I swipe right on the {string} session scene card to unlink it', async ({ page }, sceneName: string) => {
   if (!page.url().includes('/sessions/')) {
     await openSessionScenes(page, 'Session 1')
   }
   const card = page.locator(`[data-session-scene-card="${sceneName}"]`)
-  await card.evaluate((el) => {
-    const touchStartEvent = new Event('touchstart', { bubbles: true })
-    Object.defineProperty(touchStartEvent, 'touches', {
-      value: [{ clientX: 10 }]
-    })
-    el.dispatchEvent(touchStartEvent)
-
-    const touchEndEvent = new Event('touchend', { bubbles: true })
-    Object.defineProperty(touchEndEvent, 'changedTouches', {
-      value: [{ clientX: 100 }]
-    })
-    el.dispatchEvent(touchEndEvent)
-  })
+  const swipeTarget = page.locator('[data-swipe-delete]').filter({ has: card })
+  await swipeRight(swipeTarget)
 })
 
 When('I confirm the unlink', async ({ page }) => {
@@ -301,14 +291,14 @@ Then(
 )
 
 Then(
-  'the {string} card shows a Last Active indicator',
+  'the {string} session scene card shows a Last Active indicator',
   async ({ page }, sceneName: string) => {
     await expect(page.locator(`[data-last-active="${sceneName}"]`)).toBeVisible()
   },
 )
 
 Then(
-  'the {string} card does not show a Last Active indicator',
+  'the {string} session scene card does not show a Last Active indicator',
   async ({ page }, sceneName: string) => {
     await expect(page.locator(`[data-last-active="${sceneName}"]`)).toHaveCount(0)
   },

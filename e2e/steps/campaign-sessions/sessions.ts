@@ -2,7 +2,9 @@ import { expect } from '@playwright/test'
 import { createBdd } from 'playwright-bdd'
 import {
   buildCampaign,
+  buildScene,
   buildSession,
+  buildSessionSceneLink,
   campaignIdForName,
   mergeCampaign,
   openCampaignSessions,
@@ -11,6 +13,7 @@ import {
   setE2EControls,
   tableRows,
 } from '../shared/test-data'
+import { swipeRight } from '../shared/gestures'
 
 const { Given, When, Then } = createBdd()
 
@@ -33,16 +36,27 @@ Given(
     await resetE2EData(page)
     const campaign = buildCampaign(campaignName)
     const row = tableRows(dataTable)[0] ?? []
+    const sceneCount = Number.parseInt(row[3] ?? '0', 10)
     const session = buildSession(
       campaign.id,
       Number.parseInt(row[0]?.replace('Session ', '') ?? '1', 10),
       row[1] ?? 'Untitled',
       {
         date: row[2] === 'Mar 12' ? '2026-03-12' : new Date().toISOString().slice(0, 10),
-        sceneCount: Number.parseInt(row[3] ?? '0', 10),
       },
     )
-    await seedE2EData(page, { campaigns: [campaign], sessions: [session] })
+    const scenes = Array.from({ length: sceneCount }, (_, index) =>
+      buildScene(`${session.name} Scene ${index + 1}`),
+    )
+    const sessionSceneLinks = scenes.map((scene) =>
+      buildSessionSceneLink(session.id, scene.id),
+    )
+    await seedE2EData(page, {
+      campaigns: [campaign],
+      sessions: [session],
+      scenes,
+      sessionSceneLinks,
+    })
   },
 )
 
@@ -237,7 +251,7 @@ When('I tap the card body for session {string}', async ({ page }, sessionLabel: 
   await page.locator(`[data-session-body="${sessionLabel}"]`).click()
 })
 
-When('I tap Edit on the {string} card', async ({ page }, sessionLabel: string) => {
+When('I tap Edit on the {string} session card', async ({ page }, sessionLabel: string) => {
   await page.locator(`[data-edit-session="${sessionLabel}"]`).click()
 })
 
@@ -279,7 +293,7 @@ When('I confirm the edit', async ({ page }) => {
 })
 
 When(
-  'I {string} on the {string} card',
+  /^I (tap Trash|swipe right) on the "([^"]+)" session card$/,
   async ({ page }, gesture: string, sessionLabel: string) => {
     if (gesture === 'tap Trash') {
       await page.locator(`[data-delete-session="${sessionLabel}"]`).click()
@@ -287,10 +301,8 @@ When(
     }
     if (gesture === 'swipe right') {
       const card = page.locator(`[data-session-card="${sessionLabel}"]`)
-      const box = await card.boundingBox()
-      if (!box) throw new Error('Session card not found')
-      await page.touchscreen.tap(box.x + 10, box.y + box.height / 2)
-      await page.touchscreen.tap(box.x + box.width - 10, box.y + box.height / 2)
+      const swipeTarget = page.locator('[data-swipe-delete]').filter({ has: card })
+      await swipeRight(swipeTarget)
     }
   },
 )
@@ -358,12 +370,13 @@ Then('I see an {string} card in the grid', async ({ page }, label: string) => {
   await expect(page.getByRole('button', { name: label })).toBeVisible()
 })
 
-Then('I see {string} on the session card', async ({ page }, text: string) => {
-  await expect(page.getByText(text, { exact: false })).toBeVisible()
+Then('I see {string} on the {string} session card', async ({ page }, text: string, sessionLabel: string) => {
+  const card = page.locator(`[data-session-card="${sessionLabel}"]`)
+  await expect(card.getByText(text, { exact: false })).toBeVisible()
 })
 
 Then(
-  'the {string} card shows a {string} badge',
+  'the {string} session card shows a {string} badge',
   async ({ page }, sessionLabel: string, badge: string) => {
     const card = page.locator(`[data-session-card="${sessionLabel}"]`)
     await expect(card.getByText(badge)).toBeVisible()
@@ -371,7 +384,7 @@ Then(
 )
 
 Then(
-  'the {string} card does not show a {string} badge',
+  'the {string} session card does not show a {string} badge',
   async ({ page }, sessionLabel: string, badge: string) => {
     const card = page.locator(`[data-session-card="${sessionLabel}"]`)
     await expect(card.getByText(badge)).toHaveCount(0)
@@ -383,10 +396,10 @@ Then('I see loading placeholders for session cards', async ({ page }) => {
 })
 
 Then('I see the scene list for {string}', async ({ page }, sessionLabel: string) => {
-  await expect(page.getByRole('heading', { level: 2, name: 'Session Scenes' })).toBeVisible({
-    timeout: 10_000,
-  })
-  await expect(page.locator(`[data-session-label="${sessionLabel}"]`)).toBeVisible()
+  const screen = page.getByRole('region', { name: 'Session Scenes screen' })
+  await expect(screen).toBeVisible()
+  await expect(screen.getByRole('heading', { level: 2 })).toContainText(sessionLabel)
+  await expect(screen.getByText('Session Scenes', { exact: true })).toBeVisible()
 })
 
 Then('I see the session edit dialog', async ({ page }) => {
@@ -419,7 +432,7 @@ Then('I see the new session in the sessions list', async ({ page }) => {
   await expect(page.locator('[data-session-card]').first()).toBeVisible()
 })
 
-Then('the session card shows the chosen future date', async ({ page }) => {
+Then('the new session card shows the chosen future date', async ({ page }) => {
   await expect(page.locator('[data-session-metadata]').first()).toBeVisible()
 })
 
@@ -427,8 +440,9 @@ Then('the selected image is shown as the session\'s cover art', async ({ page })
   await expect(page.locator('[data-testid="cover-art-area"] img')).toBeVisible()
 })
 
-Then('the session card shows the description snippet', async ({ page }) => {
-  await expect(page.locator('[data-session-card] .italic')).toBeVisible()
+Then('the {string} session card shows the description snippet', async ({ page }, sessionLabel: string) => {
+  const card = page.locator(`[data-session-card="${sessionLabel}"]`)
+  await expect(card.locator('.italic')).toBeVisible()
 })
 
 Then('I see the empty sessions list for {string}', async ({ page }, campaignName: string) => {
@@ -456,14 +470,16 @@ Then('I do not see {string} in the sessions list', async ({ page }, name: string
   await expect(page.locator(`[data-session-name]`).filter({ hasText: name })).toHaveCount(0)
 })
 
-Then('the session card shows the updated cover art', async ({ page }) => {
-  await expect(page.locator('[data-session-card] img').first()).toBeVisible()
+Then('the {string} session card shows the updated cover art', async ({ page }, sessionLabel: string) => {
+  const card = page.locator(`[data-session-card="${sessionLabel}"]`)
+  await expect(card.locator('img').first()).toBeVisible()
 })
 
 Then(
-  'the session card shows {string} as the description snippet',
-  async ({ page }, snippet: string) => {
-    await expect(page.getByText(snippet)).toBeVisible()
+  'the {string} session card shows {string} as the description snippet',
+  async ({ page }, sessionLabel: string, snippet: string) => {
+    const card = page.locator(`[data-session-card="${sessionLabel}"]`)
+    await expect(card.getByText(snippet)).toBeVisible()
   },
 )
 
@@ -475,9 +491,15 @@ Then('{string} is no longer in the sessions list', async ({ page }, sessionLabel
   await expect(page.locator(`[data-session-number="${sessionLabel}"]`)).toHaveCount(0)
 })
 
+Then('{string} appears above older sessions in the list', async ({ page }, sessionLabel: string) => {
+  const firstCard = page.locator('[data-session-card]').first()
+  await expect(firstCard.locator(`[data-session-number="${sessionLabel}"]`)).toBeVisible()
+})
+
 Then('{string} is available for recovery in Trash', async ({ page }, sessionLabel: string) => {
-  await page.goto('/trash')
-  await expect(page.locator(`[data-trashed-session="${sessionLabel}"]`)).toBeVisible()
+  await page.goto('/trash?tab=sessions')
+  const sessionsTab = page.getByRole('region', { name: 'Trash Sessions tab' })
+  await expect(sessionsTab.getByText(new RegExp(`^${sessionLabel}:`))).toBeVisible()
 })
 
 Then('{string} remains in the sessions list', async ({ page }, sessionLabel: string) => {

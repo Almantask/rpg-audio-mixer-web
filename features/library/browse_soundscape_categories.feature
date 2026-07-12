@@ -25,11 +25,11 @@ Feature: Browse soundscape categories
   Scenario: Each category card shows the track count per intensity level
     Given "Weather" has 3 tracks at level I, 5 at level II, and 2 at level III
     When I open the Soundscapes tab in the Library
-    Then the "Weather" card shows "I: 3 · II: 5 · III: 2"
+    Then the "Weather" soundscape category card shows "I: 3 · II: 5 · III: 2"
 
   Scenario: Opening a category from the library grid opens the Category Composer
     Given "Interior" is in the soundscape categories grid
-    When I tap the "Interior" card body
+    When I tap the "Interior" soundscape category card body
     Then I see the Soundscape Category Composer for "Interior"
 
   Scenario: Soundscape categories show skeleton cards while loading

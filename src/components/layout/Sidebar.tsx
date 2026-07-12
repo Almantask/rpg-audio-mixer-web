@@ -9,7 +9,7 @@ import {
   ScrollText,
   Trash2,
 } from 'lucide-react'
-import { NavLink } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { SIDEBAR_ITEMS, SIDEBAR_ROUTES, type SidebarItem } from '@/lib/constants'
 import { cn } from '@/lib/utils'
@@ -49,7 +49,7 @@ export function Sidebar({ open, onNavigate }: SidebarProps) {
           const isActive = activeItem === item
 
           return (
-            <NavLink
+            <Link
               key={item}
               to={SIDEBAR_ROUTES[item]}
               onClick={onNavigate}
@@ -65,7 +65,7 @@ export function Sidebar({ open, onNavigate }: SidebarProps) {
             >
               {ICONS[item]}
               <span>{item === 'Campaign' ? 'Campaign' : item}</span>
-            </NavLink>
+            </Link>
           )
         })}
       </nav>

@@ -13,6 +13,7 @@ import {
   setE2EControls,
   tableColumnValues,
 } from '../shared/test-data'
+import { swipeRight } from '../shared/gestures'
 
 const { Given, When, Then } = createBdd()
 
@@ -219,7 +220,7 @@ When('I select an image from the browser upload dialog', async ({ page }) => {
   })
 })
 
-When('I tap "Resume" on the {string} card', async ({ page }, campaignName: string) => {
+When('I tap "Resume" on the {string} campaign card', async ({ page }, campaignName: string) => {
   await ensureCampaignsScreen(page)
   await page.locator(`[data-campaign-cta="${campaignName}"]`).click()
 })
@@ -233,7 +234,7 @@ When('I tap the campaign title {string}', async ({ page }, title: string) => {
 })
 
 When(
-  'I {string} on the {string} card',
+  /^I (tap the delete control|swipe right) on the "([^"]+)" campaign card$/,
   async ({ page }, action: string, campaignName: string) => {
     if (action === 'tap the delete control') {
       await page.locator(`[data-delete-campaign="${campaignName}"]`).click()
@@ -241,10 +242,8 @@ When(
     }
     if (action === 'swipe right') {
       const card = page.locator(`[data-campaign-card="${campaignName}"]`)
-      const box = await card.boundingBox()
-      if (!box) throw new Error('Campaign card not found')
-      await page.touchscreen.tap(box.x + 10, box.y + box.height / 2)
-      await page.touchscreen.tap(box.x + box.width - 10, box.y + box.height / 2)
+      const swipeTarget = page.locator('[data-swipe-delete]').filter({ has: card })
+      await swipeRight(swipeTarget)
       return
     }
     throw new Error(`Unknown delete action: ${action}`)
@@ -281,9 +280,10 @@ Then('I see {string} on its campaign card', async ({ page }, name: string) => {
 })
 
 Then(
-  'I see the description snippet {string} on the card',
-  async ({ page }, snippet: string) => {
-    await expect(page.getByText(snippet)).toBeVisible()
+  'I see the description snippet {string} on the {string} campaign card',
+  async ({ page }, snippet: string, campaignName: string) => {
+    const card = page.locator(`[data-campaign-card="${campaignName}"]`)
+    await expect(card.getByText(snippet)).toBeVisible()
   },
 )
 
@@ -327,14 +327,14 @@ Then('I see all three campaigns in the list', async ({ page }) => {
 })
 
 Then(
-  'I do not see a description on the {string} card',
+  'I do not see a description on the {string} campaign card',
   async ({ page }, campaignName: string) => {
     await expect(page.locator(`[data-campaign-description="${campaignName}"]`)).toHaveCount(0)
   },
 )
 
 Then(
-  'I see {string} on the {string} card',
+  'I see {string} on the {string} campaign card',
   async ({ page }, text: string, campaignName: string) => {
     const card = page.locator(`[data-campaign-card="${campaignName}"]`)
     await expect(card.getByText(text)).toBeVisible()
@@ -351,7 +351,7 @@ Then('I see an error message with a retry action', async ({ page }) => {
 })
 
 Then(
-  'I see a {string} button on the {string} card',
+  'I see a {string} button on the {string} campaign card',
   async ({ page }, label: string, campaignName: string) => {
     const card = page.locator(`[data-campaign-card="${campaignName}"]`)
     await expect(card.getByRole('button', { name: label })).toBeVisible()

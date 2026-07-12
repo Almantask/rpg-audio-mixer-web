@@ -218,9 +218,7 @@ export function LibraryPage() {
     updateFx,
     softDeleteFx,
     downloadFreeTracks,
-    activeSoundscapeTracks,
     createSoundscapeCategory,
-    updateSoundscapeCategory,
     softDeleteSoundscapeCategory,
     downloadFreeCompositions,
   } = useCampaignData()

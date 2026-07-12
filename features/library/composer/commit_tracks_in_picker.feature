@@ -8,7 +8,7 @@ Feature: Commit tracks in Category Composer picker
   Scenario: Track picker Add Selected is disabled when no tracks are checked
     Given the Track Picker modal is open for "Level I" in "Weather"
     And the soundscape library has "Thunderous Downpour"
-    And no track cards are checked
+    And no picker track cards are checked
     Then the "Add Selected (0)" button is disabled
 
   Scenario: Add Selected adds checked tracks to the current intensity level
@@ -24,16 +24,16 @@ Feature: Commit tracks in Category Composer picker
     And the soundscape library has "Thunderous Downpour"
     And I have checked "Thunderous Downpour"
     When I tap "Add Selected (1)"
-    Then no track cards are checked
+    Then no picker track cards are checked
     And the "Add Selected (0)" button is disabled
     And the Track Picker modal stays open
 
   Scenario: Multiple Add Selected commits can run in one picker visit
     Given the Track Picker modal is open for "Level I" in "Weather"
     And the soundscape library has "Thunderous Downpour" and "Distant Rolling Thunder"
-    When I check "Thunderous Downpour"
+    When I check "Thunderous Downpour" in the track picker
     And I tap "Add Selected (1)"
-    And I check "Distant Rolling Thunder"
+    And I check "Distant Rolling Thunder" in the track picker
     And I tap "Add Selected (1)"
     Then both tracks appear in "Level I"
     And the Track Picker modal stays open
@@ -48,7 +48,7 @@ Feature: Commit tracks in Category Composer picker
   Scenario: The same track may appear on multiple intensity levels
     Given "Thunderous Downpour" is attached to "Level I" in "Weather"
     And the Track Picker modal is open for "Level II" in "Weather"
-    When I check "Thunderous Downpour"
+    When I check "Thunderous Downpour" in the track picker
     And I tap "Add Selected (1)"
     Then "Thunderous Downpour" appears on both "Level I" and "Level II"
 
@@ -56,7 +56,7 @@ Feature: Commit tracks in Category Composer picker
     Given I am in the Soundscape Category Composer for "Weather"
     And the Track Picker modal is open for "Level I" in "Weather"
     And the soundscape library has "Thunderous Downpour"
-    When I check "Thunderous Downpour"
+    When I check "Thunderous Downpour" in the track picker
     And I tap "Add Selected (1)"
     Then I see "Thunderous Downpour" in "Level I"
     And the composition is persisted without tapping "Save Composition"

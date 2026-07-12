@@ -34,10 +34,15 @@ describe('Sidebar', () => {
   it('highlights Home on session drill-down routes', () => {
     renderSidebar('/campaigns/curse-of-strahd/sessions/1/scenes')
 
-    expect(screen.getByText('Home').closest('[data-sidebar-item="Home"]')).toHaveAttribute(
-      'data-active',
-      'true',
-    )
+    const homeLink = screen.getByRole('link', { name: 'Home' })
+    expect(homeLink).toHaveAttribute('data-active', 'true')
+    expect(homeLink).toHaveAttribute('aria-current', 'page')
+
+    for (const link of screen.getAllByRole('link')) {
+      if (link !== homeLink) {
+        expect(link).not.toHaveAttribute('aria-current')
+      }
+    }
   })
 
   it('shows a static avatar placeholder without navigation', async () => {

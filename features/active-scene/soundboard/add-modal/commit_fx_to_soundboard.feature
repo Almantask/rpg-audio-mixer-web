@@ -17,7 +17,7 @@ Feature: Commit FX selection to soundboard
     And I check "Wolf Howl" in the picker
     Then the "Add Selected (2)" button is enabled
 
-  Scenario: Checking a card selects it without starting preview
+  Scenario: Checking the FX picker checkbox selects the track without starting preview
     Given the Sound Effects picker modal is open
     And the FX library has "Thunder Crack"
     When I check "Thunder Crack" in the picker
@@ -52,6 +52,7 @@ Feature: Commit FX selection to soundboard
 
   Scenario: Multiple commits can add effects in one visit to the picker
     Given the Sound Effects picker modal is open
+    And the FX library has "Thunder Crack", "Wolf Howl", and "Sword Clash"
     When I check "Thunder Crack" in the picker
     And I tap "Add Selected (1)"
     And I check "Wolf Howl" in the picker
@@ -71,6 +72,7 @@ Feature: Commit FX selection to soundboard
   Scenario: Hotkeys are assigned sequentially to newly added tiles only
     Given the current scene's soundboard has 3 effect tiles with hotkeys Num 1 through Num 3
     And the Sound Effects picker modal is open
+    And the FX library has "Thunder Crack"
     When I check "Thunder Crack" in the picker
     And I tap "Add Selected (1)"
     Then the "Thunder Crack" tile shows hotkey label "Num 4"

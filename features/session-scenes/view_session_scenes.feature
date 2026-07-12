@@ -55,8 +55,8 @@ Feature: View session scenes
     And I most recently played "Forest" in "Session 1"
     When I open "Session 1"
     Then "Forest" appears above "Tavern" in the session scene list
-    And the "Forest" card shows a Last Active indicator
-    And the "Tavern" card does not show a Last Active indicator
+    And the "Forest" session scene card shows a Last Active indicator
+    And the "Tavern" session scene card does not show a Last Active indicator
 
   Scenario: Non-active linked scenes follow last-played recency order
     Given "Tavern", "Forest", and "Dungeon" are linked to "Session 1"

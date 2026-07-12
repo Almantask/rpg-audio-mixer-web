@@ -9,21 +9,21 @@ Feature: Browse FX library
     Given I am on the Sound Effects tab in the Library
     Then I see the subtitle "Browse, import, and manage your sound effects."
 
-  Scenario: Multiple FX tracks appear in the card grid
+  Scenario: Multiple FX tracks appear in the FX library card grid
     Given I have imported "Wolf Howl", "Thunder Crack", "Door Creak"
     When I open the Sound Effects tab in the Library
-    Then I see all three tracks as cards in the grid
+    Then I see all three tracks as FX cards in the grid
 
   Scenario: FX cards show title, duration, and base intensity
     Given "Thunder Crack" is in the FX library with duration 0:04 and base intensity II
     When I open the Sound Effects tab in the Library
-    Then the "Thunder Crack" card shows the title "Thunder Crack"
-    And the card shows duration "0:04" and base intensity "II"
+    Then the "Thunder Crack" FX card shows the title "Thunder Crack"
+    And the "Thunder Crack" FX card shows duration "0:04" and base intensity "II"
 
   Scenario: FX cards show tag badge chips
     Given "Wolf Howl" is in the FX library with tags "Combat" and "Creature"
     When I open the Sound Effects tab in the Library
-    Then the "Wolf Howl" card shows "Combat" and "Creature" tag chips
+    Then the "Wolf Howl" FX card shows "Combat" and "Creature" tag chips
 
   Scenario: FX library shows skeleton cards while loading
     Given the FX library data has not yet resolved
@@ -42,4 +42,4 @@ Feature: Browse FX library
   Scenario: FX browse cards have no checkboxes
     Given "Wolf Howl" is in the FX library
     When I open the Sound Effects tab in the Library
-    Then the "Wolf Howl" card has no checkbox
+    Then the "Wolf Howl" FX card has no checkbox
