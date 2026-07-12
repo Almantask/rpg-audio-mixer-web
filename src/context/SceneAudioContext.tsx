@@ -115,8 +115,25 @@ export function SceneAudioProvider({ sceneId, children }: SceneAudioProviderProp
   useEffect(() => {
     const manager = new SceneAudioManager()
     managerRef.current = manager
-    const unsubscribe = manager.subscribe(setPlayback)
+    let rafId: number | undefined
+    let pendingState: ScenePlaybackState | null = null
+    const flushPlayback = () => {
+      rafId = undefined
+      if (pendingState) {
+        setPlayback(pendingState)
+        pendingState = null
+      }
+    }
+    const unsubscribe = manager.subscribe((state) => {
+      pendingState = state
+      if (rafId === undefined) {
+        rafId = requestAnimationFrame(flushPlayback)
+      }
+    })
     return () => {
+      if (rafId !== undefined) {
+        cancelAnimationFrame(rafId)
+      }
       unsubscribe()
       manager.dispose()
       managerRef.current = null

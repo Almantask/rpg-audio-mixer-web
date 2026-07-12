@@ -9,7 +9,7 @@ const BUNDLED_FX_FILES = [
   'dog_bark.ogg',
   'dragon_roar2.ogg',
   'dragon_roar3.ogg',
-  'draong_roar.ogg',
+  'dragon-studio-dragon-roar-364478.ogg',
   'musicholder-sword-sound-260274.ogg',
   'owl_hooting.ogg',
   'sword.ogg',

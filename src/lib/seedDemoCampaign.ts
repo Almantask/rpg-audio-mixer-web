@@ -9,6 +9,7 @@ import type {
 } from '@/types/scene'
 import { createBundledFxTracks } from '@/lib/seedBundledFx'
 import { createBundledSoundscapeLibrary } from '@/lib/seedBundledSoundscapes'
+import { dedupeSoundboardEntries } from '@/lib/sceneStorage'
 
 export const DEMO_CAMPAIGN_ID = 'campaign-demo-adventure'
 export const DEMO_CAMPAIGN_NAME = 'Demo Adventure'
@@ -51,10 +52,18 @@ function resolveSoundscapeCategory(
 }
 
 function orderedBundledFxTracks(fxTracks: FxTrack[], now: string): FxTrack[] {
-  return createBundledFxTracks(now).map(
-    (seed) =>
-      fxTracks.find((track) => track.name.toLowerCase() === seed.name.toLowerCase()) ?? seed,
-  )
+  const seen = new Set<string>()
+  const tracks: FxTrack[] = []
+  for (const seed of createBundledFxTracks(now)) {
+    const track =
+      fxTracks.find((item) => item.name.toLowerCase() === seed.name.toLowerCase()) ?? seed
+    if (seen.has(track.id)) {
+      continue
+    }
+    seen.add(track.id)
+    tracks.push(track)
+  }
+  return tracks
 }
 
 export interface DemoCampaignSeed extends Pick<
@@ -252,10 +261,10 @@ export function mergeDemoCampaignInto(current: AppData, demo: DemoCampaignSeed):
       ...current.sceneSoundscapeSlots.filter((slot) => slot.sceneId !== DEMO_SCENE_ID),
       ...demo.sceneSoundscapeSlots,
     ],
-    sceneSoundboardEntries: [
+    sceneSoundboardEntries: dedupeSoundboardEntries([
       ...current.sceneSoundboardEntries.filter((entry) => entry.sceneId !== DEMO_SCENE_ID),
       ...demo.sceneSoundboardEntries,
-    ],
+    ]),
     sceneSoundscapeSettings: mergeSettingsBySceneId(
       current.sceneSoundscapeSettings,
       demo.sceneSoundscapeSettings,

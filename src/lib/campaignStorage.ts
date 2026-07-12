@@ -1,5 +1,6 @@
 import type { AppData, Campaign, E2EControls, Session } from '@/types/campaign'
 import { DEFAULT_E2E_CONTROLS, EMPTY_APP_DATA } from '@/types/campaign'
+import { dedupeSoundboardEntries } from '@/lib/sceneStorage'
 
 const STORAGE_KEY = 'arcanum-audio-data'
 const E2E_STORAGE_KEY = 'arcanum-e2e-controls'
@@ -22,7 +23,7 @@ export function loadAppData(): AppData {
       lastActiveSessionByCampaign: parsed.lastActiveSessionByCampaign ?? {},
       scenes: parsed.scenes ?? [],
       sessionSceneLinks: parsed.sessionSceneLinks ?? [],
-      sceneSoundboardEntries: parsed.sceneSoundboardEntries ?? [],
+      sceneSoundboardEntries: dedupeSoundboardEntries(parsed.sceneSoundboardEntries ?? []),
       sceneSoundscapeSlots: parsed.sceneSoundscapeSlots ?? [],
       sceneSoundboardSettings: parsed.sceneSoundboardSettings ?? [],
       sceneSoundscapeSettings: parsed.sceneSoundscapeSettings ?? [],

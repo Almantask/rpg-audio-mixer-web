@@ -10,6 +10,7 @@ import {
   mergeDemoCampaignInto,
 } from '@/lib/seedDemoCampaign'
 import { categoryHasTracks } from '@/lib/soundscapeStorage'
+import { dedupeSoundboardEntries } from '@/lib/sceneStorage'
 
 function countAssignedTracks(category: SoundscapeCategory): number {
   return (
@@ -51,6 +52,27 @@ function mergeFxByName(existing: FxTrack[], incoming: FxTrack[]): FxTrack[] {
   return [...existing, ...incoming.filter((track) => !names.has(track.name.toLowerCase()))]
 }
 
+function syncBundledFxTracks(existing: FxTrack[], bundled: FxTrack[]): { fxTracks: FxTrack[]; changed: boolean } {
+  const bundledById = new Map(bundled.map((track) => [track.id, track]))
+  let changed = false
+  const synced = existing.map((track) => {
+    const seed = bundledById.get(track.id)
+    if (!seed) {
+      return track
+    }
+    if (track.audioUrl === seed.audioUrl && track.name === seed.name) {
+      return track
+    }
+    changed = true
+    return { ...track, audioUrl: seed.audioUrl, name: seed.name }
+  })
+  const merged = mergeFxByName(synced, bundled)
+  if (merged.length !== existing.length) {
+    changed = true
+  }
+  return { fxTracks: merged, changed }
+}
+
 function mergeSoundscapeCategories(
   existing: SoundscapeCategory[],
   incoming: SoundscapeCategory[],
@@ -84,12 +106,12 @@ function mergeBundledLibrary(
     bundledSoundscapes.categories,
   )
   const mergedTracks = mergeById(current.soundscapeTracks ?? [], bundledSoundscapes.tracks)
-  const mergedFx = mergeFxByName(current.fxTracks, bundledFx)
+  const mergedFxResult = syncBundledFxTracks(current.fxTracks, bundledFx)
 
   const changed =
     mergedCategories.changed ||
     mergedTracks.length !== (current.soundscapeTracks ?? []).length ||
-    mergedFx.length !== current.fxTracks.length
+    mergedFxResult.changed
 
   return {
     changed,
@@ -97,7 +119,7 @@ function mergeBundledLibrary(
       ...current,
       soundscapeCategories: mergedCategories.categories,
       soundscapeTracks: mergedTracks,
-      fxTracks: mergedFx,
+      fxTracks: mergedFxResult.fxTracks,
     },
   }
 }
@@ -129,7 +151,12 @@ export function ensureBundledAppSeed(
     )
 
   if (!shouldEnsureDemoCampaign && !shouldRepairDemoScene) {
-    return libraryChanged ? next : null
+    const sceneSoundboardEntries = dedupeSoundboardEntries(next.sceneSoundboardEntries)
+    const entriesChanged = sceneSoundboardEntries.length !== next.sceneSoundboardEntries.length
+    if (!libraryChanged && !entriesChanged) {
+      return null
+    }
+    return entriesChanged ? { ...next, sceneSoundboardEntries } : next
   }
 
   const demo = createDemoCampaignData(

@@ -10,6 +10,31 @@ export function getTrashedScenes(scenes: Scene[]): Scene[] {
   return scenes.filter((scene) => scene.deletedAt)
 }
 
+export function dedupeSoundboardEntries(entries: SceneSoundboardEntry[]): SceneSoundboardEntry[] {
+  const byId = new Map<string, SceneSoundboardEntry>()
+  for (const entry of entries) {
+    if (!byId.has(entry.id)) {
+      byId.set(entry.id, entry)
+    }
+  }
+
+  const bySceneTrack = new Map<string, SceneSoundboardEntry>()
+  for (const entry of byId.values()) {
+    const key = `${entry.sceneId}:${entry.fxTrackId}`
+    const existing = bySceneTrack.get(key)
+    if (!existing || entry.order < existing.order) {
+      bySceneTrack.set(key, entry)
+    }
+  }
+
+  return Array.from(bySceneTrack.values()).sort((a, b) => {
+    if (a.sceneId !== b.sceneId) {
+      return a.sceneId.localeCompare(b.sceneId)
+    }
+    return a.order - b.order
+  })
+}
+
 export function getSceneStats(
   sceneId: string,
   soundscapeSlots: SceneSoundscapeSlot[],

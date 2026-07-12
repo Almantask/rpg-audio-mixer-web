@@ -273,7 +273,14 @@ export class SceneAudioManager {
 
     this.evictSoundboardInstancesIfNeeded(fxTrackId)
 
-    const buffer = await this.loadBuffer(audioUrl)
+    let buffer: AudioBuffer
+    try {
+      buffer = await this.loadBuffer(audioUrl)
+    } catch (error) {
+      console.error(`Soundboard playback failed for "${trackName}"`, error)
+      return
+    }
+
     const source = this.ctx.createBufferSource()
     source.buffer = buffer
     source.connect(this.soundboardMasterBus)
@@ -491,10 +498,17 @@ export class SceneAudioManager {
       return cached
     }
     const response = await fetch(audioUrl)
+    if (!response.ok) {
+      throw new Error(`Failed to load audio (${response.status}): ${audioUrl}`)
+    }
     const arrayBuffer = await response.arrayBuffer()
-    const buffer = await this.ctx.decodeAudioData(arrayBuffer)
-    this.bufferCache.set(audioUrl, buffer)
-    return buffer
+    try {
+      const buffer = await this.ctx.decodeAudioData(arrayBuffer)
+      this.bufferCache.set(audioUrl, buffer)
+      return buffer
+    } catch (error) {
+      throw new Error(`Unable to decode audio: ${audioUrl}`, { cause: error })
+    }
   }
 
   private applySoundboardMasterVolume(): void {

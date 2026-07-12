@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   filterScenesByName,
+  dedupeSoundboardEntries,
   formatFxDuration,
   formatSceneStats,
   getActiveScenes,
@@ -77,5 +78,23 @@ describe('sceneStorage', () => {
     expect(formatFxDuration(4)).toBe('0:04')
     expect(getHotkeyLabel(0)).toBe('Num 1')
     expect(getHotkeyLabel(9)).toBeUndefined()
+  })
+
+  it('dedupes soundboard entries by id and scene track', () => {
+    const duplicateId: SceneSoundboardEntry = {
+      id: 'soundboard-scene-the-ancient-gate-fx-bundled-6',
+      sceneId: 'scene-the-ancient-gate',
+      fxTrackId: 'fx-bundled-6',
+      order: 1,
+    }
+    const duplicateTrack: SceneSoundboardEntry = {
+      id: 'soundboard-entry-other',
+      sceneId: 'scene-the-ancient-gate',
+      fxTrackId: 'fx-bundled-6',
+      order: 2,
+    }
+    const deduped = dedupeSoundboardEntries([duplicateId, duplicateId, duplicateTrack])
+    expect(deduped).toHaveLength(1)
+    expect(deduped[0]?.id).toBe('soundboard-scene-the-ancient-gate-fx-bundled-6')
   })
 })

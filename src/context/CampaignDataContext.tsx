@@ -60,6 +60,8 @@ import { createBundledSoundscapeLibrary } from '@/lib/seedBundledSoundscapes'
 
 import {
 
+  dedupeSoundboardEntries,
+
   getActiveScenes,
 
   getLinkedSessionCount,
@@ -1373,7 +1375,7 @@ export function CampaignDataProvider({ children }: { children: ReactNode }) {
 
     (sceneId: string) =>
 
-      data.sceneSoundboardEntries
+      dedupeSoundboardEntries(data.sceneSoundboardEntries)
 
         .filter((entry) => entry.sceneId === sceneId)
 
