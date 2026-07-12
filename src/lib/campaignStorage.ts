@@ -27,6 +27,7 @@ export function loadAppData(): AppData {
       sceneSoundboardSettings: parsed.sceneSoundboardSettings ?? [],
       fxTracks: parsed.fxTracks ?? [],
       soundscapeCategories: parsed.soundscapeCategories ?? [],
+      soundscapeTracks: parsed.soundscapeTracks ?? [],
       lastActiveSceneBySession: parsed.lastActiveSceneBySession ?? {},
     }
   } catch {

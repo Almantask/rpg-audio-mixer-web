@@ -1,4 +1,4 @@
-import type { FxTrack, SoundscapeCategory } from './library'
+import type { FxTrack, SoundscapeCategory, SoundscapeTrack } from './library'
 import type {
   Scene,
   SceneSoundboardEntry,
@@ -42,17 +42,19 @@ export interface AppData {
   sceneSoundboardSettings: SceneSoundboardSettings[]
   fxTracks: FxTrack[]
   soundscapeCategories: SoundscapeCategory[]
+  soundscapeTracks: SoundscapeTrack[]
   /** sessionId → sceneId of most recently played scene */
   lastActiveSceneBySession: Record<string, string>
 }
 
-export type TrashTab = 'campaigns' | 'sessions' | 'scenes' | 'fx'
+export type TrashTab = 'campaigns' | 'sessions' | 'scenes' | 'soundscapes' | 'fx'
 
 export interface E2EControls {
   campaignListState: 'ready' | 'loading' | 'error'
   sessionsListState: Record<string, 'ready' | 'loading' | 'error'>
   sceneListState: 'ready' | 'loading' | 'error'
   fxLibraryState: 'ready' | 'loading' | 'error'
+  soundscapeLibraryState?: 'ready' | 'loading' | 'error'
   sessionScenesListState: Record<string, 'ready' | 'loading' | 'error'>
   createSessionFails: boolean
   saveSessionFails: boolean
@@ -70,15 +72,19 @@ export const EMPTY_APP_DATA: AppData = {
   sceneSoundboardSettings: [],
   fxTracks: [],
   soundscapeCategories: [],
+  soundscapeTracks: [],
   lastActiveSceneBySession: {},
 }
+
 
 export const DEFAULT_E2E_CONTROLS: E2EControls = {
   campaignListState: 'ready',
   sessionsListState: {},
   sceneListState: 'ready',
   fxLibraryState: 'ready',
+  soundscapeLibraryState: 'ready',
   sessionScenesListState: {},
   createSessionFails: false,
   saveSessionFails: false,
 }
+

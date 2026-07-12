@@ -5,9 +5,10 @@ const testDir = defineBddConfig({
   features: 'features/**/*.feature',
   steps: 'e2e/steps/**/*.ts',
   outputDir: '.features-gen',
-  tags: '@iter0 or @iter1 or @iter2 or @iter3',
+  tags: '@iter0 or @iter1 or @iter2 or @iter3 or @iter4',
   missingSteps: 'skip-scenario',
 })
+
 
 export default defineConfig({
   testDir,

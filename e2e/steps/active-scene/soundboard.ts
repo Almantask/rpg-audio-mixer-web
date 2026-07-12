@@ -262,6 +262,15 @@ Given('{string} is previewing in the picker', async ({ page }, name: string) => 
     await body.click()
     return
   }
+  const scTrack = page.locator(`[data-picker-track="${name}"]`)
+  if ((await scTrack.count()) > 0) {
+    const preview = scTrack.getByRole('button', { name: `Preview ${name}`, exact: true })
+    await preview.click()
+    await expect(
+      scTrack.getByRole('button', { name: `Pause preview ${name}`, exact: true })
+    ).toHaveAttribute('aria-pressed', 'true')
+    return
+  }
   await page.evaluate((trackName) => {
     window.__ARCANUM_AUDIO_STATE__ = {
       isPlaying: true,
@@ -272,8 +281,14 @@ Given('{string} is previewing in the picker', async ({ page }, name: string) => 
 })
 
 When('I type {string} in the picker search bar', async ({ page }, query: string) => {
-  await page.locator('[data-fx-picker-search]').fill(query)
+  const fxSearch = page.locator('[data-fx-picker-search]')
+  if (await fxSearch.count() > 0) {
+    await fxSearch.fill(query)
+  } else {
+    await page.locator('[data-picker-search]').fill(query)
+  }
 })
+
 
 When('I set the FX Types filter to {word} in the picker', async ({ page }, fxType: string) => {
   await page.locator('[data-fx-picker-filter-type]').selectOption(fxType)
@@ -301,7 +316,15 @@ When('I check {string} in the picker', async ({ page }, name: string) => {
 })
 
 When('I tap the card body for {string}', async ({ page }, name: string) => {
-  await page.locator(`[data-fx-picker-body="${name}"]`).click()
+  const fxBody = page.locator(`[data-fx-picker-body="${name}"]`)
+  if (await fxBody.count() > 0) {
+    await fxBody.click()
+  } else {
+    await page
+      .locator(`[data-picker-track="${name}"]`)
+      .getByRole('button', { name: `Preview ${name}`, exact: true })
+      .click()
+  }
 })
 
 When('I tap the back link {string}', async ({ page }) => {
@@ -313,12 +336,17 @@ Then('I see the Sound Effects picker modal', async ({ page }) => {
 })
 
 Then('I see a back link {string}', async ({ page }, label: string) => {
-  await expect(page.locator('[data-fx-picker-back]')).toContainText(label)
+  const fxBack = page.locator('[data-fx-picker-back]')
+  if (await fxBack.count() > 0) {
+    await expect(fxBack).toContainText(label)
+    return
+  }
+  await expect(
+    page.getByRole('dialog').getByRole('button', { name: label, exact: true })
+  ).toBeVisible()
 })
 
-Then('I see the title {string}', async ({ page }, title: string) => {
-  await expect(page.getByRole('heading', { name: title })).toBeVisible()
-})
+
 
 Then(
   'I see the picker search bar with placeholder {string}',
@@ -362,15 +390,28 @@ Then('the picker grid shows a loading state', async ({ page }) => {
 })
 
 Then('I see {string} in the picker grid', async ({ page }, name: string) => {
-  await expect(page.locator(`[data-fx-picker-item="${name}"]`)).toBeVisible()
+  const fxItem = page.locator(`[data-fx-picker-item="${name}"]`)
+  if (await fxItem.count() > 0) {
+    await expect(fxItem).toBeVisible()
+  } else {
+    await expect(page.locator(`[data-picker-track="${name}"]`)).toBeVisible()
+  }
 })
 
 Then('I do not see {string} in the picker grid', async ({ page }, name: string) => {
-  await expect(page.locator(`[data-fx-picker-item="${name}"]`)).toHaveCount(0)
+  const fxItem = page.locator(`[data-fx-picker-item="${name}"]`)
+  const scTrack = page.locator(`[data-picker-track="${name}"]`)
+  await expect(fxItem).toHaveCount(0)
+  await expect(scTrack).toHaveCount(0)
 })
 
 Then('I see a clear-filters action', async ({ page }) => {
-  await expect(page.locator('[data-fx-picker-clear-filters]')).toBeVisible()
+  const fxFilters = page.locator('[data-fx-picker-clear-filters]')
+  if (await fxFilters.count() > 0) {
+    await expect(fxFilters).toBeVisible()
+  } else {
+    await expect(page.locator('[data-picker-no-match] button')).toBeVisible()
+  }
 })
 
 Then(
@@ -399,7 +440,12 @@ Then('But I see {string} in the picker grid', async ({ page }, name: string) => 
 
 Then('the {string} button is disabled', async ({ page }, label: string) => {
   if (label.startsWith('Add Selected')) {
-    await expect(page.locator('[data-fx-picker-add-selected]')).toBeDisabled()
+    const scBtn = page.locator('[data-picker-commit]')
+    if (await scBtn.count() > 0) {
+      await expect(scBtn).toBeDisabled()
+    } else {
+      await expect(page.locator('[data-fx-picker-add-selected]')).toBeDisabled()
+    }
     return
   }
   await expect(page.getByRole('button', { name: label })).toBeDisabled()
@@ -407,7 +453,12 @@ Then('the {string} button is disabled', async ({ page }, label: string) => {
 
 Then('the {string} button is enabled', async ({ page }, label: string) => {
   if (label.startsWith('Add Selected')) {
-    await expect(page.locator('[data-fx-picker-add-selected]')).toBeEnabled()
+    const scBtn = page.locator('[data-picker-commit]')
+    if (await scBtn.count() > 0) {
+      await expect(scBtn).toBeEnabled()
+    } else {
+      await expect(page.locator('[data-fx-picker-add-selected]')).toBeEnabled()
+    }
     return
   }
   await expect(page.getByRole('button', { name: label })).toBeEnabled()
@@ -490,12 +541,28 @@ Then('{string} stops previewing', async ({ page }, name: string) => {
     await expect(previewState).toHaveAttribute('data-state', 'idle')
     return
   }
+  const scTrack = page.locator(`[data-picker-track="${name}"]`)
+  if (await scTrack.count() > 0) {
+    await expect(
+      scTrack.getByRole('button', { name: `Preview ${name}`, exact: true })
+    ).toHaveAttribute('aria-pressed', 'false')
+    return
+  }
   const state = await page.evaluate(() => window.__ARCANUM_AUDIO_STATE__ ?? { isPlaying: false })
   expect(state.isPlaying === false || state.trackName !== name).toBeTruthy()
 })
 
 Then('{string} begins previewing in the picker', async ({ page }, name: string) => {
-  await expect(page.locator(`[data-fx-picker-preview-state="${name}"]`)).toHaveAttribute('data-state', 'playing')
+  const fxPreviewState = page.locator(`[data-fx-picker-preview-state="${name}"]`)
+  if (await fxPreviewState.count() > 0) {
+    await expect(fxPreviewState).toHaveAttribute('data-state', 'playing')
+    return
+  }
+  await expect(
+    page
+      .locator(`[data-picker-track="${name}"]`)
+      .getByRole('button', { name: `Pause preview ${name}`, exact: true })
+  ).toHaveAttribute('aria-pressed', 'true')
 })
 
 Then('the {string} card shows a playing state in the picker', async ({ page }, name: string) => {

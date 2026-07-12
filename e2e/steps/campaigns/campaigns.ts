@@ -163,7 +163,12 @@ When('I tap {string}', async ({ page }, label: string) => {
     return
   }
   if (/^Add Selected \(\d+\)$/.test(label)) {
-    await page.locator('[data-fx-picker-add-selected]').click()
+    const soundscapeCommit = page.locator('[data-picker-commit]')
+    if (await soundscapeCommit.count() > 0) {
+      await soundscapeCommit.click()
+    } else {
+      await page.locator('[data-fx-picker-add-selected]').click()
+    }
     return
   }
   await page.getByRole('button', { name: label, exact: true }).click()
@@ -309,9 +314,7 @@ Then('I see the page title {string}', async ({ page }, title: string) => {
   await expect(page.getByRole('heading', { level: 2, name: title })).toBeVisible()
 })
 
-Then('I see the subtitle {string}', async ({ page }, subtitle: string) => {
-  await expect(page.getByText(subtitle)).toBeVisible()
-})
+
 
 Then('I see a {string} card', async ({ page }, label: string) => {
   await expect(page.getByRole('button', { name: label })).toBeVisible()

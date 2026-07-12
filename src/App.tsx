@@ -6,6 +6,7 @@ import { CampaignSessionsPage } from '@/pages/CampaignSessionsPage'
 import { CreditsPage } from '@/pages/CreditsPage'
 import { HomePage } from '@/pages/HomePage'
 import { LibraryPage, StorefrontPage } from '@/pages/LibraryPage'
+import { CategoryComposerPage } from '@/pages/CategoryComposerPage'
 import { ScenesPage } from '@/pages/ScenesPage'
 import { SessionScenesPage } from '@/pages/SessionScenesPage'
 import { TrashPage } from '@/pages/TrashPage'
@@ -25,9 +26,11 @@ export function AppRoutes() {
           <Route path="scenes" element={<ScenesPage />} />
           <Route path="scenes/:sceneId/active" element={<ActiveScenePage />} />
           <Route path="library" element={<LibraryPage />} />
+          <Route path="library/soundscapes/:categoryId/compose" element={<CategoryComposerPage />} />
           <Route path="storefront" element={<StorefrontPage />} />
           <Route path="credits" element={<CreditsPage />} />
           <Route path="trash" element={<TrashPage />} />
+
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>

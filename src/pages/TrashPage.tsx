@@ -28,6 +28,8 @@ const TABS: { id: TrashTab; label: string }[] = [
 
   { id: 'scenes', label: 'Scenes' },
 
+  { id: 'soundscapes', label: 'Soundscapes' },
+
   { id: 'fx', label: 'FX' },
 
 ]
@@ -36,7 +38,7 @@ const TABS: { id: TrashTab; label: string }[] = [
 
 function trashTabFromQuery(value: string | null): TrashTab {
 
-  if (value === 'sessions' || value === 'scenes' || value === 'fx' || value === 'campaigns') {
+  if (value === 'sessions' || value === 'scenes' || value === 'fx' || value === 'campaigns' || value === 'soundscapes') {
 
     return value
 
@@ -50,7 +52,7 @@ function trashTabFromQuery(value: string | null): TrashTab {
 
 export function TrashPage() {
 
-  const { data, restoreCampaign, restoreSession, restoreScene, restoreFx } = useCampaignData()
+  const { data, restoreCampaign, restoreSession, restoreScene, restoreFx, restoreSoundscapeCategory } = useCampaignData()
 
   const [searchParams] = useSearchParams()
 
@@ -64,6 +66,8 @@ export function TrashPage() {
 
   const trashedScenes = getTrashedScenes(data.scenes)
 
+  const trashedSoundscapes = (data.soundscapeCategories ?? []).filter((c) => c.deletedAt)
+
   const trashedFx = getTrashedFxTracks(data.fxTracks)
 
 
@@ -76,7 +80,10 @@ export function TrashPage() {
 
     trashedScenes.length === 0 &&
 
+    trashedSoundscapes.length === 0 &&
+
     trashedFx.length === 0
+
 
 
 
@@ -270,9 +277,31 @@ export function TrashPage() {
 
       ) : null}
 
-
+      {activeTab === 'soundscapes' ? (
+        <section aria-label="Trash Soundscapes tab" data-trash-soundscapes>
+          {trashedSoundscapes.length === 0 ? (
+            <p className="text-muted">No trashed soundscapes.</p>
+          ) : (
+            <ul className="space-y-2">
+              {trashedSoundscapes.map((category) => (
+                <li
+                  key={category.id}
+                  className="flex items-center justify-between rounded-md border border-white/10 p-3"
+                  data-trashed-soundscape={category.name}
+                >
+                  <span>{category.name}</span>
+                  <Button type="button" onClick={() => restoreSoundscapeCategory(category.id)}>
+                    Restore
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      ) : null}
 
       {activeTab === 'fx' ? (
+
 
         <section aria-label="Trash FX tab" data-trash-fx>
 

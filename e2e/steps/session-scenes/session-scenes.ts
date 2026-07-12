@@ -323,13 +323,31 @@ Then('the session scene list appears in order:', async ({ page }, dataTable) => 
   }
 })
 
-Then('I see {string} in {string}', async ({ page }, sceneName: string, sessionLabel: string) => {
-  await expect(page.locator(`[data-session-scene-title="${sceneName}"]`)).toBeVisible()
-  await expect(page.locator(`[data-session-label="${sessionLabel}"]`)).toBeVisible()
+Then('I see {string} in {string}', async ({ page }, name1: string, name2: string) => {
+  const isComposer = page.url().includes('/compose')
+  if (isComposer) {
+    if (name1 === 'Add track') {
+      const lvl = name2.split(' ')[1]
+      await expect(page.locator(`[data-sc-level-content="${lvl}"] button:has-text("Add track")`)).toBeVisible()
+    } else {
+      const lvl = name2.split(' ')[1]
+      await expect(page.locator(`[data-sc-level-content="${lvl}"] [data-sc-composer-track="${name1}"]`)).toBeVisible()
+    }
+  } else {
+    await expect(page.locator(`[data-session-scene-title="${name1}"]`)).toBeVisible()
+    await expect(page.locator(`[data-session-label="${name2}"]`)).toBeVisible()
+  }
 })
 
-Then('{string} is no longer shown in {string}', async ({ page }, sceneName: string) => {
-  await expect(page.locator(`[data-session-scene-title="${sceneName}"]`)).toHaveCount(0)
+Then('{string} is no longer shown in {string}', async ({ page }, name1: string, name2: string) => {
+  const isComposer = page.url().includes('/compose')
+  if (isComposer) {
+    const lvl = name2.split(' ')[1]
+    const levelContent = page.locator(`[data-sc-level-content="${lvl}"]`)
+    await expect(levelContent.locator(`[data-sc-composer-track="${name1}"]`)).toHaveCount(0)
+  } else {
+    await expect(page.locator(`[data-session-scene-title="${name1}"]`)).toHaveCount(0)
+  }
 })
 
 Then('{string} is still shown in {string}', async ({ page }, sceneName: string) => {
@@ -366,12 +384,26 @@ Then('I see a link to create a new scene in Scenes', async ({ page }) => {
   await expect(page.getByRole('link', { name: /scenes.*new scene/i })).toBeVisible()
 })
 
-Then(/^(.*) appear in "([^"]+)"$/, async ({ page }, expected: string, sessionLabel: string) => {
-  const names = parseSceneList(expected)
-  for (const name of names) {
-    await expect(page.locator(`[data-session-scene-title="${name}"]`)).toBeVisible()
+Then(/^(.*) appear in "([^"]+)"$/, async ({ page }, expected: string, label: string) => {
+  const isComposer = page.url().includes('/compose')
+  if (isComposer) {
+    const lvl = label.split(' ')[1]
+    const content = page.locator(`[data-sc-level-content="${lvl}"]`)
+    if (expected === 'both tracks') {
+      await expect(content.locator('[data-sc-composer-track]')).toHaveCount(2)
+    } else {
+      const names = expected.split(/\s+and\s+/).map((n) => n.replace(/"/g, '').trim())
+      for (const name of names) {
+        await expect(content.locator(`[data-sc-composer-track="${name}"]`)).toBeVisible()
+      }
+    }
+  } else {
+    const names = parseSceneList(expected)
+    for (const name of names) {
+      await expect(page.locator(`[data-session-scene-title="${name}"]`)).toBeVisible()
+    }
+    await expect(page.locator(`[data-session-label="${label}"]`)).toBeVisible()
   }
-  await expect(page.locator(`[data-session-label="${sessionLabel}"]`)).toBeVisible()
 })
 
 Then('no audio is playing', async ({ page }) => {

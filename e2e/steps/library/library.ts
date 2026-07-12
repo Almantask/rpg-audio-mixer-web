@@ -207,21 +207,36 @@ When('I tap the {string} card body', async ({ page }, name: string) => {
   if (!page.url().includes('/library')) {
     await openLibraryFxTab(page)
   }
-  await page.locator(`[data-fx-card-body="${name}"]`).click()
+  const fxBody = page.locator(`[data-fx-card-body="${name}"]`)
+  if (await fxBody.count() > 0) {
+    await fxBody.click()
+  } else {
+    await page.locator(`[data-sc-card-body="${name}"]`).click()
+  }
 })
 
 When('I tap the {string} card thumbnail', async ({ page }, name: string) => {
   if (!page.url().includes('/library')) {
     await openLibraryFxTab(page)
   }
-  await page.locator(`[data-fx-card-thumb="${name}"]`).click()
+  const fxThumb = page.locator(`[data-fx-card-thumb="${name}"]`)
+  if (await fxThumb.count() > 0) {
+    await fxThumb.click()
+  } else {
+    await page.locator(`[data-sc-card-thumb="${name}"]`).click()
+  }
 })
 
 When('I preview {string} from its card', async ({ page }, name: string) => {
-  if (!page.url().includes('/library')) {
-    await openLibraryFxTab(page)
+  const isSoundscapes = page.url().includes('tab=soundscapes') || (await page.locator('[data-library-tab="Soundscapes"]').getAttribute('aria-selected')) === 'true'
+  if (isSoundscapes) {
+    await page.locator(`[data-sc-preview="${name}"]`).click()
+  } else {
+    if (!page.url().includes('/library')) {
+      await openLibraryFxTab(page)
+    }
+    await page.locator(`[data-fx-card-body="${name}"]`).click()
   }
-  await page.locator(`[data-fx-card-body="${name}"]`).click()
 })
 
 When(
@@ -275,7 +290,12 @@ Then(
 )
 
 Then('I see skeleton placeholder cards in the grid', async ({ page }) => {
-  await expect(page.locator('[data-fx-library-loading]')).toBeVisible()
+  const isSoundscapes = page.url().includes('tab=soundscapes') || (await page.locator('[data-library-tab="Soundscapes"]').getAttribute('aria-selected')) === 'true'
+  if (isSoundscapes) {
+    await expect(page.locator('[data-sc-library-loading]')).toBeVisible()
+  } else {
+    await expect(page.locator('[data-fx-library-loading]')).toBeVisible()
+  }
 })
 
 Then('I see a centred empty-state illustration', async ({ page }) => {
@@ -410,7 +430,12 @@ Then('{string} begins playing again', async ({ page }, name: string) => {
 })
 
 Then('the {string} card no longer shows a playing preview state', async ({ page }, name: string) => {
-  await expect(page.locator(`[data-fx-card-preview-state="${name}"]`)).toHaveAttribute('data-state', 'idle')
+  const isSoundscapes = page.url().includes('tab=soundscapes') || (await page.locator('[data-library-tab="Soundscapes"]').getAttribute('aria-selected')) === 'true'
+  if (isSoundscapes) {
+    await expect(page.locator(`[data-sc-card-preview-state="${name}"]`)).toHaveAttribute('data-state', 'idle')
+  } else {
+    await expect(page.locator(`[data-fx-card-preview-state="${name}"]`)).toHaveAttribute('data-state', 'idle')
+  }
 })
 
 Then('the mini player is no longer visible', async ({ page }) => {
@@ -435,4 +460,759 @@ Then('the mini player disappears', async ({ page }) => {
 
 Then('audio playback stops', async ({ page }) => {
   await expectNoAudioPlayback(page)
+})
+
+Given('I am on the Soundscapes tab in the Library', async ({ page }) => {
+  await page.goto('/library?tab=soundscapes')
+  await page.waitForLoadState('networkidle')
+})
+
+Given('I have created categories {string}, {string}, {string}', async ({ page }, cat1, cat2, cat3) => {
+  const buildCat = (name: string) => ({
+    id: `category-${name.toLowerCase()}`,
+    name,
+    trackCount: 0,
+    levels: { I: [], II: [], III: [] }
+  })
+  await mergeE2EData(page, {
+    soundscapeCategories: [buildCat(cat1), buildCat(cat2), buildCat(cat3)]
+  }, { navigateHome: false })
+})
+
+When('I open the Soundscapes tab in the Library', async ({ page }) => {
+  await page.goto('/library?tab=soundscapes')
+  await page.waitForLoadState('networkidle')
+})
+
+Then('I see {string}, {string}, and {string} in the grid', async ({ page }, cat1, cat2, cat3) => {
+  await expect(page.locator(`[data-sc-card="${cat1}"]`)).toBeVisible()
+  await expect(page.locator(`[data-sc-card="${cat2}"]`)).toBeVisible()
+  await expect(page.locator(`[data-sc-card="${cat3}"]`)).toBeVisible()
+})
+
+Then('I see download progress UI', async ({ page }) => {
+  await expect(page.locator('[data-sc-download-progress]')).toBeVisible()
+})
+
+Then('new soundscape categories appear in the grid when the demo pack download completes', async ({ page }) => {
+  await expect(page.locator('[data-sc-card="Tavern"]')).toBeVisible({ timeout: 15000 })
+  await expect(page.locator('[data-sc-card="Dungeon"]')).toBeVisible()
+})
+
+Given('{string} has {int} tracks at level I, {int} at level II, and {int} at level III', async ({ page }, catName, c1, c2, c3) => {
+  const tracks: string[] = []
+  const levelI: string[] = []
+  const levelII: string[] = []
+  const levelIII: string[] = []
+  for (let i = 0; i < c1; i++) {
+    const id = `track-i-${i}`
+    levelI.push(id)
+    tracks.push(id)
+  }
+  for (let i = 0; i < c2; i++) {
+    const id = `track-ii-${i}`
+    levelII.push(id)
+    tracks.push(id)
+  }
+  for (let i = 0; i < c3; i++) {
+    const id = `track-iii-${i}`
+    levelIII.push(id)
+    tracks.push(id)
+  }
+
+  const soundscapeTracks = tracks.map(id => ({
+    id,
+    name: `Track ${id}`,
+    durationSeconds: 120,
+    format: 'MP3',
+    channels: 'Stereo',
+    audioUrl: '/assets/audio/soundscape/light_rain.mp3',
+    createdAt: new Date().toISOString()
+  }))
+
+  const category = {
+    id: `category-${catName.toLowerCase()}`,
+    name: catName,
+    trackCount: new Set(tracks).size,
+    levels: { I: levelI, II: levelII, III: levelIII }
+  }
+
+  await mergeE2EData(page, {
+    soundscapeCategories: [category],
+    soundscapeTracks
+  }, { navigateHome: false })
+})
+
+Then('the {string} card shows {string}', async ({ page }, catName, text) => {
+  const card = page.locator(`[data-sc-card="${catName}"]`)
+  await expect(card.locator('[data-sc-card-meta]')).toContainText(text)
+})
+
+Given('{string} is in the soundscape categories grid', async ({ page }, catName) => {
+  const track = {
+    id: `track-${catName.toLowerCase().replace(/\s+/g, '-')}-sample`,
+    name: `${catName} Sample`,
+    durationSeconds: 120,
+    format: 'MP3',
+    channels: 'Stereo',
+    audioUrl: '/assets/audio/soundboard/owl_hooting.ogg',
+    createdAt: new Date().toISOString()
+  }
+  const category = {
+    id: `category-${catName.toLowerCase()}`,
+    name: catName,
+    trackCount: 1,
+    levels: { I: [track.id], II: [], III: [] }
+  }
+  await mergeE2EData(page, {
+    soundscapeCategories: [category],
+    soundscapeTracks: [track]
+  }, { navigateHome: false })
+  await page.goto('/library?tab=soundscapes')
+  await page.waitForLoadState('networkidle')
+})
+
+Then('I see the Soundscape Category Composer for {string}', async ({ page }, catName) => {
+  await expect(page.locator('main h1')).toContainText(catName)
+  await expect(page.locator('main').getByText('Category Composer', { exact: true })).toBeVisible()
+})
+
+Given('soundscape library data has not yet resolved', async ({ page }) => {
+  await resetE2EData(page)
+  await setE2EControls(page, { soundscapeLibraryState: 'loading' })
+})
+
+Given('I have not created any soundscape categories', async ({ page }) => {
+  await resetE2EData(page)
+})
+
+Then('I see a centred empty-state illustration with a prompt', async ({ page }) => {
+  await expect(page.locator('[data-sc-library-empty]')).toBeVisible()
+})
+
+Then('I see a "+ Add Soundscape" tile at the end of the grid', async ({ page }) => {
+  await expect(page.locator('[data-sc-add-tile]')).toBeVisible()
+})
+
+Given('{string} exists with {int} tracks at all intensity levels', async ({ page }, catName, trackCount) => {
+  const category = {
+    id: `category-${catName.toLowerCase()}`,
+    name: catName,
+    trackCount,
+    levels: { I: [], II: [], III: [] }
+  }
+  await mergeE2EData(page, {
+    soundscapeCategories: [category]
+  }, { navigateHome: false })
+})
+
+Then('I see {string} in the grid', async ({ page }, catName) => {
+  await expect(page.locator(`[data-sc-card="${catName}"]`)).toBeVisible()
+})
+
+When('I create a soundscape category named {string} via Add Soundscape', async ({ page }, catName) => {
+  page.once('dialog', async dialog => {
+    await dialog.accept(catName)
+  })
+  await page.locator('[data-sc-add-tile]').click()
+})
+
+Then('the {string} card shows a playing preview state on the thumbnail', async ({ page }, name) => {
+  await expect(page.locator(`[data-sc-card-preview-state="${name}"]`)).toHaveAttribute('data-state', 'playing')
+})
+
+Then('no mini player appears', async ({ page }) => {
+  await expect(page.locator('[data-mini-player]')).toHaveCount(0)
+})
+
+Given('the {string} category is previewing a sample track', async ({ page }, catName) => {
+  const track = {
+    id: 'track-weather-sample',
+    name: 'Weather Sample',
+    durationSeconds: 120,
+    format: 'MP3',
+    channels: 'Stereo',
+    audioUrl: '/assets/audio/soundboard/owl_hooting.ogg',
+    createdAt: new Date().toISOString()
+  }
+  const category = {
+    id: `category-${catName.toLowerCase()}`,
+    name: catName,
+    trackCount: 1,
+    levels: { I: ['track-weather-sample'], II: [], III: [] }
+  }
+  await mergeE2EData(page, {
+    soundscapeCategories: [category],
+    soundscapeTracks: [track]
+  }, { navigateHome: false })
+  await page.goto('/library?tab=soundscapes')
+  await page.locator(`[data-sc-preview="${catName}"]`).click()
+  await expect(page.locator(`[data-sc-card-preview-state="${catName}"]`)).toHaveAttribute('data-state', 'playing')
+})
+
+When('I stop the preview on the {string} card', async ({ page }, catName) => {
+  await page.locator(`[data-sc-preview="${catName}"]`).click()
+})
+
+Given('I am in the Soundscape Category Composer for {string}', async ({ page }, name) => {
+  const category = {
+    id: `category-${name.toLowerCase()}`,
+    name,
+    trackCount: 0,
+    levels: { I: [], II: [], III: [] }
+  }
+  await mergeE2EData(page, {
+    soundscapeCategories: [category]
+  }, { navigateHome: false })
+  await page.goto(`/library/soundscapes/category-${name.toLowerCase()}/compose`)
+  await page.waitForLoadState('networkidle')
+})
+
+Then('I see exactly three intensity level rows labelled {string}, {string}, and {string}', async ({ page }, l1, l2, l3) => {
+  await expect(page.locator(`[data-sc-level-header="I"]`)).toContainText(l1)
+  await expect(page.locator(`[data-sc-level-header="II"]`)).toContainText(l2)
+  await expect(page.locator(`[data-sc-level-header="III"]`)).toContainText(l3)
+})
+
+Then('I do not see an "Add intensity level" control', async ({ page }) => {
+  await expect(page.locator('button:has-text("Add intensity level")')).toHaveCount(0)
+})
+
+Then('I see the category name {string}', async ({ page }, name) => {
+  await expect(page.locator('h1.text-3xl')).toHaveText(name)
+})
+
+Given('I am in the Soundscape Category Composer for a new category {string}', async ({ page }, name) => {
+  const category = {
+    id: `category-${name.toLowerCase()}`,
+    name,
+    trackCount: 0,
+    levels: { I: [], II: [], III: [] }
+  }
+  await mergeE2EData(page, {
+    soundscapeCategories: [category]
+  }, { navigateHome: false })
+  await page.goto(`/library/soundscapes/category-${name.toLowerCase()}/compose`)
+  await page.waitForLoadState('networkidle')
+})
+
+Then('{string} is expanded', async ({ page }, levelName) => {
+  const lvl = levelName.split(' ')[1]
+  await expect(page.locator(`[data-sc-level-content="${lvl}"]`)).toBeVisible()
+})
+
+Then('{string} and {string} are collapsed', async ({ page }, lvl1, lvl2) => {
+  const l1 = lvl1.split(' ')[1]
+  const l2 = lvl2.split(' ')[1]
+  await expect(page.locator(`[data-sc-level-content="${l1}"]`)).toHaveCount(0)
+  await expect(page.locator(`[data-sc-level-content="${l2}"]`)).toHaveCount(0)
+})
+
+Given('{string} is expanded with no tracks', async ({ page }, levelName) => {
+  const lvl = levelName.split(' ')[1]
+  const content = page.locator(`[data-sc-level-content="${lvl}"]`)
+  if (await content.count() === 0) {
+    await page.locator(`[data-sc-level-header="${lvl}"]`).click()
+  }
+})
+
+Then('I see only "Add track" in {string}', async ({ page }, levelName) => {
+  const lvl = levelName.split(' ')[1]
+  const content = page.locator(`[data-sc-level-content="${lvl}"]`)
+  await expect(content.locator('button:has-text("Add track")')).toBeVisible()
+  await expect(content.locator('[data-sc-composer-track]')).toHaveCount(0)
+})
+
+Then('I do not see placeholder track rows', async ({ page }) => {
+  await expect(page.locator('[data-sc-placeholder-track]')).toHaveCount(0)
+})
+
+Given('{string} in {string} has 2 tracks and is expanded', async ({ page }, levelName, catName) => {
+  const lvl = levelName.split(' ')[1]
+  const track1 = {
+    id: 't-1',
+    name: 'Track One',
+    durationSeconds: 120,
+    format: 'MP3',
+    channels: 'Stereo',
+    audioUrl: '/assets/audio/soundscape/light_rain.mp3',
+    createdAt: new Date().toISOString()
+  }
+  const track2 = {
+    id: 't-2',
+    name: 'Track Two',
+    durationSeconds: 180,
+    format: 'WAV',
+    channels: 'Stereo',
+    audioUrl: '/assets/audio/soundscape/light_rain.mp3',
+    createdAt: new Date().toISOString()
+  }
+  const category = {
+    id: `category-${catName.toLowerCase()}`,
+    name: catName,
+    trackCount: 2,
+    levels: {
+      I: lvl === 'I' ? ['t-1', 't-2'] : [],
+      II: lvl === 'II' ? ['t-1', 't-2'] : [],
+      III: lvl === 'III' ? ['t-1', 't-2'] : [],
+    }
+  }
+  await mergeE2EData(page, {
+    soundscapeCategories: [category],
+    soundscapeTracks: [track1, track2]
+  }, { navigateHome: false })
+  await page.goto(`/library/soundscapes/category-${catName.toLowerCase()}/compose`)
+  const content = page.locator(`[data-sc-level-content="${lvl}"]`)
+  if (await content.count() === 0) {
+    await page.locator(`[data-sc-level-header="${lvl}"]`).click()
+  }
+})
+
+When('I tap the collapse control on {string}', async ({ page }, levelName) => {
+  const lvl = levelName.split(' ')[1]
+  await page.locator(`[data-sc-level-header="${lvl}"]`).click()
+})
+
+Then('the track list for {string} is hidden', async ({ page }, levelName) => {
+  const lvl = levelName.split(' ')[1]
+  await expect(page.locator(`[data-sc-level-content="${lvl}"]`)).toHaveCount(0)
+})
+
+Then('the collapsed {string} row shows {string}', async ({ page }, levelName, text) => {
+  const lvl = levelName.split(' ')[1]
+  await expect(page.locator(`[data-sc-level-header="${lvl}"] [data-sc-level-count="${lvl}"]`)).toHaveText(text)
+})
+
+Given('{string} in {string} has 2 tracks and is collapsed', async ({ page }, levelName, catName) => {
+  const lvl = levelName.split(' ')[1]
+  const track1 = {
+    id: 't-1',
+    name: 'Track One',
+    durationSeconds: 120,
+    format: 'MP3',
+    channels: 'Stereo',
+    audioUrl: '/assets/audio/soundscape/light_rain.mp3',
+    createdAt: new Date().toISOString()
+  }
+  const track2 = {
+    id: 't-2',
+    name: 'Track Two',
+    durationSeconds: 180,
+    format: 'WAV',
+    channels: 'Stereo',
+    audioUrl: '/assets/audio/soundscape/light_rain.mp3',
+    createdAt: new Date().toISOString()
+  }
+  const category = {
+    id: `category-${catName.toLowerCase()}`,
+    name: catName,
+    trackCount: 2,
+    levels: {
+      I: lvl === 'I' ? ['t-1', 't-2'] : [],
+      II: lvl === 'II' ? ['t-1', 't-2'] : [],
+      III: lvl === 'III' ? ['t-1', 't-2'] : [],
+    }
+  }
+  await mergeE2EData(page, {
+    soundscapeCategories: [category],
+    soundscapeTracks: [track1, track2]
+  }, { navigateHome: false })
+  await page.goto(`/library/soundscapes/category-${catName.toLowerCase()}/compose`)
+  const content = page.locator(`[data-sc-level-content="${lvl}"]`)
+  if (await content.count() > 0) {
+    await page.locator(`[data-sc-level-header="${lvl}"]`).click()
+  }
+})
+
+When('I tap the expand control on {string}', async ({ page }, levelName) => {
+  const lvl = levelName.split(' ')[1]
+  await page.locator(`[data-sc-level-header="${lvl}"]`).click()
+})
+
+Then('the track list for {string} is visible', async ({ page }, levelName) => {
+  const lvl = levelName.split(' ')[1]
+  await expect(page.locator(`[data-sc-level-content="${lvl}"]`)).toBeVisible()
+})
+
+Given('{string} is attached to {string} in {string}', async ({ page }, trackName, levelName, catName) => {
+  const lvl = levelName.split(' ')[1]
+  const trackId = `t-${trackName.toLowerCase().replace(/\s+/g, '-')}`
+  const track = {
+    id: trackId,
+    name: trackName,
+    durationSeconds: 222,
+    format: 'MP3',
+    channels: 'Stereo',
+    audioUrl: '/assets/audio/soundscape/owl_hooting.ogg',
+    createdAt: new Date().toISOString()
+  }
+  const category = {
+    id: `category-${catName.toLowerCase()}`,
+    name: catName,
+    trackCount: 1,
+    levels: {
+      I: lvl === 'I' ? [trackId] : [],
+      II: lvl === 'II' ? [trackId] : [],
+      III: lvl === 'III' ? [trackId] : [],
+    }
+  }
+  await mergeE2EData(page, {
+    soundscapeCategories: [category],
+    soundscapeTracks: [track]
+  }, { navigateHome: false })
+  await page.goto(`/library/soundscapes/category-${catName.toLowerCase()}/compose`)
+  await page.waitForLoadState('networkidle')
+})
+
+Then('I see {string} with subtitle {string}', async ({ page }, trackName, subtitle) => {
+  const trackRow = page.locator(`[data-sc-composer-track="${trackName}"]`)
+  await expect(trackRow).toBeVisible()
+  await expect(trackRow).toContainText(subtitle)
+})
+
+When('I tap the remove control on {string} in {string}', async ({ page }, trackName, levelName) => {
+  const lvl = levelName.split(' ')[1]
+  const levelContent = page.locator(`[data-sc-level-content="${lvl}"]`)
+  await levelContent.locator(`[data-sc-composer-track="${trackName}"] button`).click()
+})
+
+Then('{string} remains available in the library', async ({ page }, trackName) => {
+  const exists = await page.evaluate((name) => {
+    const data = JSON.parse(localStorage.getItem('arcanum-audio-data') || '{}')
+    return (data.soundscapeTracks ?? []).some(
+      (track: { name: string; deletedAt?: string }) => track.name === name && !track.deletedAt
+    )
+  }, trackName)
+  expect(exists).toBe(true)
+})
+
+Given('I have made composition changes in {string}', async ({ page }, catName) => {
+  const category = {
+    id: `category-${catName.toLowerCase()}`,
+    name: catName,
+    trackCount: 0,
+    levels: { I: [], II: [], III: [] }
+  }
+  await mergeE2EData(page, {
+    soundscapeCategories: [category]
+  }, { navigateHome: false })
+  await page.goto(`/library/soundscapes/category-${catName.toLowerCase()}/compose`)
+  await page.locator('[data-sc-level-header="II"]').click()
+})
+
+Then('I remain on the Soundscape Category Composer for {string}', async ({ page }, catName) => {
+  expect(page.url()).toContain(`/library/soundscapes/category-${catName.toLowerCase()}/compose`)
+})
+
+Given('I have added a track to {string} in {string}', async ({ page }, levelName, catName) => {
+  const lvl = levelName.split(' ')[1]
+  const track = {
+    id: 't-sample',
+    name: 'Sample Track',
+    durationSeconds: 120,
+    format: 'MP3',
+    channels: 'Stereo',
+    audioUrl: '/assets/audio/soundscape/light_rain.mp3',
+    createdAt: new Date().toISOString()
+  }
+  const category = {
+    id: `category-${catName.toLowerCase()}`,
+    name: catName,
+    trackCount: 0,
+    levels: { I: [], II: [], III: [] }
+  }
+  await mergeE2EData(page, {
+    soundscapeCategories: [category],
+    soundscapeTracks: [track]
+  }, { navigateHome: false })
+  await page.goto(`/library/soundscapes/category-${catName.toLowerCase()}/compose`)
+  await page.locator(`[data-sc-level-content="${lvl}"] button:has-text("Add track")`).click()
+  await page.getByRole('checkbox', { name: 'Select Sample Track', exact: true }).check()
+  await page.locator('[data-picker-commit]').click()
+  await page.getByRole('button', { name: '← Category Composer', exact: true }).click()
+  await expect(page.getByRole('dialog')).toHaveCount(0)
+})
+
+Then('I return to the Library Soundscapes tab', async ({ page }) => {
+  expect(page.url()).toContain('/library?tab=soundscapes')
+})
+
+Then('I do not see a discard-changes confirmation dialog', async ({ page }) => {
+  await expect(page.locator('role=dialog')).toHaveCount(0)
+})
+
+When('I reopen the Soundscape Category Composer for {string}', async ({ page }, catName) => {
+  await page.locator(`[data-sc-card-body="${catName}"]`).click()
+})
+
+Then('the added track is still attached to {string}', async ({ page }, levelName) => {
+  const lvl = levelName.split(' ')[1]
+  await expect(page.locator(`[data-sc-level-content="${lvl}"] [data-sc-composer-track="Sample Track"]`)).toBeVisible()
+})
+
+When('I tap "Add track" on {string}', async ({ page }, levelName) => {
+  const lvl = levelName.split(' ')[1]
+  const levelContent = page.locator(`[data-sc-level-content="${lvl}"]`)
+  if (!(await levelContent.isVisible())) {
+    await page.locator(`[data-sc-level-header="${lvl}"]`).click()
+  }
+  await levelContent.getByRole('button', { name: 'Add track', exact: true }).click()
+})
+
+Then('I see the Track Picker modal titled "Add track"', async ({ page }) => {
+  await expect(
+    page.getByRole('dialog').getByRole('heading', { name: 'Add track', exact: true })
+  ).toBeVisible()
+})
+
+Then('I see an "Import" action', async ({ page }) => {
+  await expect(page.locator('button:has-text("Import")')).toBeVisible()
+})
+
+Then('I see a picker search bar', async ({ page }) => {
+  await expect(page.locator('[data-picker-search]')).toBeVisible()
+})
+
+Given('the Track Picker modal is open for {string} in {string}', async ({ page }, levelName, catName) => {
+  const lvl = levelName.split(' ')[1]
+  const categoryId = `category-${catName.toLowerCase()}`
+  const categoryExists = await page.evaluate((id) => {
+    const data = JSON.parse(localStorage.getItem('arcanum-audio-data') || '{}')
+    return (data.soundscapeCategories ?? []).some((category: { id: string }) => category.id === id)
+  }, categoryId)
+  if (!categoryExists) {
+    await mergeE2EData(page, {
+      soundscapeCategories: [{
+        id: categoryId,
+        name: catName,
+        trackCount: 0,
+        levels: { I: [], II: [], III: [] }
+      }]
+    }, { navigateHome: false })
+  }
+  await page.goto(`/library/soundscapes/${categoryId}/compose`)
+  const levelContent = page.locator(`[data-sc-level-content="${lvl}"]`)
+  if (!(await levelContent.isVisible())) {
+    await page.locator(`[data-sc-level-header="${lvl}"]`).click()
+  }
+  await levelContent.getByRole('button', { name: 'Add track', exact: true }).click()
+})
+
+Given('the soundscape library has {string}', async ({ page }, trackName) => {
+  const track = {
+    id: `t-${trackName.toLowerCase().replace(/\s+/g, '-')}`,
+    name: trackName,
+    durationSeconds: 222,
+    format: 'MP3',
+    channels: 'Stereo',
+    audioUrl: '/assets/audio/soundboard/owl_hooting.ogg',
+    createdAt: new Date().toISOString()
+  }
+  await mergeE2EData(page, {
+    soundscapeTracks: [track]
+  }, { navigateHome: false })
+})
+
+Then('the {string} card displays a selection checkbox', async ({ page }, trackName) => {
+  await expect(page.locator(`[data-picker-track="${trackName}"] [data-picker-checkbox="${trackName}"]`)).toBeVisible()
+})
+
+Then('the {string} card shows format, channel, and duration metadata', async ({ page }, trackName) => {
+  await expect(page.locator(`[data-picker-track="${trackName}"]`)).toContainText(/MP3|WAV|Stereo|Mono/)
+})
+
+Then('the {string} card does not display a + button', async ({ page }, trackName) => {
+  await expect(page.locator(`[data-picker-track="${trackName}"] button:has-text("+")`)).toHaveCount(0)
+})
+
+Given('the soundscape library has no tracks', async ({ page }) => {
+  await resetE2EData(page)
+})
+
+Then('I see guidance to import tracks via Import', async ({ page }) => {
+  await expect(page.locator('[data-picker-empty]')).toBeVisible()
+})
+
+Given('the soundscape library is still loading', async ({ page }) => {
+  await resetE2EData(page)
+  await setE2EControls(page, { fxLibraryState: 'loading' })
+})
+
+When('I open the Track Picker for {string} in {string}', async ({ page }, levelName, catName) => {
+  const lvl = levelName.split(' ')[1]
+  const category = {
+    id: `category-${catName.toLowerCase()}`,
+    name: catName,
+    trackCount: 0,
+    levels: { I: [], II: [], III: [] }
+  }
+  await mergeE2EData(page, {
+    soundscapeCategories: [category]
+  }, { navigateHome: false })
+  await page.goto(`/library/soundscapes/category-${catName.toLowerCase()}/compose`)
+  const levelContent = page.locator(`[data-sc-level-content="${lvl}"]`)
+  if (!(await levelContent.isVisible())) {
+    await page.locator(`[data-sc-level-header="${lvl}"]`).click()
+  }
+  await levelContent.getByRole('button', { name: 'Add track', exact: true }).click()
+})
+
+Then('I see skeleton cards in the picker grid', async ({ page }) => {
+  await expect(page.locator('[data-picker-loading]')).toBeVisible()
+})
+
+When('I import the audio file {string}', async ({ page }, fileName) => {
+  await page.locator('input[type="file"]').setInputFiles({
+    name: fileName,
+    mimeType: 'audio/mpeg',
+    buffer: SAMPLE_PNG,
+  })
+})
+
+Then('{string} is checked in the picker', async ({ page }, trackName) => {
+  await expect(page.locator(`[data-picker-track="${trackName}"] input[type="checkbox"]`)).toBeChecked()
+})
+
+Then('no track cards are checked', async ({ page }) => {
+  const checkboxes = page.locator('[data-picker-grid] input[type="checkbox"]')
+  const count = await checkboxes.count()
+  for (let i = 0; i < count; i++) {
+    await expect(checkboxes.nth(i)).not.toBeChecked()
+  }
+})
+
+Given('I have checked {string} and {string}', async ({ page }, t1, t2) => {
+  await page.getByRole('checkbox', { name: `Select ${t1}`, exact: true }).check()
+  await page.getByRole('checkbox', { name: `Select ${t2}`, exact: true }).check()
+})
+
+Given('I have checked {string}', async ({ page }, trackName) => {
+  await page.getByRole('checkbox', { name: `Select ${trackName}`, exact: true }).check()
+})
+
+Then('the Track Picker modal stays open', async ({ page }) => {
+  await expect(
+    page.getByRole('dialog').getByRole('heading', { name: 'Add track', exact: true })
+  ).toBeVisible()
+})
+
+When('I check {string}', async ({ page }, trackName) => {
+  await page.getByRole('checkbox', { name: `Select ${trackName}`, exact: true }).check()
+})
+
+Given('the soundscape library has {string} and {string}', async ({ page }, t1, t2) => {
+  const track1 = {
+    id: `t-${t1.toLowerCase().replace(/\s+/g, '-')}`,
+    name: t1,
+    durationSeconds: 222,
+    format: 'MP3',
+    channels: 'Stereo',
+    audioUrl: '/assets/audio/soundboard/owl_hooting.ogg',
+    createdAt: new Date().toISOString()
+  }
+  const track2 = {
+    id: `t-${t2.toLowerCase().replace(/\s+/g, '-')}`,
+    name: t2,
+    durationSeconds: 135,
+    format: 'WAV',
+    channels: 'Wide Stereo',
+    audioUrl: '/assets/audio/soundboard/whip.ogg',
+    createdAt: new Date().toISOString()
+  }
+  await mergeE2EData(page, {
+    soundscapeTracks: [track1, track2]
+  }, { navigateHome: false })
+})
+
+When('I open the Track Picker for {string}', async ({ page }, levelName) => {
+  const lvl = levelName.split(' ')[1]
+  await page.locator(`[data-sc-level-content="${lvl}"] button:has-text("Add track")`).click()
+})
+
+Then('{string} appears on both {string} and {string}', async ({ page }, trackName, lvl1Name, lvl2Name) => {
+  const l1 = lvl1Name.split(' ')[1]
+  const l2 = lvl2Name.split(' ')[1]
+  await expect(page.locator(`[data-sc-level-content="${l1}"] [data-sc-composer-track="${trackName}"]`)).toBeVisible()
+  const content = page.locator(`[data-sc-level-content="${l2}"]`)
+  if (await content.count() === 0) {
+    await page.locator(`[data-sc-level-header="${l2}"]`).click()
+  }
+  await expect(page.locator(`[data-sc-level-content="${l2}"] [data-sc-composer-track="${trackName}"]`)).toBeVisible()
+})
+
+Then('the composition is persisted without tapping "Save Composition"', async ({ page }) => {
+  const saved = await page.evaluate(() => {
+    const data = JSON.parse(localStorage.getItem('arcanum-audio-data') || '{}')
+    const weather = data.soundscapeCategories?.find(
+      (category: { name: string; levels?: { I?: string[] } }) => category.name === 'Weather'
+    )
+    return weather?.levels?.I?.includes('t-thunderous-downpour')
+  })
+  expect(saved).toBe(true)
+})
+
+Given('I opened the Track Picker from "Add track" on {string} in {string}', async ({ page }, levelName, catName) => {
+  const lvl = levelName.split(' ')[1]
+  const track = {
+    id: 't-thunderous-downpour',
+    name: 'Thunderous Downpour',
+    durationSeconds: 222,
+    format: 'MP3',
+    channels: 'Stereo',
+    audioUrl: '/assets/audio/soundboard/owl_hooting.ogg',
+    createdAt: new Date().toISOString()
+  }
+  const category = {
+    id: `category-${catName.toLowerCase()}`,
+    name: catName,
+    trackCount: 0,
+    levels: { I: [], II: [], III: [] }
+  }
+  await mergeE2EData(page, {
+    soundscapeCategories: [category],
+    soundscapeTracks: [track]
+  }, { navigateHome: false })
+  await page.goto(`/library/soundscapes/category-${catName.toLowerCase()}/compose`)
+  const levelContent = page.locator(`[data-sc-level-content="${lvl}"]`)
+  if (!(await levelContent.isVisible())) {
+    await page.locator(`[data-sc-level-header="${lvl}"]`).click()
+  }
+  await levelContent.getByRole('button', { name: 'Add track', exact: true }).click()
+})
+
+Then('{string} is still expanded', async ({ page }, levelName) => {
+  const lvl = levelName.split(' ')[1]
+  await expect(page.locator(`[data-sc-level-content="${lvl}"]`)).toBeVisible()
+})
+
+When('I delete {string} from the soundscape grid', async ({ page }, catName) => {
+  await page.locator(`[data-sc-delete="${catName}"]`).click()
+})
+
+When('I swipe right on the {string} soundscape card', async ({ page }, catName) => {
+  const card = page.locator(`[data-sc-card="${catName}"]`)
+  const swipeTarget = page.locator('[data-swipe-delete]').filter({ has: card })
+  await swipeTarget.evaluate((element) => {
+    const touchStartEvent = new Event('touchstart', { bubbles: true })
+    Object.defineProperty(touchStartEvent, 'touches', {
+      value: [{ clientX: 10 }]
+    })
+    element.dispatchEvent(touchStartEvent)
+
+    const touchEndEvent = new Event('touchend', { bubbles: true })
+    Object.defineProperty(touchEndEvent, 'changedTouches', {
+      value: [{ clientX: 100 }]
+    })
+    element.dispatchEvent(touchEndEvent)
+  })
+})
+
+Then('{string} is moved to the Trash Soundscapes tab', async ({ page }, name) => {
+  await page.goto('/trash?tab=soundscapes')
+  await expect(page.locator(`[data-trashed-soundscape="${name}"]`)).toBeVisible()
+})
+
+Then('{string} is no longer in the soundscape categories grid', async ({ page }, name) => {
+  await page.goto('/library?tab=soundscapes')
+  await expect(page.locator(`[data-sc-card="${name}"]`)).toHaveCount(0)
 })

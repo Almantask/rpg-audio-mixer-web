@@ -14,6 +14,7 @@ Feature: Filter track picker in Category Composer
 
   Scenario: Track picker no-match filters shows a clear-filters action
     Given the Track Picker modal is open for "Level I" in "Weather"
+    And the soundscape library has "Thunderous Downpour"
     When I type "nonexistent" in the picker search bar
     Then I see "No tracks match your filters"
     And I see a clear-filters action

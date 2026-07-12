@@ -42,6 +42,7 @@ export const EMPTY_E2E_APP_DATA: E2EAppData = {
   sceneSoundscapeSlots: [],
   sceneSoundboardSettings: [],
   soundscapeCategories: [],
+  soundscapeTracks: [],
   lastActiveSceneBySession: {},
 }
 
@@ -294,6 +295,7 @@ export async function mergeE2EData(page: Page, partial: Partial<E2EAppData>, opt
       sceneSoundscapeSlots: [],
       sceneSoundboardSettings: [],
       soundscapeCategories: [],
+      soundscapeTracks: [],
       lastActiveSceneBySession: {},
     }
 
@@ -327,6 +329,7 @@ export async function mergeE2EData(page: Page, partial: Partial<E2EAppData>, opt
       sceneSoundscapeSlots: mergeById(current.sceneSoundscapeSlots, next.sceneSoundscapeSlots),
       sceneSoundboardSettings: next.sceneSoundboardSettings ?? current.sceneSoundboardSettings,
       soundscapeCategories: mergeById(current.soundscapeCategories, next.soundscapeCategories),
+      soundscapeTracks: mergeById(current.soundscapeTracks, next.soundscapeTracks),
       lastActiveSessionByCampaign: {
         ...current.lastActiveSessionByCampaign,
         ...next.lastActiveSessionByCampaign,

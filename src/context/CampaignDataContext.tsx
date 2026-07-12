@@ -20,7 +20,7 @@ import type { AppData, Campaign, E2EControls, Session } from '@/types/campaign'
 
 import { DEFAULT_E2E_CONTROLS, EMPTY_APP_DATA } from '@/types/campaign'
 
-import type { FxTrack, FxType } from '@/types/library'
+import type { FxTrack, FxType, SoundscapeCategory, SoundscapeTrack } from '@/types/library'
 
 import type { Scene, SceneSoundboardEntry, SceneSoundscapeSlot } from '@/types/scene'
 
@@ -158,6 +158,8 @@ interface CampaignDataContextValue {
 
   activeFxTracks: FxTrack[]
 
+  activeSoundscapeTracks: SoundscapeTrack[]
+
   reload: () => void
 
   getCampaign: (id: string) => Campaign | undefined
@@ -207,6 +209,8 @@ interface CampaignDataContextValue {
 
   getSessionScenes: (sessionId: string) => Scene[]
 
+  role?: string // to prevent interface matching issues if any
+
   markScenePlayed: (sessionId: string, sceneId: string) => void
 
   createSoundscapeSlot: (sceneId: string, categoryId: string) => SceneSoundscapeSlot
@@ -229,6 +233,18 @@ interface CampaignDataContextValue {
 
   downloadFreeTracks: () => number
 
+  createSoundscapeCategory: (name: string) => SoundscapeCategory
+
+  updateSoundscapeCategory: (id: string, input: Partial<SoundscapeCategory>) => SoundscapeCategory
+
+  softDeleteSoundscapeCategory: (id: string) => void
+
+  restoreSoundscapeCategory: (id: string) => void
+
+  importSoundscapeTrack: (file: File) => SoundscapeTrack
+
+  downloadFreeCompositions: () => number
+
   seedData: (partial: Partial<AppData>) => void
 
   resetAll: () => void
@@ -236,6 +252,7 @@ interface CampaignDataContextValue {
   setE2EControls: (controls: Partial<E2EControls>) => void
 
 }
+
 
 
 
@@ -310,14 +327,102 @@ export function CampaignDataProvider({ children }: { children: ReactNode }) {
 
 
   useEffect(() => {
+    const isE2E = typeof sessionStorage !== 'undefined' && sessionStorage.getItem('arcanum-e2e-controls') !== null
+    if (isE2E) return
+
     setData((current) => {
       if (current.soundscapeCategories.length === 0) {
         const next = {
           ...current,
           soundscapeCategories: [
-            { id: 'category-weather', name: 'Weather', trackCount: 12 },
-            { id: 'category-interior', name: 'Interior', trackCount: 8 },
+            {
+              id: 'category-weather',
+              name: 'Weather',
+              trackCount: 5,
+              type: 'WEATHER',
+              levels: {
+                I: ['track-thunderous-downpour', 'track-light-rain', 'track-gentle-breeze'],
+                II: ['track-thunderous-downpour', 'track-distant-rolling-thunder', 'track-light-rain', 'track-gentle-breeze', 'track-howling-wind'],
+                III: ['track-thunderous-downpour', 'track-distant-rolling-thunder']
+              }
+            },
+            {
+              id: 'category-interior',
+              name: 'Interior',
+              trackCount: 2,
+              type: 'INTERIOR',
+              levels: {
+                I: ['track-tavern-chatter'],
+                II: ['track-fireplace'],
+                III: []
+              }
+            },
           ],
+          soundscapeTracks: [
+            {
+              id: 'track-thunderous-downpour',
+              name: 'Thunderous Downpour',
+              durationSeconds: 222,
+              format: 'MP3',
+              channels: 'Stereo',
+              audioUrl: '/assets/audio/soundscape/owl_hooting.ogg',
+              createdAt: new Date().toISOString()
+            },
+            {
+              id: 'track-distant-rolling-thunder',
+              name: 'Distant Rolling Thunder',
+              durationSeconds: 135,
+              format: 'WAV',
+              channels: 'Wide Stereo',
+              audioUrl: '/assets/audio/soundboard/whip.ogg',
+              createdAt: new Date().toISOString()
+            },
+            {
+              id: 'track-light-rain',
+              name: 'Light Rain',
+              durationSeconds: 180,
+              format: 'MP3',
+              channels: 'Stereo',
+              audioUrl: '/assets/audio/soundscape/light_rain.mp3',
+              createdAt: new Date().toISOString()
+            },
+            {
+              id: 'track-gentle-breeze',
+              name: 'Gentle Breeze',
+              durationSeconds: 120,
+              format: 'MP3',
+              channels: 'Stereo',
+              audioUrl: '/assets/audio/soundscape/gentle_breeze.mp3',
+              createdAt: new Date().toISOString()
+            },
+            {
+              id: 'track-howling-wind',
+              name: 'Howling Wind',
+              durationSeconds: 240,
+              format: 'MP3',
+              channels: 'Stereo',
+              audioUrl: '/assets/audio/soundscape/howling_wind.mp3',
+              createdAt: new Date().toISOString()
+            },
+            {
+              id: 'track-tavern-chatter',
+              name: 'Tavern Chatter',
+              durationSeconds: 300,
+              format: 'MP3',
+              channels: 'Stereo',
+              audioUrl: '/assets/audio/soundscape/tavern_chatter.mp3',
+              createdAt: new Date().toISOString()
+            },
+            {
+              id: 'track-fireplace',
+              name: 'Cozy Fireplace',
+              durationSeconds: 150,
+              format: 'WAV',
+              channels: 'Stereo',
+              audioUrl: '/assets/audio/soundscape/cozy_fireplace.wav',
+              createdAt: new Date().toISOString()
+            }
+          ]
         }
         persist(next)
         return next
@@ -325,6 +430,7 @@ export function CampaignDataProvider({ children }: { children: ReactNode }) {
       return current
     })
   }, [])
+
 
 
 
@@ -357,6 +463,12 @@ export function CampaignDataProvider({ children }: { children: ReactNode }) {
   const activeScenes = useMemo(() => getActiveScenes(data.scenes), [data.scenes])
 
   const activeFxTracks = useMemo(() => getActiveFxTracks(data.fxTracks), [data.fxTracks])
+
+  const activeSoundscapeTracks = useMemo(
+    () => (data.soundscapeTracks ?? []).filter((track) => !track.deletedAt),
+    [data.soundscapeTracks],
+  )
+
 
 
 
@@ -1531,6 +1643,143 @@ export function CampaignDataProvider({ children }: { children: ReactNode }) {
 
 
 
+  const createSoundscapeCategory = useCallback(
+    (name: string): SoundscapeCategory => {
+      const category: SoundscapeCategory = {
+        id: createId('category'),
+        name,
+        trackCount: 0,
+        levels: { I: [], II: [], III: [] }
+      }
+      updateData((current) => ({
+        ...current,
+        soundscapeCategories: [...current.soundscapeCategories, category],
+      }))
+      return category
+    },
+    [updateData]
+  )
+
+  const updateSoundscapeCategory = useCallback(
+    (id: string, input: Partial<SoundscapeCategory>): SoundscapeCategory => {
+      let updated: SoundscapeCategory | undefined
+      updateData((current) => ({
+        ...current,
+        soundscapeCategories: current.soundscapeCategories.map((category) => {
+          if (category.id === id) {
+            const levels = input.levels ?? category.levels ?? { I: [], II: [], III: [] }
+            const uniqueTrackIds = new Set([...levels.I, ...levels.II, ...levels.III])
+            updated = {
+              ...category,
+              ...input,
+              trackCount: uniqueTrackIds.size,
+              levels,
+            }
+            return updated
+          }
+          return category
+        }),
+      }))
+      if (!updated) {
+        throw new Error(`Category ${id} not found`)
+      }
+      return updated
+    },
+    [updateData]
+  )
+
+  const softDeleteSoundscapeCategory = useCallback(
+    (id: string) => {
+      updateData((current) => ({
+        ...current,
+        soundscapeCategories: current.soundscapeCategories.map((category) =>
+          category.id === id ? { ...category, deletedAt: new Date().toISOString() } : category,
+        ),
+      }))
+    },
+    [updateData]
+  )
+
+  const restoreSoundscapeCategory = useCallback(
+    (id: string) => {
+      updateData((current) => ({
+        ...current,
+        soundscapeCategories: current.soundscapeCategories.map((category) =>
+          category.id === id ? { ...category, deletedAt: undefined } : category,
+        ),
+      }))
+    },
+    [updateData]
+  )
+
+  const importSoundscapeTrack = useCallback(
+    (file: File): SoundscapeTrack => {
+      const now = new Date().toISOString()
+      const ext = file.name.split('.').pop()?.toUpperCase() ?? 'MP3'
+      const track: SoundscapeTrack = {
+        id: createId('track'),
+        name: file.name,
+        durationSeconds: 222,
+        format: ext,
+        channels: 'Stereo',
+        audioUrl: URL.createObjectURL(file),
+        createdAt: now,
+      }
+      updateData((current) => ({
+        ...current,
+        soundscapeTracks: [...(current.soundscapeTracks ?? []), track],
+      }))
+      return track
+    },
+    [updateData]
+  )
+
+  const downloadFreeCompositions = useCallback((): number => {
+    let added = 0
+    updateData((current) => {
+      const existingNames = new Set(
+        current.soundscapeCategories.filter(c => !c.deletedAt).map((c) => c.name.toLowerCase()),
+      )
+      const demoCompositions = [
+        {
+          id: 'category-demo-tavern',
+          name: 'Tavern',
+          trackCount: 2,
+          type: 'TOWN',
+          levels: {
+            I: ['track-tavern-chatter'],
+            II: ['track-fireplace'],
+            III: []
+          }
+        },
+        {
+          id: 'category-demo-dungeon',
+          name: 'Dungeon',
+          trackCount: 1,
+          type: 'DUNGEON',
+          levels: {
+            I: [],
+            II: ['track-distant-rolling-thunder'],
+            III: []
+          }
+        }
+      ]
+      const toAdd = demoCompositions.filter((c) => !existingNames.has(c.name.toLowerCase()))
+      added = toAdd.length
+      if (added === 0) {
+        return current
+      }
+      return {
+        ...current,
+        soundscapeCategories: [...current.soundscapeCategories, ...toAdd],
+      }
+    })
+    return added
+  }, [updateData])
+
+
+
+
   const seedData = useCallback((partial: Partial<AppData>) => {
 
     setData((current) => {
@@ -1562,6 +1811,8 @@ export function CampaignDataProvider({ children }: { children: ReactNode }) {
         fxTracks: partial.fxTracks ?? current.fxTracks,
 
         soundscapeCategories: partial.soundscapeCategories ?? current.soundscapeCategories,
+
+        soundscapeTracks: partial.soundscapeTracks ?? current.soundscapeTracks,
 
         lastActiveSceneBySession:
 
@@ -1647,6 +1898,8 @@ export function CampaignDataProvider({ children }: { children: ReactNode }) {
 
       activeFxTracks,
 
+      activeSoundscapeTracks,
+
       reload,
 
       getCampaign,
@@ -1718,6 +1971,18 @@ export function CampaignDataProvider({ children }: { children: ReactNode }) {
       restoreFx,
 
       downloadFreeTracks,
+
+      createSoundscapeCategory,
+
+      updateSoundscapeCategory,
+
+      softDeleteSoundscapeCategory,
+
+      restoreSoundscapeCategory,
+
+      importSoundscapeTrack,
+
+      downloadFreeCompositions,
 
       seedData,
 
@@ -1810,6 +2075,18 @@ export function CampaignDataProvider({ children }: { children: ReactNode }) {
       restoreFx,
 
       downloadFreeTracks,
+
+      createSoundscapeCategory,
+
+      updateSoundscapeCategory,
+
+      softDeleteSoundscapeCategory,
+
+      restoreSoundscapeCategory,
+
+      importSoundscapeTrack,
+
+      downloadFreeCompositions,
 
       seedData,
 

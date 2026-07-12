@@ -13,6 +13,7 @@ Feature: Preview track in Category Composer picker
 
   Scenario: Only one track previews at a time in the Track Picker
     Given the Track Picker modal is open for "Level I" in "Weather"
+    And the soundscape library has "Thunderous Downpour" and "Distant Rolling Thunder"
     And "Thunderous Downpour" is previewing in the picker
     When I tap the card body for "Distant Rolling Thunder"
     Then "Thunderous Downpour" stops previewing

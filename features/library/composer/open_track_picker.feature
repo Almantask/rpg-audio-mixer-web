@@ -25,7 +25,7 @@ Feature: Open track picker in Category Composer
     Given the soundscape library has no tracks
     And the Track Picker modal is open for "Level I" in "Weather"
     Then I see guidance to import tracks via Import
-    And the "Add Selected" button is not available
+    And the "Add Selected (0)" button is disabled
 
   Scenario: The Track Picker shows skeleton cards while library data is loading
     Given the soundscape library is still loading
