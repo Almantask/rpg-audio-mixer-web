@@ -1,140 +1,83 @@
 ---
 name: author-acceptance-tests
-description: Author and run BDD acceptance tests with Playwright. Use when writing Cucumber Gherkin scenarios, implementing Playwright step definitions, executing E2E tests, or reporting acceptance failures.
+description: Authors and runs BDD acceptance tests with Playwright and playwright-bdd. Use when writing Cucumber Gherkin scenarios, implementing Playwright step definitions, seeding E2E fixtures, executing acceptance tests, diagnosing E2E failures, or reporting test results.
 ---
 
 # Author Acceptance Tests
 
-## Role
+Act as a **senior QA engineer** for browser-based acceptance testing. You never write production React components or hooks.
 
-Act as a **senior Quality Assurance Engineer** focused on BDD and browser-based acceptance testing. You never write production React components or hooks — you define and ensure user journeys pass in a real browser.
-
----
-
-## Stack
-
-| Layer | Tool |
-|---|---|
-| Gherkin | Cucumber feature files in `features/` |
-| E2E runner | **Playwright** (with Cucumber bindings or playwright-bdd) |
-| Step definitions | TypeScript in `e2e/steps/` |
-| Selectors | Role/label/text first — `getByRole`, `getByLabelText`, `getByText` |
-| Unit/component tests | **Outside this skill** — owned by `implement-frontend-with-tdd` |
-
----
-
-## The Workflow
-
-### 1. Specification Parsing (Gherkin Generation)
-
-Before a developer touches the code, translate PO design requirements into testable Gherkin scenarios.
-
-- Place files under `features/<screen>/` — one folder per screen (e.g. `features/home/`, `features/active-scene/soundscapes/`)
-- Scene add modals live under `features/active-scene/soundboard/add-modal/` and `features/active-scene/soundscapes/add-modal/` (one file per modal action)
-- One distinct functionality per file; split when a feature covers multiple concerns
-- Use Given/When/Then structure
-- Re-use existing feature files when modifying a domain
-
-### 2. Step Definitions (Playwright)
-
-Once UI exists, write Cucumber step definitions:
-
-- Place them in `e2e/steps/`
-- Use Playwright's auto-waiting locators — never `Thread.sleep` or fixed `waitForTimeout`
-- Prefer accessible queries over `data-testid` unless no semantic alternative exists
-
-```typescript
-import { expect } from '@playwright/test'
-import { Given, When, Then } from '@cucumber/cucumber'
-
-When('I start playback', async function () {
-  await this.page.getByRole('button', { name: /play/i }).click()
-})
-
-Then('I see the scene is playing', async function () {
-  await expect(this.page.getByRole('status')).toContainText(/playing/i)
-})
-```
-
-### 3. Execution (Running Tests)
+## Quick start
 
 ```powershell
-.\ai\skills\author-acceptance-tests\scripts\run_acceptance_tests.ps1 -FeaturePath "features/your_feature.feature"
-```
-
-Or directly:
-
-```bash
-pnpm exec playwright test --grep "@your_tag"
-pnpm exec playwright test features/your_feature.feature
-```
-
-**Important:** Test runs require the user's explicit IDE approval.
-
-On branches other than `main`, self-check locally **and** trigger CI:
-
-```bash
-gh workflow run acceptance-tests.yml \
-  --ref <your-branch> \
-  -f cucumber_tags="@iter0 or @iter1" \
-  -f cucumber_features="features/<file>.feature"
-```
-
-Monitor with `gh run watch` or the **Actions** tab.
-
-### 4. Review & Issue Reporting
-
-- Tests pass → announce sign-off
-- Tests fail → structured failure log with assertion details; hand fixes to `@fe-developer`
-
----
-
-## Code Review Expectations
-
-When reviewing without running tests:
-
-- Coverage gaps: empty state, error UI, loading skeleton
-- Non-deterministic elements (clock, random) faked at the boundary — not mocked deep in the React tree
-- Interactive elements have accessible names for stable selectors
-- Acceptance tests hit the **real app stack** in a browser — mock only network or clock at boundaries
-- Step definitions use Playwright locators, not brittle CSS chains
-- Happy path and edge cases from PO are explicitly covered
-- Flag deprecated Playwright or Cucumber APIs
-
----
-
-## Pre-Test Quality Verification
-
-```bash
 pnpm typecheck
 pnpm lint
-pnpm exec playwright test --list
+npx bddgen
+npx playwright test ".features-gen/features/<path>/<feature>.feature.spec.js" --workers=1 --reporter=line
 ```
 
-Fix TypeScript and lint issues before running E2E.
+`playwright.config.ts` uses `missingSteps: 'fail-on-gen'` — undefined steps fail generation. Never treat `fixme` or skipped scenarios as passing coverage.
 
----
+## Workflow
 
-## Testing Tips
+1. **Typecheck and lint** before any browser run.
+2. **`npx bddgen`** — required before every run (also in CI).
+3. **One feature file** at a time while iterating.
+4. **Classify the failure** — see [REFERENCE.md](REFERENCE.md#failure-diagnosis) — then fix the smallest correct layer.
+5. **Re-run that feature** until it passes with zero skips.
+6. **Shared step or component changed?** Search all uses; re-run affected features.
+7. **Full suite** before sign-off; confirm failures outside the target iteration.
 
-- **Dev server must be running** (or use Playwright `webServer` config) before E2E
-- **Do not run tests with unimplemented steps** — implement step defs first
-- Support tag and feature-file filtering for fast feedback
-- Verbose console output during runs
+### Commands
 
-### Flaky Test Troubleshooting
+```powershell
+# Focused
+npx bddgen
+.\ai\skills\author-acceptance-tests\scripts\run_acceptance_tests.ps1 -FeaturePath ".features-gen/features/<path>/<feature>.feature.spec.js"
 
-1. Replace fixed timeouts with Playwright auto-wait (`expect(locator).toBeVisible()`)
-2. Ensure tests are independent — no shared browser storage without explicit setup
-3. Clean build cache: `.\ai\skills\author-acceptance-tests\scripts\clean_build.ps1`
+# Full suite
+npx bddgen
+npx playwright test --reporter=line
+```
 
----
+Test runs require the user's explicit IDE approval. On non-`main` branches, also trigger CI:
 
-## Anti-Patterns
+```bash
+gh workflow run acceptance-tests.yml --ref <branch> -f cucumber_tags="@iterN" -f cucumber_features="features/<file>.feature"
+```
 
-- Running E2E before TypeScript compiles
-- Fixing production React code yourself — report to `@fe-developer`
-- `page.locator('.css-xyz')` when a role/label exists
-- Committing without being asked
+## Authoring rules
+
+| Area | Rule |
+|---|---|
+| Gherkin | `features/<screen>/`; explicit `Given` for smallest complete state; domain nouns in steps (`soundscape card`, not generic `card`) |
+| Steps | `e2e/steps/`; `getByRole` / `getByLabel`; scope to `main` or `dialog`; no `.first()` band-aids |
+| Fixtures | Shared builders and consistent ID graph; update all seed paths when `AppData` changes — see [REFERENCE.md](REFERENCE.md#e2e-fixture-integrity) |
+| Design | Compare failures to approved design; fix production, do not weaken tests |
+| Input | Match component event family (touch vs mouse) |
+
+Full conventions, locator strategy, fixture checklist, and anti-patterns: [REFERENCE.md](REFERENCE.md).
+
+Iteration post-mortems: `learnings/feature-tests.md`.
+
+## Definition of done
+
+- [ ] Every targeted scenario executes — no `fixme` or missing-step skips
+- [ ] Each targeted feature passes independently
+- [ ] Fixtures have consistent IDs and complete cross-references
+- [ ] Locators are accessible, scoped, and strict
+- [ ] `typecheck`, `lint`, and `bddgen` pass
+- [ ] Full-suite run has no failures in the target iteration
+
+## Reporting
+
+- **Pass** → sign off against the checklist above.
+- **Fail** → structured log with diagnosis category, assertion details, and fix layer; hand production defects to `@fe-developer`.
+
+## Flaky tests
+
+1. Replace fixed timeouts with Playwright auto-wait.
+2. Ensure test independence — explicit setup, no shared storage leaks.
+3. Clean cache: `.\ai\skills\author-acceptance-tests\scripts\clean_build.ps1`
 
 **Git Policy:** Do NOT commit changes. Leave all changes uncommitted for the user to review and commit manually.
