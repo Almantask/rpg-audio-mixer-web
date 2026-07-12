@@ -1,4 +1,4 @@
-@iter3 @core
+@iter4 @core
 Feature: Preview track in Category Composer picker
 
   As a GM

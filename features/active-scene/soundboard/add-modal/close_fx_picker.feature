@@ -1,4 +1,4 @@
-@iter5
+@iter3
 Feature: Close FX picker
 
   As a GM

@@ -1,4 +1,4 @@
-@iter3 @core
+@iter4 @core
 Feature: Open track picker in Category Composer
 
   As a GM

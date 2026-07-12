@@ -1,4 +1,4 @@
-@iter5
+@iter3
 Feature: Preview FX in picker
 
   As a GM

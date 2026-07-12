@@ -44,9 +44,9 @@ GM can create campaigns, open a campaign, and manage sessions within it.
 
 ---
 
-## Iteration 3 — Scenes catalogue & soundscape library
+## Iteration 3 — Scenes catalogue & soundboard
 
-GM can browse and manage scenes, link scenes to sessions, and build soundscape categories in the library.
+GM can browse and manage scenes, link scenes to sessions, manage the FX library, and add effects to a scene's soundboard.
 
 | Feature file | Feature |
 |---|---|
@@ -60,6 +60,24 @@ GM can browse and manage scenes, link scenes to sessions, and build soundscape c
 | `features/session-scenes/open_scene_from_session.feature` | Open scene from session |
 | `features/session-scenes/import_scene_to_session.feature` | Import scene to session |
 | `features/session-scenes/unlink_scene_from_session.feature` | Unlink scene from session |
+| `features/library/browse_fx_library.feature` | Browse FX library |
+| `features/library/edit_fx_in_library.feature` | Edit FX in library |
+| `features/library/import_fx_library.feature` | Import FX to library |
+| `features/library/preview_fx_track.feature` | Preview FX track in library |
+| `features/active-scene/soundboard/add-modal/open_fx_picker.feature` | Open FX picker on Active Scene |
+| `features/active-scene/soundboard/add-modal/close_fx_picker.feature` | Close FX picker |
+| `features/active-scene/soundboard/add-modal/filter_fx_picker.feature` | Filter FX picker |
+| `features/active-scene/soundboard/add-modal/preview_fx_in_picker.feature` | Preview FX in picker |
+| `features/active-scene/soundboard/add-modal/commit_fx_to_soundboard.feature` | Commit FX selection to soundboard |
+
+---
+
+## Iteration 4 — Soundscape library
+
+GM can browse and manage soundscape categories in the library and compose categories.
+
+| Feature file | Feature |
+|---|---|
 | `features/library/browse_soundscape_categories.feature` | Browse soundscape categories |
 | `features/library/create_soundscape_category.feature` | Create soundscape category |
 | `features/library/delete_soundscape_category.feature` | Delete soundscape category |
@@ -74,7 +92,7 @@ GM can browse and manage scenes, link scenes to sessions, and build soundscape c
 
 ---
 
-## Iteration 4 — Add soundscapes to scene
+## Iteration 5 — Add soundscapes to scene
 
 GM can open the soundscape picker on Active Scene and commit categories to a scene.
 
@@ -85,24 +103,6 @@ GM can open the soundscape picker on Active Scene and commit categories to a sce
 | `features/active-scene/soundscapes/add-modal/filter_soundscape_picker.feature` | Filter soundscape picker |
 | `features/active-scene/soundscapes/add-modal/preview_soundscape_in_picker.feature` | Preview soundscape in picker |
 | `features/active-scene/soundscapes/add-modal/commit_soundscape_to_scene.feature` | Commit soundscape selection to scene |
-
----
-
-## Iteration 5 — FX library & add FX to soundboard
-
-GM can manage the FX library and add effects to a scene's soundboard via the picker modal.
-
-| Feature file | Feature |
-|---|---|
-| `features/library/browse_fx_library.feature` | Browse FX library |
-| `features/library/edit_fx_in_library.feature` | Edit FX in library |
-| `features/library/import_fx_library.feature` | Import FX to library |
-| `features/library/preview_fx_track.feature` | Preview FX track in library |
-| `features/active-scene/soundboard/add-modal/open_fx_picker.feature` | Open FX picker on Active Scene |
-| `features/active-scene/soundboard/add-modal/close_fx_picker.feature` | Close FX picker |
-| `features/active-scene/soundboard/add-modal/filter_fx_picker.feature` | Filter FX picker |
-| `features/active-scene/soundboard/add-modal/preview_fx_in_picker.feature` | Preview FX in picker |
-| `features/active-scene/soundboard/add-modal/commit_fx_to_soundboard.feature` | Commit FX selection to soundboard |
 
 ---
 

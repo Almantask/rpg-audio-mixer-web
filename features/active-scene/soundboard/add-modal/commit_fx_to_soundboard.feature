@@ -1,4 +1,4 @@
-@iter5
+@iter3
 Feature: Commit FX selection to soundboard
 
   As a GM
