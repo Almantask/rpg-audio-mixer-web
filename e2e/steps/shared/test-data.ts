@@ -1,7 +1,18 @@
 import { expect, type Page } from '@playwright/test'
 import type { AppData, Campaign, E2EControls, Session } from '../../../src/types/campaign'
 import type { FxTrack } from '../../../src/types/library'
-import type { Scene, SessionSceneLink } from '../../../src/types/scene'
+import type {
+  Scene,
+  SceneSoundboardSettings,
+  SceneSoundscapeSettings,
+  SceneSoundscapeSlot,
+  SessionSceneLink,
+  SoundscapeIntensity,
+} from '../../../src/types/scene'
+import {
+  computeSoundboardGain,
+  computeSoundscapeGain,
+} from '../../../src/lib/audio/sceneAudioManager'
 
 export interface SoundboardEntry {
   id: string
@@ -18,11 +29,27 @@ export interface E2EAppData extends AppData {
   soundboardEntries?: SoundboardEntry[]
 }
 
+export interface PlayingTrackSnapshot {
+  id: string
+  name: string
+  source: 'soundboard' | 'soundscape' | 'library' | 'picker'
+  slotId?: string
+  categoryName?: string
+}
+
+export interface ArcanumAudioVolumes {
+  soundboardMaster?: number
+  soundscapeMaster?: number
+  soundscapes?: Record<string, number>
+}
+
 export interface ArcanumAudioState {
   isPlaying: boolean
   trackName?: string
-  source?: 'library' | 'picker' | 'soundboard'
+  source?: 'library' | 'picker' | 'soundboard' | 'soundscape'
   previewVolume?: number
+  playingTracks?: PlayingTrackSnapshot[]
+  volumes?: ArcanumAudioVolumes
 }
 
 export interface ExtendedE2EControls extends E2EControls {
@@ -41,6 +68,7 @@ export const EMPTY_E2E_APP_DATA: E2EAppData = {
   sceneSoundboardEntries: [],
   sceneSoundscapeSlots: [],
   sceneSoundboardSettings: [],
+  sceneSoundscapeSettings: [],
   soundscapeCategories: [],
   soundscapeTracks: [],
   lastActiveSceneBySession: {},
@@ -96,6 +124,9 @@ export function buildScene(name: string, overrides: Partial<Scene> = {}): Scene 
   }
 }
 
+export const LONG_FX_AUDIO_URL =
+  '/assets/audio/soundscapes/Forest/II/Dancing feys in Oak Forest.ogg'
+
 export function buildFxTrack(name: string, overrides: Partial<FxTrack> = {}): FxTrack {
   const now = new Date().toISOString()
   const bundled = BUNDLED_FX_BY_NAME[name] ?? {}
@@ -120,36 +151,79 @@ const BUNDLED_FX_BY_NAME: Record<string, Partial<FxTrack>> = {
     type: 'CREATURE',
     tags: ['Creature'],
     baseIntensity: 'II',
-    durationSeconds: 3,
+    durationSeconds: 120,
   },
   'Thunder Crack': {
     audioUrl: '/assets/audio/soundboard/whip.ogg',
     type: 'IMPACT',
     tags: ['Impact', 'Combat'],
     baseIntensity: 'II',
-    durationSeconds: 4,
+    durationSeconds: 120,
   },
   'Sword Clash': {
-    audioUrl: '/assets/audio/soundboard/u_fe12rqkbth-sword-clash-241729.ogg',
+    audioUrl: '/assets/audio/soundboard/sword.ogg',
     type: 'COMBAT',
     tags: ['Combat'],
     baseIntensity: 'I',
     durationSeconds: 2,
   },
   'Battle Horn': {
-    audioUrl: '/assets/audio/soundboard/djartmusic-arrow-twang_01-306041.ogg',
+    audioUrl: '/assets/audio/soundboard/arrow2.ogg',
     type: 'COMBAT',
     tags: ['Combat'],
     baseIntensity: 'II',
     durationSeconds: 2,
   },
   'Soft Tap': {
-    audioUrl: '/assets/audio/soundboard/djartmusic-arrow-swish_03-306040.ogg',
+    audioUrl: '/assets/audio/soundboard/arrow3.ogg',
     type: 'UI',
     tags: ['UI'],
     baseIntensity: 'I',
     durationSeconds: 1,
   },
+  Whip: {
+    audioUrl: '/assets/audio/soundboard/whip.ogg',
+    type: 'IMPACT',
+    tags: ['Impact'],
+    baseIntensity: 'II',
+    durationSeconds: 2,
+  },
+  'Owl Hooting': {
+    audioUrl: '/assets/audio/soundboard/owl_hooting.ogg',
+    type: 'CREATURE',
+    tags: ['Creature'],
+    baseIntensity: 'I',
+    durationSeconds: 3,
+  },
+  'Dog Bark': {
+    audioUrl: '/assets/audio/soundboard/whip.ogg',
+    type: 'CREATURE',
+    tags: ['Creature'],
+    baseIntensity: 'II',
+    durationSeconds: 2,
+  },
+  'Door Creak': {
+    audioUrl: '/assets/audio/soundboard/sword4.ogg',
+    type: 'OTHER',
+    tags: ['Other'],
+    baseIntensity: 'I',
+    durationSeconds: 2,
+  },
+  'Dragon Roar': {
+    audioUrl: '/assets/audio/soundboard/dragon_roar2.ogg',
+    type: 'CREATURE',
+    tags: ['Creature'],
+    baseIntensity: 'III',
+    durationSeconds: 3,
+  },
+}
+
+const BUNDLED_SOUNDSCAPE_BY_NAME: Record<string, Partial<import('../../../src/types/library').SoundscapeTrack>> = {
+  'Light Rain': { id: 'track-light-rain', durationSeconds: 2 },
+  Drizzle: { id: 'track-drizzle' },
+  Storm: { id: 'track-storm' },
+  'Forest Loop': { id: 'track-forest-loop' },
+  'Light Rain Alt': { id: 'track-light-rain-alt' },
 }
 
 export function buildDefaultPickerFxTracks(): FxTrack[] {
@@ -196,12 +270,403 @@ export function parseDurationSeconds(duration: string): number {
   return (minutes ?? 0) * 60 + (seconds ?? 0)
 }
 
-export function buildSoundscapeCategory(name: string, trackCount = 5): SoundscapeCategory {
+export function categoryIdForName(name: string): string {
+  return `category-${slugify(name)}`
+}
+
+export function buildSoundscapeCategory(
+  name: string,
+  overrides: Partial<SoundscapeCategory> = {},
+): SoundscapeCategory {
+  const trackCount = overrides.trackCount ?? 5
+  const baseId = `track-${slugify(name)}`
   return {
-    id: `category-${slugify(name)}`,
+    id: categoryIdForName(name),
     name,
     trackCount,
+    levels: {
+      I: [`${baseId}-i-1`],
+      II: [`${baseId}-ii-1`, `${baseId}-ii-2`],
+      III: [`${baseId}-iii-1`],
+    },
+    ...overrides,
   }
+}
+
+export function buildSoundscapeTracksForCategory(name: string) {
+  const category = buildSoundscapeCategory(name)
+  const trackIds = [
+    ...(category.levels?.I ?? []),
+    ...(category.levels?.II ?? []),
+    ...(category.levels?.III ?? []),
+  ]
+  return trackIds.map((id, index) =>
+    buildSoundscapeTrack(`${name} Track ${index + 1}`, { id }),
+  )
+}
+
+export function buildSoundscapeCategoryWithLayers(
+  name: string,
+  trackCount: number,
+  layerCount: number,
+): SoundscapeCategory {
+  const levels: SoundscapeCategory['levels'] = { I: [], II: [], III: [] }
+  const levelKeys = (['I', 'II', 'III'] as const).slice(0, layerCount)
+  const tracksPerLevel = Math.max(1, Math.floor(trackCount / layerCount))
+  for (const level of levelKeys) {
+    const ids = Array.from({ length: tracksPerLevel }, (_, index) => {
+      return `track-${slugify(name)}-${level.toLowerCase()}-${index + 1}`
+    })
+    levels[level] = ids
+  }
+  return {
+    id: categoryIdForName(name),
+    name,
+    trackCount,
+    levels,
+  }
+}
+
+export function buildEmptySoundscapeCategory(name: string): SoundscapeCategory {
+  return {
+    id: categoryIdForName(name),
+    name,
+    trackCount: 0,
+    levels: { I: [], II: [], III: [] },
+  }
+}
+
+export function soundscapeTrackIdForName(name: string): string {
+  return BUNDLED_SOUNDSCAPE_BY_NAME[name]?.id ?? `track-${slugify(name)}`
+}
+
+export function buildSoundscapeTrack(name: string, overrides: Partial<import('../../../src/types/library').SoundscapeTrack> = {}) {
+  const bundled = BUNDLED_SOUNDSCAPE_BY_NAME[name] ?? {}
+  return {
+    id: soundscapeTrackIdForName(name),
+    name,
+    durationSeconds: 180,
+    format: 'MP3',
+    channels: 'Stereo',
+    audioUrl: '/assets/audio/soundboard/owl_hooting.ogg',
+    createdAt: new Date().toISOString(),
+    ...bundled,
+    ...overrides,
+  }
+}
+
+export function intensityLabelToLevel(label: string): SoundscapeIntensity {
+  const match = label.match(/Level\s+(I{1,3})/i) ?? label.match(/^(I{1,3})$/)
+  if (!match) {
+    throw new Error(`Invalid intensity label: ${label}`)
+  }
+  return match[1] as SoundscapeIntensity
+}
+
+export function buildWeatherCategoryWithTracks() {
+  const lightRain = buildSoundscapeTrack('Light Rain')
+  const drizzle = buildSoundscapeTrack('Drizzle')
+  const lightRainAlt = buildSoundscapeTrack('Light Rain Alt')
+  const storm = buildSoundscapeTrack('Storm')
+  const category = buildSoundscapeCategory('Weather', {
+    trackCount: 4,
+    levels: {
+      I: [lightRain.id, drizzle.id, lightRainAlt.id],
+      II: [storm.id],
+      III: [],
+    },
+  })
+  return {
+    category,
+    tracks: [lightRain, drizzle, lightRainAlt, storm],
+  }
+}
+
+export function buildSoundscapeCategoryWithNamedTracks(
+  name: string,
+  tracksByLevel: Partial<Record<SoundscapeIntensity, string[]>>,
+) {
+  const tracks = Object.values(tracksByLevel)
+    .flat()
+    .filter(Boolean)
+    .map((trackName) => buildSoundscapeTrack(trackName as string))
+  const levels: SoundscapeCategory['levels'] = { I: [], II: [], III: [] }
+  for (const level of ['I', 'II', 'III'] as const) {
+    const names = tracksByLevel[level] ?? []
+    levels[level] = names.map((trackName) => soundscapeTrackIdForName(trackName as string))
+  }
+  const category = buildSoundscapeCategory(name, {
+    trackCount: tracks.length,
+    levels,
+  })
+  return { category, tracks }
+}
+
+export function buildDungeonCategoryPartialLevels() {
+  const dungeonTrack = buildSoundscapeTrack('Dungeon Ambience')
+  const category = buildSoundscapeCategory('Dungeon', {
+    trackCount: 1,
+    levels: {
+      I: [dungeonTrack.id],
+      II: [],
+      III: [],
+    },
+  })
+  return { category, tracks: [dungeonTrack] }
+}
+
+export function buildForestCategoryWithLoop() {
+  const forestLoop = buildSoundscapeTrack('Forest Loop')
+  const category = buildSoundscapeCategory('Forest', {
+    trackCount: 1,
+    levels: {
+      I: [],
+      II: [forestLoop.id],
+      III: [],
+    },
+  })
+  return { category, tracks: [forestLoop] }
+}
+
+export function seedSoundboardEffects(sceneId: string, effectNames: string[], options?: { longAudio?: boolean }) {
+  const fxTracks = effectNames.map((name) =>
+    buildFxTrack(
+      name,
+      options?.longAudio
+        ? { audioUrl: LONG_FX_AUDIO_URL, durationSeconds: 120 }
+        : { durationSeconds: 120 },
+    ),
+  )
+  const sceneSoundboardEntries = fxTracks.map((fx, index) =>
+    buildSoundboardEntry(sceneId, fx.id, index + 1),
+  )
+  return { fxTracks, sceneSoundboardEntries }
+}
+
+export async function replaceSceneSoundboard(
+  page: Page,
+  sceneId: string,
+  effectNames: string[],
+) {
+  const { fxTracks, sceneSoundboardEntries } = seedSoundboardEffects(sceneId, effectNames)
+  await page.evaluate(
+    ({ targetSceneId, tracks, entries }) => {
+      const raw = localStorage.getItem('arcanum-audio-data')
+      const data = raw ? JSON.parse(raw) : {}
+      const mergeById = <T extends { id: string }>(existing: T[] = [], incoming: T[]): T[] => {
+        const map = new Map(existing.map((item) => [item.id, item]))
+        for (const item of incoming) {
+          map.set(item.id, item)
+        }
+        return Array.from(map.values())
+      }
+      data.sceneSoundboardEntries = [
+        ...(data.sceneSoundboardEntries ?? []).filter(
+          (entry: { sceneId: string }) => entry.sceneId !== targetSceneId,
+        ),
+        ...entries,
+      ]
+      data.fxTracks = mergeById(data.fxTracks ?? [], tracks)
+      localStorage.setItem('arcanum-audio-data', JSON.stringify(data))
+      window.__ARCANUM_E2E__?.seed(data)
+    },
+    { targetSceneId: sceneId, tracks: fxTracks, entries: sceneSoundboardEntries },
+  )
+}
+
+export async function ensureSoundboardEffectOnBoard(page: Page, effectName: string) {
+  const sceneId = sceneIdForName(DEFAULT_SCENE_NAME)
+  const fxId = fxIdForName(effectName)
+  const alreadyOnBoard = await page.evaluate(
+    ({ targetSceneId, targetFxId }) => {
+      const raw = localStorage.getItem('arcanum-audio-data')
+      if (!raw) {
+        return false
+      }
+      const data = JSON.parse(raw)
+      return (data.sceneSoundboardEntries ?? []).some(
+        (entry: { sceneId: string; fxTrackId: string }) =>
+          entry.sceneId === targetSceneId && entry.fxTrackId === targetFxId,
+      )
+    },
+    { targetSceneId: sceneId, targetFxId: fxId },
+  )
+  if (alreadyOnBoard) {
+    return
+  }
+  const nextOrder = await page.evaluate((targetSceneId) => {
+    const raw = localStorage.getItem('arcanum-audio-data')
+    if (!raw) {
+      return 1
+    }
+    const data = JSON.parse(raw)
+    const orders = (data.sceneSoundboardEntries ?? [])
+      .filter((entry: { sceneId: string }) => entry.sceneId === targetSceneId)
+      .map((entry: { order: number }) => entry.order)
+    return orders.length > 0 ? Math.max(...orders) + 1 : 1
+  }, sceneId)
+  const fx = buildFxTrack(effectName)
+  await mergeE2EData(
+    page,
+    {
+      fxTracks: [fx],
+      sceneSoundboardEntries: [buildSoundboardEntry(sceneId, fx.id, nextOrder)],
+    },
+    { navigateHome: false },
+  )
+}
+
+export async function tapCategoryPlay(page: Page, categoryName: string) {
+  const playButton = page.locator(`[data-soundscape-play="${categoryName}"]`)
+  if (await playButton.isDisabled()) {
+    await page.locator(`[data-soundscape-d20="${categoryName}"]`).click()
+    await expect(playButton).toBeEnabled({ timeout: 5_000 })
+  }
+  await playButton.click()
+  await expect(page.locator(`[data-soundscape-playback-state="${categoryName}"]`)).toHaveAttribute(
+    'data-state',
+    'playing',
+    { timeout: 5_000 },
+  )
+}
+
+export function buildSceneSoundscapeSettings(
+  sceneId: string,
+  overrides: Partial<SceneSoundscapeSettings> = {},
+): SceneSoundscapeSettings {
+  return {
+    sceneId,
+    masterVolume: 100,
+    muted: false,
+    ...overrides,
+  }
+}
+
+export function buildSceneSoundboardSettings(
+  sceneId: string,
+  overrides: Partial<SceneSoundboardSettings> = {},
+): SceneSoundboardSettings {
+  return {
+    sceneId,
+    masterVolume: 85,
+    ...overrides,
+  }
+}
+
+export function buildSceneSoundscapeSlotWithOptions(
+  sceneId: string,
+  categoryId: string,
+  order: number,
+  overrides: Partial<SceneSoundscapeSlot> = {},
+): SceneSoundscapeSlot {
+  return {
+    ...buildSceneSoundscapeSlot(sceneId, categoryId, order),
+    ...overrides,
+  }
+}
+
+export async function setSessionLocked(page: Page, locked = true) {
+  await setE2EControls(page, { sessionLocked: locked })
+}
+
+export async function simulateNativeDragDrop(
+  page: Page,
+  sourceSelector: string,
+  targetSelector: string,
+) {
+  await page.evaluate(
+    ({ dragSourceSelector, dragTargetSelector }) => {
+      const source = document.querySelector(dragSourceSelector)
+      const target = document.querySelector(dragTargetSelector)
+      if (!source || !target) {
+        throw new Error(`Drag source or target not found: ${dragSourceSelector} -> ${dragTargetSelector}`)
+      }
+      const dataTransfer = new DataTransfer()
+      source.dispatchEvent(
+        new DragEvent('dragstart', { bubbles: true, cancelable: true, dataTransfer }),
+      )
+      target.dispatchEvent(
+        new DragEvent('dragenter', { bubbles: true, cancelable: true, dataTransfer }),
+      )
+      target.dispatchEvent(
+        new DragEvent('dragover', { bubbles: true, cancelable: true, dataTransfer }),
+      )
+      target.dispatchEvent(new DragEvent('drop', { bubbles: true, cancelable: true, dataTransfer }))
+      source.dispatchEvent(new DragEvent('dragend', { bubbles: true, cancelable: true, dataTransfer }))
+    },
+    { dragSourceSelector: sourceSelector, dragTargetSelector: targetSelector },
+  )
+}
+
+export async function leaveAndReopenActiveScene(
+  page: Page,
+  sceneName = DEFAULT_SCENE_NAME,
+  tab: 'Soundscapes' | 'Soundboard' = 'Soundscapes',
+) {
+  await page.goto('/scenes')
+  await page.waitForLoadState('networkidle')
+  await openActiveScene(page, sceneName, tab)
+}
+
+export function expectedSoundboardMappedGain(masterPercent: number): number {
+  return computeSoundboardGain(masterPercent)
+}
+
+export function expectedSoundscapeMappedGain(
+  masterPercent: number,
+  volumePercent: number,
+  duckMultiplier = 1,
+  muted = false,
+): number {
+  return computeSoundscapeGain(masterPercent, volumePercent, muted, duckMultiplier)
+}
+
+export async function getPlayingTracks(page: Page): Promise<PlayingTrackSnapshot[]> {
+  const state = await getAudioState(page)
+  return state.playingTracks ?? []
+}
+
+export async function isTrackPlaying(page: Page, trackName: string): Promise<boolean> {
+  const tracks = await getPlayingTracks(page)
+  return tracks.some((track) => track.name === trackName)
+}
+
+export async function isCategoryLooping(page: Page, categoryName: string): Promise<boolean> {
+  const onPage = await page.locator(`[data-soundscape-playback-state="${categoryName}"]`).count()
+  if (onPage > 0) {
+    const state = await page.locator(`[data-soundscape-playback-state="${categoryName}"]`).getAttribute('data-state')
+    return state === 'playing'
+  }
+  const tracks = await getPlayingTracks(page)
+  return tracks.some((track) => track.source === 'soundscape' && track.categoryName === categoryName)
+}
+
+export async function countPlayingInstances(page: Page, trackName: string): Promise<number> {
+  const tracks = await getPlayingTracks(page)
+  return tracks.filter((track) => track.name === trackName).length
+}
+
+export async function readPersistedSlotIntensity(
+  page: Page,
+  sceneId: string,
+  categoryName: string,
+): Promise<SoundscapeIntensity | undefined> {
+  const categoryId = categoryIdForName(categoryName)
+  return page.evaluate(
+    ({ targetSceneId, targetCategoryId }) => {
+      const raw = localStorage.getItem('arcanum-audio-data')
+      if (!raw) {
+        return undefined
+      }
+      const data = JSON.parse(raw)
+      const slot = (data.sceneSoundscapeSlots ?? []).find(
+        (item: { sceneId: string; categoryId: string }) =>
+          item.sceneId === targetSceneId && item.categoryId === targetCategoryId,
+      )
+      return slot?.intensity
+    },
+    { targetSceneId: sceneId, targetCategoryId: categoryId },
+  )
 }
 
 export function buildSceneSoundscapeSlot(
@@ -294,6 +759,7 @@ export async function mergeE2EData(page: Page, partial: Partial<E2EAppData>, opt
       sceneSoundboardEntries: [],
       sceneSoundscapeSlots: [],
       sceneSoundboardSettings: [],
+      sceneSoundscapeSettings: [],
       soundscapeCategories: [],
       soundscapeTracks: [],
       lastActiveSceneBySession: {},

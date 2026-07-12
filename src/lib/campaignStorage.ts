@@ -25,6 +25,7 @@ export function loadAppData(): AppData {
       sceneSoundboardEntries: parsed.sceneSoundboardEntries ?? [],
       sceneSoundscapeSlots: parsed.sceneSoundscapeSlots ?? [],
       sceneSoundboardSettings: parsed.sceneSoundboardSettings ?? [],
+      sceneSoundscapeSettings: parsed.sceneSoundscapeSettings ?? [],
       fxTracks: parsed.fxTracks ?? [],
       soundscapeCategories: parsed.soundscapeCategories ?? [],
       soundscapeTracks: parsed.soundscapeTracks ?? [],

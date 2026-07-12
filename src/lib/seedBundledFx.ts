@@ -1,149 +1,84 @@
-import type { FxTrack } from '@/types/library'
+import type { FxIntensity, FxTrack, FxType } from '@/types/library'
 
 const AUDIO_BASE = '/assets/audio/soundboard'
 
-interface BundledFxSeed {
-  file: string
-  name: string
-  durationSeconds: number
-  baseIntensity: FxTrack['baseIntensity']
-  type: FxTrack['type']
-  tags: string[]
+const BUNDLED_FX_FILES = [
+  'arrow.ogg',
+  'arrow2.ogg',
+  'arrow3.ogg',
+  'dog_bark.ogg',
+  'dragon_roar2.ogg',
+  'dragon_roar3.ogg',
+  'draong_roar.ogg',
+  'musicholder-sword-sound-260274.ogg',
+  'owl_hooting.ogg',
+  'sword.ogg',
+  'sword4.ogg',
+  'sword5.ogg',
+  'sword6.ogg',
+  'sword7.ogg',
+  'whip.ogg',
+] as const
+
+function displayNameFromFile(file: string): string {
+  const baseName = file.replace(/\.[^.]+$/, '')
+  return baseName.replace(/[_-]+/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase())
 }
 
-const BUNDLED_FX: BundledFxSeed[] = [
-  {
-    file: 'owl_hooting.ogg',
-    name: 'Wolf Howl',
-    durationSeconds: 3,
-    baseIntensity: 'II',
-    type: 'CREATURE',
-    tags: ['Creature', 'Combat'],
-  },
-  {
-    file: 'whip.ogg',
-    name: 'Thunder Crack',
-    durationSeconds: 4,
-    baseIntensity: 'II',
-    type: 'IMPACT',
-    tags: ['Impact', 'Combat'],
-  },
-  {
-    file: 'u_fe12rqkbth-sword-clash-241729.ogg',
-    name: 'Sword Clash',
-    durationSeconds: 2,
-    baseIntensity: 'I',
-    type: 'COMBAT',
-    tags: ['Combat'],
-  },
-  {
-    file: 'djartmusic-arrow-twang_01-306041.ogg',
-    name: 'Battle Horn',
-    durationSeconds: 2,
-    baseIntensity: 'II',
-    type: 'COMBAT',
-    tags: ['Combat'],
-  },
-  {
-    file: 'dragon-studio-sword-clattering-to-the-ground-393838.ogg',
-    name: 'Door Creak',
-    durationSeconds: 3,
-    baseIntensity: 'I',
-    type: 'AMBIENT',
-    tags: ['Ambient'],
-  },
-  {
-    file: 'djartmusic-arrow-swish_03-306040.ogg',
-    name: 'Soft Tap',
-    durationSeconds: 1,
-    baseIntensity: 'I',
-    type: 'UI',
-    tags: ['UI'],
-  },
-  {
-    file: 'dog_bark.ogg',
-    name: 'Dog Bark',
-    durationSeconds: 2,
-    baseIntensity: 'I',
-    type: 'CREATURE',
-    tags: ['Creature'],
-  },
-  {
-    file: 'dragon-studio-violent-sword-slice-393839.ogg',
-    name: 'Violent Sword Slice',
-    durationSeconds: 2,
-    baseIntensity: 'III',
-    type: 'COMBAT',
-    tags: ['Combat'],
-  },
-  {
-    file: 'musicholder-sword-sound-260274.ogg',
-    name: 'Sword Ring',
-    durationSeconds: 2,
-    baseIntensity: 'II',
-    type: 'COMBAT',
-    tags: ['Combat'],
-  },
-  {
-    file: 'daviddumaisaudio-sword-slash-with-metallic-impact-185435.ogg',
-    name: 'Sword Slash',
-    durationSeconds: 2,
-    baseIntensity: 'II',
-    type: 'COMBAT',
-    tags: ['Combat', 'Impact'],
-  },
-  {
-    file: 'freesound_community-sword-schwing-40520.ogg',
-    name: 'Sword Schwing',
-    durationSeconds: 1,
-    baseIntensity: 'I',
-    type: 'COMBAT',
-    tags: ['Combat'],
-  },
-  {
-    file: 'dennish18-arrow-body-impact-146419.ogg',
-    name: 'Arrow Impact',
-    durationSeconds: 2,
-    baseIntensity: 'II',
-    type: 'IMPACT',
-    tags: ['Impact', 'Combat'],
-  },
-  {
-    file: 'dragon-studio-epic-dragon-roar-364481.ogg',
-    name: 'Dragon Roar',
-    durationSeconds: 4,
-    baseIntensity: 'III',
-    type: 'CREATURE',
-    tags: ['Creature'],
-  },
-  {
-    file: 'dragon-studio-dragon-breathing-fire-epic-sound-364482.ogg',
-    name: 'Dragon Fire',
-    durationSeconds: 5,
-    baseIntensity: 'III',
-    type: 'CREATURE',
-    tags: ['Creature', 'Impact'],
-  },
-  {
-    file: 'dragon-studio-dragon-roar-364478.ogg',
-    name: 'Dragon Growl',
-    durationSeconds: 3,
-    baseIntensity: 'II',
-    type: 'CREATURE',
-    tags: ['Creature'],
-  },
-]
+function inferFxType(name: string): FxType {
+  const lower = name.toLowerCase()
+  if (lower.includes('sword') || lower.includes('arrow') || lower.includes('whip')) {
+    return 'COMBAT'
+  }
+  if (lower.includes('dragon') || lower.includes('dog') || lower.includes('owl')) {
+    return 'CREATURE'
+  }
+  return 'OTHER'
+}
+
+function inferFxIntensity(name: string): FxIntensity {
+  const lower = name.toLowerCase()
+  if (lower.includes('dragon') || lower.includes('sword7') || lower.includes('sword6')) {
+    return 'III'
+  }
+  if (
+    lower.includes('sword4') ||
+    lower.includes('sword5') ||
+    lower.includes('whip') ||
+    lower.includes('musicholder')
+  ) {
+    return 'II'
+  }
+  return 'I'
+}
+
+function inferFxTags(type: FxType): string[] {
+  switch (type) {
+    case 'COMBAT':
+      return ['Combat']
+    case 'CREATURE':
+      return ['Creature']
+    case 'IMPACT':
+      return ['Impact']
+    default:
+      return ['Other']
+  }
+}
 
 export function createBundledFxTracks(now = new Date().toISOString()): FxTrack[] {
-  return BUNDLED_FX.map((seed, index) => ({
-    id: `fx-bundled-${index}`,
-    name: seed.name,
-    durationSeconds: seed.durationSeconds,
-    baseIntensity: seed.baseIntensity,
-    type: seed.type,
-    tags: seed.tags,
-    audioUrl: `${AUDIO_BASE}/${seed.file}`,
-    defaultVolume: 80,
-    createdAt: now,
-  }))
+  return BUNDLED_FX_FILES.map((file, index) => {
+    const name = displayNameFromFile(file)
+    const type = inferFxType(name)
+    return {
+      id: `fx-bundled-${index}`,
+      name,
+      durationSeconds: 3,
+      baseIntensity: inferFxIntensity(name),
+      type,
+      tags: inferFxTags(type),
+      audioUrl: `${AUDIO_BASE}/${file}`,
+      defaultVolume: 80,
+      createdAt: now,
+    }
+  })
 }

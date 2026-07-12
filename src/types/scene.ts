@@ -24,11 +24,22 @@ export interface SceneSoundboardEntry {
   order: number
 }
 
+export type SoundscapeIntensity = 'I' | 'II' | 'III'
+
 export interface SceneSoundscapeSlot {
   id: string
   sceneId: string
   categoryId: string
   order: number
+  volume?: number
+  intensity?: SoundscapeIntensity
+  currentTrackId?: string
+}
+
+export interface SceneSoundscapeSettings {
+  sceneId: string
+  masterVolume: number
+  muted: boolean
 }
 
 export interface SceneSoundboardSettings {

@@ -296,7 +296,13 @@ Then('I see skeleton placeholder cards in the grid', async ({ page }) => {
 })
 
 Then('I see a centred empty-state illustration', async ({ page }) => {
-  await expect(page.locator('[data-fx-library-empty]')).toBeVisible()
+  const fxEmpty = page.locator('[data-fx-library-empty]')
+  const scPickerEmpty = page.locator('[data-sc-picker-empty]')
+  if (await scPickerEmpty.count() > 0) {
+    await expect(scPickerEmpty).toBeVisible()
+    return
+  }
+  await expect(fxEmpty).toBeVisible()
 })
 
 Then('I see copy directing me to import or download FX tracks', async ({ page }) => {
@@ -402,10 +408,6 @@ Then('the mini player appears at the bottom of the main content area', async ({ 
   await expect(page.locator('[data-mini-player]')).toBeVisible()
 })
 
-Then('{string} begins playing', async ({ page }, name: string) => {
-  await expectAudioPlaying(page, name)
-})
-
 Then('the {string} FX card shows a playing preview state', async ({ page }, name: string) => {
   await expect(page.locator(`[data-fx-card-preview-state="${name}"]`)).toHaveAttribute('data-state', 'playing')
 })
@@ -491,8 +493,9 @@ Then('I see download progress UI', async ({ page }) => {
 })
 
 Then('new soundscape categories appear in the grid when the demo pack download completes', async ({ page }) => {
-  await expect(page.locator('[data-sc-card="Tavern"]')).toBeVisible({ timeout: 15000 })
-  await expect(page.locator('[data-sc-card="Dungeon"]')).toBeVisible()
+  for (const name of ['Forest', 'Boss', 'Combat', 'Mystery']) {
+    await expect(page.locator(`[data-sc-card="${name}"]`)).toBeVisible({ timeout: 15000 })
+  }
 })
 
 Given('{string} has {int} tracks at level I, {int} at level II, and {int} at level III', async ({ page }, catName, c1, c2, c3) => {
@@ -1038,8 +1041,10 @@ Then('I see guidance to import tracks via Import', async ({ page }) => {
 })
 
 Given('the soundscape library is still loading', async ({ page }) => {
-  await resetE2EData(page)
-  await setE2EControls(page, { fxLibraryState: 'loading' })
+  await setE2EControls(page, {
+    fxLibraryState: 'loading',
+    soundscapeLibraryState: 'loading',
+  })
 })
 
 When('I open the Track Picker for {string} in {string}', async ({ page }, levelName, catName) => {

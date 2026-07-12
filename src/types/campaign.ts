@@ -3,6 +3,7 @@ import type {
   Scene,
   SceneSoundboardEntry,
   SceneSoundboardSettings,
+  SceneSoundscapeSettings,
   SceneSoundscapeSlot,
   SessionSceneLink,
 } from './scene'
@@ -40,6 +41,7 @@ export interface AppData {
   sceneSoundboardEntries: SceneSoundboardEntry[]
   sceneSoundscapeSlots: SceneSoundscapeSlot[]
   sceneSoundboardSettings: SceneSoundboardSettings[]
+  sceneSoundscapeSettings: SceneSoundscapeSettings[]
   fxTracks: FxTrack[]
   soundscapeCategories: SoundscapeCategory[]
   soundscapeTracks: SoundscapeTrack[]
@@ -59,6 +61,7 @@ export interface E2EControls {
   createSessionFails: boolean
   saveSessionFails: boolean
   invalidAudioImport?: boolean
+  sessionLocked?: boolean
 }
 
 export const EMPTY_APP_DATA: AppData = {
@@ -70,6 +73,7 @@ export const EMPTY_APP_DATA: AppData = {
   sceneSoundboardEntries: [],
   sceneSoundscapeSlots: [],
   sceneSoundboardSettings: [],
+  sceneSoundscapeSettings: [],
   fxTracks: [],
   soundscapeCategories: [],
   soundscapeTracks: [],

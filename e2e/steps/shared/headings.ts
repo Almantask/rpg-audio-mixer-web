@@ -4,7 +4,7 @@ import { createBdd } from 'playwright-bdd'
 const { Then } = createBdd()
 
 Then('I see the title {string}', async ({ page }, title: string) => {
-  await expect(page.getByText(title, { exact: true })).toBeVisible()
+  await expect(page.getByRole('heading', { name: title, exact: true })).toBeVisible()
 })
 
 Then('I see the subtitle {string}', async ({ page }, subtitle: string) => {

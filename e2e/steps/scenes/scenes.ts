@@ -416,6 +416,14 @@ Then('I see the {string} call to action', async ({ page }, label: string) => {
 })
 
 Then('I see {string}', async ({ page }, message: string) => {
+  if (message === 'No compositions match your filters') {
+    await expect(page.locator('[data-sc-picker-no-match]')).toContainText(message)
+    return
+  }
+  if (message.startsWith('Add Selected (')) {
+    await expect(page.locator('[data-picker-commit]')).toHaveText(message)
+    return
+  }
   await expect(page.getByText(message, { exact: false })).toBeVisible()
 })
 

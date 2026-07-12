@@ -22,7 +22,13 @@ import { DEFAULT_E2E_CONTROLS, EMPTY_APP_DATA } from '@/types/campaign'
 
 import type { FxTrack, FxType, SoundscapeCategory, SoundscapeTrack } from '@/types/library'
 
-import type { Scene, SceneSoundboardEntry, SceneSoundscapeSlot } from '@/types/scene'
+import type {
+  Scene,
+  SceneSoundboardEntry,
+  SceneSoundboardSettings,
+  SceneSoundscapeSettings,
+  SceneSoundscapeSlot,
+} from '@/types/scene'
 
 import {
 
@@ -48,7 +54,9 @@ import {
 
 import { getActiveFxTracks } from '@/lib/libraryStorage'
 
+import { ensureBundledAppSeed } from '@/lib/ensureBundledAppSeed'
 import { createBundledFxTracks } from '@/lib/seedBundledFx'
+import { createBundledSoundscapeLibrary } from '@/lib/seedBundledSoundscapes'
 
 import {
 
@@ -215,6 +223,8 @@ interface CampaignDataContextValue {
 
   createSoundscapeSlot: (sceneId: string, categoryId: string) => SceneSoundscapeSlot
 
+  addSoundscapesToScene: (sceneId: string, categoryIds: string[]) => SceneSoundscapeSlot[]
+
   removeSoundscapeSlot: (slotId: string) => void
 
   addFxToSoundboard: (sceneId: string, fxTrackIds: string[]) => SceneSoundboardEntry[]
@@ -222,6 +232,24 @@ interface CampaignDataContextValue {
   removeSoundboardEntry: (entryId: string) => void
 
   getSoundboardEntries: (sceneId: string) => SceneSoundboardEntry[]
+
+  updateSoundscapeSlot: (slotId: string, input: Partial<SceneSoundscapeSlot>) => void
+
+  updateSoundscapeSettings: (
+    sceneId: string,
+    input: Partial<Pick<SceneSoundscapeSettings, 'masterVolume' | 'muted'>>,
+  ) => void
+
+  updateSoundboardSettings: (
+    sceneId: string,
+    input: Partial<Pick<SceneSoundboardSettings, 'masterVolume'>>,
+  ) => void
+
+  reorderSoundscapeSlots: (sceneId: string, orderedSlotIds: string[]) => void
+
+  reorderSoundboardEntries: (sceneId: string, orderedEntryIds: string[]) => void
+
+  getSoundscapeSettings: (sceneId: string) => SceneSoundscapeSettings
 
   importFx: (file: File) => FxTrack
 
@@ -328,106 +356,24 @@ export function CampaignDataProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const isE2E = typeof sessionStorage !== 'undefined' && sessionStorage.getItem('arcanum-e2e-controls') !== null
-    if (isE2E) return
+    if (isE2E || import.meta.env.MODE === 'test') return
 
     setData((current) => {
-      if (current.soundscapeCategories.length === 0) {
-        const next = {
-          ...current,
-          soundscapeCategories: [
-            {
-              id: 'category-weather',
-              name: 'Weather',
-              trackCount: 5,
-              type: 'WEATHER',
-              levels: {
-                I: ['track-thunderous-downpour', 'track-light-rain', 'track-gentle-breeze'],
-                II: ['track-thunderous-downpour', 'track-distant-rolling-thunder', 'track-light-rain', 'track-gentle-breeze', 'track-howling-wind'],
-                III: ['track-thunderous-downpour', 'track-distant-rolling-thunder']
-              }
-            },
-            {
-              id: 'category-interior',
-              name: 'Interior',
-              trackCount: 2,
-              type: 'INTERIOR',
-              levels: {
-                I: ['track-tavern-chatter'],
-                II: ['track-fireplace'],
-                III: []
-              }
-            },
-          ],
-          soundscapeTracks: [
-            {
-              id: 'track-thunderous-downpour',
-              name: 'Thunderous Downpour',
-              durationSeconds: 222,
-              format: 'MP3',
-              channels: 'Stereo',
-              audioUrl: '/assets/audio/soundscape/owl_hooting.ogg',
-              createdAt: new Date().toISOString()
-            },
-            {
-              id: 'track-distant-rolling-thunder',
-              name: 'Distant Rolling Thunder',
-              durationSeconds: 135,
-              format: 'WAV',
-              channels: 'Wide Stereo',
-              audioUrl: '/assets/audio/soundboard/whip.ogg',
-              createdAt: new Date().toISOString()
-            },
-            {
-              id: 'track-light-rain',
-              name: 'Light Rain',
-              durationSeconds: 180,
-              format: 'MP3',
-              channels: 'Stereo',
-              audioUrl: '/assets/audio/soundscape/light_rain.mp3',
-              createdAt: new Date().toISOString()
-            },
-            {
-              id: 'track-gentle-breeze',
-              name: 'Gentle Breeze',
-              durationSeconds: 120,
-              format: 'MP3',
-              channels: 'Stereo',
-              audioUrl: '/assets/audio/soundscape/gentle_breeze.mp3',
-              createdAt: new Date().toISOString()
-            },
-            {
-              id: 'track-howling-wind',
-              name: 'Howling Wind',
-              durationSeconds: 240,
-              format: 'MP3',
-              channels: 'Stereo',
-              audioUrl: '/assets/audio/soundscape/howling_wind.mp3',
-              createdAt: new Date().toISOString()
-            },
-            {
-              id: 'track-tavern-chatter',
-              name: 'Tavern Chatter',
-              durationSeconds: 300,
-              format: 'MP3',
-              channels: 'Stereo',
-              audioUrl: '/assets/audio/soundscape/tavern_chatter.mp3',
-              createdAt: new Date().toISOString()
-            },
-            {
-              id: 'track-fireplace',
-              name: 'Cozy Fireplace',
-              durationSeconds: 150,
-              format: 'WAV',
-              channels: 'Stereo',
-              audioUrl: '/assets/audio/soundscape/cozy_fireplace.wav',
-              createdAt: new Date().toISOString()
-            }
-          ]
+      try {
+        const next = ensureBundledAppSeed(current)
+        if (!next) {
+          return current
         }
-        persist(next)
-        return next
+        const synced = {
+          ...next,
+          sessions: syncSessionSceneCounts(next.sessions, next.sessionSceneLinks),
+        }
+        persist(synced)
+        return synced
+      } catch (error) {
+        console.error('Failed to seed bundled demo data', error)
+        return current
       }
-      return current
     })
   }, [])
 
@@ -869,6 +815,14 @@ export function CampaignDataProvider({ children }: { children: ReactNode }) {
 
         ],
 
+        sceneSoundscapeSettings: [
+
+          ...current.sceneSoundscapeSettings,
+
+          { sceneId: scene.id, masterVolume: 100, muted: false },
+
+        ],
+
       }))
 
 
@@ -975,6 +929,12 @@ export function CampaignDataProvider({ children }: { children: ReactNode }) {
 
       )
 
+      const sourceSoundscapeSettings = data.sceneSoundscapeSettings.find(
+
+        (settings) => settings.sceneId === sceneId,
+
+      )
+
 
 
       updateData((current) => ({
@@ -1029,6 +989,22 @@ export function CampaignDataProvider({ children }: { children: ReactNode }) {
 
         ],
 
+        sceneSoundscapeSettings: [
+
+          ...current.sceneSoundscapeSettings,
+
+          {
+
+            sceneId: duplicate.id,
+
+            masterVolume: sourceSoundscapeSettings?.masterVolume ?? 100,
+
+            muted: sourceSoundscapeSettings?.muted ?? false,
+
+          },
+
+        ],
+
       }))
 
 
@@ -1037,7 +1013,7 @@ export function CampaignDataProvider({ children }: { children: ReactNode }) {
 
     },
 
-    [data.sceneSoundboardEntries, data.sceneSoundboardSettings, data.sceneSoundscapeSlots, data.scenes, updateData],
+    [data.sceneSoundboardEntries, data.sceneSoundboardSettings, data.sceneSoundscapeSettings, data.sceneSoundscapeSlots, data.scenes, updateData],
 
   )
 
@@ -1307,6 +1283,10 @@ export function CampaignDataProvider({ children }: { children: ReactNode }) {
 
         order: existing.length,
 
+        volume: 100,
+
+        intensity: 'II',
+
       }
 
       updateData((current) => ({
@@ -1318,6 +1298,48 @@ export function CampaignDataProvider({ children }: { children: ReactNode }) {
       }))
 
       return slot
+
+    },
+
+    [data.sceneSoundscapeSlots, updateData],
+
+  )
+
+
+
+  const addSoundscapesToScene = useCallback(
+
+    (sceneId: string, categoryIds: string[]): SceneSoundscapeSlot[] => {
+
+      const existing = data.sceneSoundscapeSlots.filter((slot) => slot.sceneId === sceneId)
+
+      let order = existing.length
+
+      const newSlots: SceneSoundscapeSlot[] = categoryIds.map((categoryId) => ({
+
+        id: createId('soundscape-slot'),
+
+        sceneId,
+
+        categoryId,
+
+        order: order++,
+
+        volume: 100,
+
+        intensity: 'II',
+
+      }))
+
+      updateData((current) => ({
+
+        ...current,
+
+        sceneSoundscapeSlots: [...current.sceneSoundscapeSlots, ...newSlots],
+
+      }))
+
+      return newSlots
 
     },
 
@@ -1358,6 +1380,234 @@ export function CampaignDataProvider({ children }: { children: ReactNode }) {
         .sort((a, b) => a.order - b.order),
 
     [data.sceneSoundboardEntries],
+
+  )
+
+
+
+  const updateSoundscapeSlot = useCallback(
+
+    (slotId: string, input: Partial<SceneSoundscapeSlot>) => {
+
+      updateData((current) => ({
+
+        ...current,
+
+        sceneSoundscapeSlots: current.sceneSoundscapeSlots.map((slot) =>
+
+          slot.id === slotId ? { ...slot, ...input } : slot,
+
+        ),
+
+      }))
+
+    },
+
+    [updateData],
+
+  )
+
+
+
+  const updateSoundscapeSettings = useCallback(
+
+    (
+
+      sceneId: string,
+
+      input: Partial<Pick<SceneSoundscapeSettings, 'masterVolume' | 'muted'>>,
+
+    ) => {
+
+      updateData((current) => {
+
+        const existing = current.sceneSoundscapeSettings.find((item) => item.sceneId === sceneId)
+
+        if (existing) {
+
+          return {
+
+            ...current,
+
+            sceneSoundscapeSettings: current.sceneSoundscapeSettings.map((item) =>
+
+              item.sceneId === sceneId ? { ...item, ...input } : item,
+
+            ),
+
+          }
+
+        }
+
+        return {
+
+          ...current,
+
+          sceneSoundscapeSettings: [
+
+            ...current.sceneSoundscapeSettings,
+
+            { sceneId, masterVolume: 100, muted: false, ...input },
+
+          ],
+
+        }
+
+      })
+
+    },
+
+    [updateData],
+
+  )
+
+
+
+  const updateSoundboardSettings = useCallback(
+
+    (sceneId: string, input: Partial<Pick<SceneSoundboardSettings, 'masterVolume'>>) => {
+
+      updateData((current) => {
+
+        const existing = current.sceneSoundboardSettings.find((item) => item.sceneId === sceneId)
+
+        if (existing) {
+
+          return {
+
+            ...current,
+
+            sceneSoundboardSettings: current.sceneSoundboardSettings.map((item) =>
+
+              item.sceneId === sceneId ? { ...item, ...input } : item,
+
+            ),
+
+          }
+
+        }
+
+        return {
+
+          ...current,
+
+          sceneSoundboardSettings: [
+
+            ...current.sceneSoundboardSettings,
+
+            { sceneId, masterVolume: 85, ...input },
+
+          ],
+
+        }
+
+      })
+
+    },
+
+    [updateData],
+
+  )
+
+
+
+  const reorderSoundscapeSlots = useCallback(
+
+    (sceneId: string, orderedSlotIds: string[]) => {
+
+      updateData((current) => {
+
+        const orderMap = new Map(orderedSlotIds.map((id, index) => [id, index]))
+
+        return {
+
+          ...current,
+
+          sceneSoundscapeSlots: current.sceneSoundscapeSlots.map((slot) => {
+
+            if (slot.sceneId !== sceneId) {
+
+              return slot
+
+            }
+
+            const order = orderMap.get(slot.id)
+
+            return order === undefined ? slot : { ...slot, order }
+
+          }),
+
+        }
+
+      })
+
+    },
+
+    [updateData],
+
+  )
+
+
+
+  const reorderSoundboardEntries = useCallback(
+
+    (sceneId: string, orderedEntryIds: string[]) => {
+
+      updateData((current) => {
+
+        const orderMap = new Map(orderedEntryIds.map((id, index) => [id, index]))
+
+        return {
+
+          ...current,
+
+          sceneSoundboardEntries: current.sceneSoundboardEntries.map((entry) => {
+
+            if (entry.sceneId !== sceneId) {
+
+              return entry
+
+            }
+
+            const order = orderMap.get(entry.id)
+
+            return order === undefined ? entry : { ...entry, order }
+
+          }),
+
+        }
+
+      })
+
+    },
+
+    [updateData],
+
+  )
+
+
+
+  const getSoundscapeSettings = useCallback(
+
+    (sceneId: string): SceneSoundscapeSettings => {
+
+      return (
+
+        data.sceneSoundscapeSettings.find((item) => item.sceneId === sceneId) ?? {
+
+          sceneId,
+
+          masterVolume: 100,
+
+          muted: false,
+
+        }
+
+      )
+
+    },
+
+    [data.sceneSoundscapeSettings],
 
   )
 
@@ -1737,41 +1987,23 @@ export function CampaignDataProvider({ children }: { children: ReactNode }) {
   const downloadFreeCompositions = useCallback((): number => {
     let added = 0
     updateData((current) => {
+      const bundled = createBundledSoundscapeLibrary()
       const existingNames = new Set(
-        current.soundscapeCategories.filter(c => !c.deletedAt).map((c) => c.name.toLowerCase()),
+        current.soundscapeCategories.filter((c) => !c.deletedAt).map((c) => c.name.toLowerCase()),
       )
-      const demoCompositions = [
-        {
-          id: 'category-demo-tavern',
-          name: 'Tavern',
-          trackCount: 2,
-          type: 'TOWN',
-          levels: {
-            I: ['track-tavern-chatter'],
-            II: ['track-fireplace'],
-            III: []
-          }
-        },
-        {
-          id: 'category-demo-dungeon',
-          name: 'Dungeon',
-          trackCount: 1,
-          type: 'DUNGEON',
-          levels: {
-            I: [],
-            II: ['track-distant-rolling-thunder'],
-            III: []
-          }
-        }
-      ]
-      const toAdd = demoCompositions.filter((c) => !existingNames.has(c.name.toLowerCase()))
-      added = toAdd.length
-      if (added === 0) {
+      const existingTrackIds = new Set((current.soundscapeTracks ?? []).map((track) => track.id))
+      const categoriesToAdd = bundled.categories.filter(
+        (category) => !existingNames.has(category.name.toLowerCase()),
+      )
+      const tracksToAdd = bundled.tracks.filter((track) => !existingTrackIds.has(track.id))
+      added = categoriesToAdd.length
+      if (categoriesToAdd.length === 0 && tracksToAdd.length === 0) {
         return current
       }
       return {
         ...current,
-        soundscapeCategories: [...current.soundscapeCategories, ...toAdd],
+        soundscapeCategories: [...current.soundscapeCategories, ...categoriesToAdd],
+        soundscapeTracks: [...(current.soundscapeTracks ?? []), ...tracksToAdd],
       }
     })
     return added
@@ -1807,6 +2039,10 @@ export function CampaignDataProvider({ children }: { children: ReactNode }) {
         sceneSoundboardSettings:
 
           partial.sceneSoundboardSettings ?? current.sceneSoundboardSettings,
+
+        sceneSoundscapeSettings:
+
+          partial.sceneSoundscapeSettings ?? current.sceneSoundscapeSettings,
 
         fxTracks: partial.fxTracks ?? current.fxTracks,
 
@@ -1954,6 +2190,8 @@ export function CampaignDataProvider({ children }: { children: ReactNode }) {
 
       createSoundscapeSlot,
 
+      addSoundscapesToScene,
+
       removeSoundscapeSlot,
 
       addFxToSoundboard,
@@ -1961,6 +2199,18 @@ export function CampaignDataProvider({ children }: { children: ReactNode }) {
       removeSoundboardEntry,
 
       getSoundboardEntries,
+
+      updateSoundscapeSlot,
+
+      updateSoundscapeSettings,
+
+      updateSoundboardSettings,
+
+      reorderSoundscapeSlots,
+
+      reorderSoundboardEntries,
+
+      getSoundscapeSettings,
 
       importFx,
 
@@ -2058,6 +2308,8 @@ export function CampaignDataProvider({ children }: { children: ReactNode }) {
 
       createSoundscapeSlot,
 
+      addSoundscapesToScene,
+
       removeSoundscapeSlot,
 
       addFxToSoundboard,
@@ -2065,6 +2317,18 @@ export function CampaignDataProvider({ children }: { children: ReactNode }) {
       removeSoundboardEntry,
 
       getSoundboardEntries,
+
+      updateSoundscapeSlot,
+
+      updateSoundscapeSettings,
+
+      updateSoundboardSettings,
+
+      reorderSoundscapeSlots,
+
+      reorderSoundboardEntries,
+
+      getSoundscapeSettings,
 
       importFx,
 

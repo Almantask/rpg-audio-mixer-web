@@ -172,6 +172,10 @@ When('I tap {string}', async ({ page }, label: string) => {
     }
     return
   }
+  if (label === 'Stop All') {
+    await page.locator('[data-stop-all]').click()
+    return
+  }
   await page.getByRole('button', { name: label, exact: true }).click()
 })
 
