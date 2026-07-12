@@ -1,0 +1,107 @@
+@import "tailwindcss";
+
+@theme {
+  --color-background: #0d0d0d;
+  --color-surface: #121212;
+  --color-gold: #d4af37;
+  --color-gold-bright: #eab308;
+  --color-purple-accent: #a855f7;
+  --font-serif: "Cinzel", serif;
+  --font-sans: "Inter", sans-serif;
+}
+
+@layer base {
+  * {
+    @apply border-zinc-800;
+  }
+
+  body {
+    @apply bg-background text-zinc-100 antialiased;
+    font-family: var(--font-sans);
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-serif);
+  }
+}
+
+@layer utilities {
+  .screen-transition-content {
+    @apply min-h-[1px];
+  }
+
+  .screen-transition-enter {
+    animation: screen-fade-in 220ms ease-out both;
+  }
+
+  .modal-transition-content {
+    animation: modal-scale-in 200ms ease-out both;
+  }
+
+  .modal-transition-overlay {
+    animation: modal-fade-in 200ms ease-out both;
+  }
+
+  .mini-player-enter {
+    animation: mini-player-slide-up 220ms ease-out both;
+  }
+
+  .mini-player-exit {
+    animation: mini-player-slide-down 180ms ease-in both;
+  }
+}
+
+@keyframes screen-fade-in {
+  from {
+    opacity: 0;
+    transform: translateX(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes modal-scale-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -48%) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+@keyframes modal-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes mini-player-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes mini-player-slide-down {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+}

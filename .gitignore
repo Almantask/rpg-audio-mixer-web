@@ -5,3 +5,54 @@
 !/.opencode/agents
 .opencode/skills/**
 !/.opencode/skills
+
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+
+# Vite / TypeScript
+*.local
+*.tsbuildinfo
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Test & coverage
+coverage/
+test-results/
+playwright-report/
+blob-report/
+.features-gen/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# IDE (keep shared settings if committed elsewhere)
+.idea/
+*.swp
+*.swo
+
+# Legacy Android / Gradle (prior stack)
+.gradle/
+local.properties
+*.iml
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Misc
+*.tgz
+.cache/
