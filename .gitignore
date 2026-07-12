@@ -5,3 +5,62 @@
 !/.opencode/agents
 .opencode/skills/**
 !/.opencode/skills
+
+# Local AI tool mirrors (not versioned; edit under ai/ instead)
+.agents/
+.gemini/
+
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+out/
+.next/
+
+# Vite / tooling caches
+.vite/
+*.tsbuildinfo
+.eslintcache
+
+# Test & coverage artifacts
+coverage/
+test-results/
+playwright-report/
+blob-report/
+.features-gen/
+
+# Environment & secrets
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Gradle / Android
+.gradle/
+local.properties
+.cxx/
+*.iml
+captures/
+*.apk
+*.aab
+*.ap_
+*.dex
+
+# OS files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# IDE (keep shared editor config if added later)
+.idea/
+*.swp
+*.swo
+*~
