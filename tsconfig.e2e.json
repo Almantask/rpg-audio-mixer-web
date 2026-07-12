@@ -15,5 +15,5 @@
     "noFallthroughCasesInSwitch": true,
     "types": ["node"]
   },
-  "include": ["e2e/**/*.ts", ".features-gen/**/*.ts"]
+  "include": ["e2e/**/*.ts", "e2e/**/*.d.ts", ".features-gen/**/*.ts"]
 }

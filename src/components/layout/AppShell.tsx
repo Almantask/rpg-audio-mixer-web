@@ -42,16 +42,18 @@ export function ScreenLandmark({
   screenName,
   children,
   className,
+  ...props
 }: {
   screenName: string
   children: ReactNode
   className?: string
-}) {
+} & React.HTMLAttributes<HTMLElement>) {
   return (
     <section
       aria-label={screenName}
       data-screen={screenName}
       className={cn('mx-auto max-w-4xl', className)}
+      {...props}
     >
       {children}
     </section>
