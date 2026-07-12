@@ -3,7 +3,10 @@ import { AppShell } from '@/components/layout/AppShell'
 import { ActiveScenePage } from '@/pages/ActiveScenePage'
 import { CampaignsPage } from '@/pages/CampaignsPage'
 import { CampaignSessionsPage } from '@/pages/CampaignSessionsPage'
+import { AttributionsPage } from '@/pages/AttributionsPage'
 import { CreditsPage } from '@/pages/CreditsPage'
+import { PrivacyPage } from '@/pages/PrivacyPage'
+import { TermsPage } from '@/pages/TermsPage'
 import { HomePage } from '@/pages/HomePage'
 import { LibraryPage, StorefrontPage } from '@/pages/LibraryPage'
 import { CategoryComposerPage } from '@/pages/CategoryComposerPage'
@@ -29,6 +32,9 @@ export function AppRoutes() {
           <Route path="library/soundscapes/:categoryId/compose" element={<CategoryComposerPage />} />
           <Route path="storefront" element={<StorefrontPage />} />
           <Route path="credits" element={<CreditsPage />} />
+          <Route path="credits/attributions" element={<AttributionsPage />} />
+          <Route path="legal/terms" element={<TermsPage />} />
+          <Route path="legal/privacy" element={<PrivacyPage />} />
           <Route path="trash" element={<TrashPage />} />
 
           <Route path="*" element={<Navigate to="/" replace />} />

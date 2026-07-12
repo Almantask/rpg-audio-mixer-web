@@ -417,7 +417,15 @@ Then('I see the {string} call to action', async ({ page }, label: string) => {
 
 Then('I see {string}', async ({ page }, message: string) => {
   if (message === 'No compositions match your filters') {
+    if (page.url().includes('/library')) {
+      await expect(page.getByText(message, { exact: true })).toBeVisible()
+      return
+    }
     await expect(page.locator('[data-sc-picker-no-match]')).toContainText(message)
+    return
+  }
+  if (message === 'No effects match your filters') {
+    await expect(page.locator('[data-fx-no-match]')).toContainText(message)
     return
   }
   if (message.startsWith('Add Selected (')) {

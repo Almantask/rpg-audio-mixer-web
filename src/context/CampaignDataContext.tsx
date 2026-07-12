@@ -16,7 +16,7 @@ import {
 
 } from 'react'
 
-import type { AppData, Campaign, E2EControls, Session } from '@/types/campaign'
+import type { AppData, BulkTrashResult, Campaign, E2EControls, Session, TrashTab } from '@/types/campaign'
 
 import { DEFAULT_E2E_CONTROLS, EMPTY_APP_DATA } from '@/types/campaign'
 
@@ -74,6 +74,7 @@ import {
 
 import { formatTodayIso } from '@/lib/dateFormat'
 import { getTopFxTrack, getTopSoundscapeCategory, incrementFxPlayCount, incrementSoundscapePlayCount } from '@/lib/playStats'
+import { resolveRestoredName } from '@/lib/trashStorage'
 
 
 
@@ -185,6 +186,8 @@ interface CampaignDataContextValue {
 
   restoreCampaign: (id: string) => void
 
+  purgeCampaign: (id: string) => void
+
   markCampaignPlayed: (id: string) => void
 
   createSession: (input: CreateSessionInput) => Session
@@ -193,6 +196,7 @@ interface CampaignDataContextValue {
 
   softDeleteSession: (sessionId: string) => void
   restoreSession: (sessionId: string) => void
+  purgeSession: (sessionId: string) => void
 
   markSessionOpened: (campaignId: string, sessionId: string) => void
 
@@ -211,6 +215,8 @@ interface CampaignDataContextValue {
   softDeleteScene: (sceneId: string) => void
 
   restoreScene: (sceneId: string) => void
+
+  purgeScene: (sceneId: string) => void
 
   getLinkedSessionCountForScene: (sceneId: string) => number
 
@@ -262,6 +268,16 @@ interface CampaignDataContextValue {
 
   restoreFx: (fxId: string) => void
 
+  purgeFx: (fxId: string) => void
+
+  restoreFxItems: (ids: string[]) => BulkTrashResult
+
+  purgeFxItems: (ids: string[]) => BulkTrashResult
+
+  restoreTrashItems: (tab: TrashTab, ids: string[]) => BulkTrashResult
+
+  purgeTrashItems: (tab: TrashTab, ids: string[]) => BulkTrashResult
+
   downloadFreeTracks: () => number
 
   createSoundscapeCategory: (name: string) => SoundscapeCategory
@@ -271,6 +287,8 @@ interface CampaignDataContextValue {
   softDeleteSoundscapeCategory: (id: string) => void
 
   restoreSoundscapeCategory: (id: string) => void
+
+  purgeSoundscapeCategory: (id: string) => void
 
   importSoundscapeTrack: (file: File) => SoundscapeTrack
 
@@ -555,17 +573,73 @@ export function CampaignDataProvider({ children }: { children: ReactNode }) {
 
     (id: string) => {
 
-      updateData((current) => ({
+      updateData((current) => {
 
-        ...current,
+        const campaign = current.campaigns.find((c) => c.id === id)
 
-        campaigns: current.campaigns.map((c) =>
+        if (!campaign) {
 
-          c.id === id ? { ...c, deletedAt: undefined } : c,
+          return current
 
-        ),
+        }
 
-      }))
+        const activeNames = getActiveCampaigns(current.campaigns).map((c) => c.name)
+
+        const resolvedName = resolveRestoredName(campaign.name, activeNames)
+
+        return {
+
+          ...current,
+
+          campaigns: current.campaigns.map((c) =>
+
+            c.id === id ? { ...c, deletedAt: undefined, name: resolvedName } : c,
+
+          ),
+
+          sessions: current.sessions.map((s) =>
+
+            s.campaignId === id && s.deletedAt
+
+              ? { ...s, deletedAt: undefined }
+
+              : s,
+
+          ),
+
+        }
+
+      })
+
+    },
+
+    [updateData],
+
+  )
+
+
+
+  const purgeCampaign = useCallback(
+
+    (id: string) => {
+
+      updateData((current) => {
+
+        const nextLastActive = { ...current.lastActiveSessionByCampaign }
+
+        delete nextLastActive[id]
+
+        return {
+
+          ...current,
+
+          campaigns: current.campaigns.filter((c) => c.id !== id),
+
+          lastActiveSessionByCampaign: nextLastActive,
+
+        }
+
+      })
 
     },
 
@@ -730,12 +804,48 @@ export function CampaignDataProvider({ children }: { children: ReactNode }) {
 
   const restoreSession = useCallback(
     (sessionId: string) => {
-      updateData((current) => ({
-        ...current,
-        sessions: current.sessions.map((s) =>
-          s.id === sessionId ? { ...s, deletedAt: undefined } : s,
-        ),
-      }))
+      updateData((current) => {
+        const session = current.sessions.find((s) => s.id === sessionId)
+        if (!session) {
+          return current
+        }
+        const activeNames = current.sessions
+          .filter((s) => s.campaignId === session.campaignId && !s.deletedAt && s.id !== sessionId)
+          .map((s) => s.name)
+        const resolvedName = resolveRestoredName(session.name, activeNames)
+        return {
+          ...current,
+          sessions: current.sessions.map((s) =>
+            s.id === sessionId
+              ? { ...s, deletedAt: undefined, name: resolvedName }
+              : s,
+          ),
+        }
+      })
+    },
+    [updateData],
+  )
+
+  const purgeSession = useCallback(
+    (sessionId: string) => {
+      updateData((current) => {
+        const session = current.sessions.find((s) => s.id === sessionId)
+        const nextLastActive = { ...current.lastActiveSessionByCampaign }
+        if (session) {
+          delete nextLastActive[session.campaignId]
+        }
+        const nextSceneLastActive = { ...current.lastActiveSceneBySession }
+        delete nextSceneLastActive[sessionId]
+        const nextLinks = current.sessionSceneLinks.filter((link) => link.sessionId !== sessionId)
+        const nextSessions = current.sessions.filter((s) => s.id !== sessionId)
+        return {
+          ...current,
+          sessions: syncSessionSceneCounts(nextSessions, nextLinks),
+          sessionSceneLinks: nextLinks,
+          lastActiveSessionByCampaign: nextLastActive,
+          lastActiveSceneBySession: nextSceneLastActive,
+        }
+      })
     },
     [updateData],
   )
@@ -1070,17 +1180,101 @@ export function CampaignDataProvider({ children }: { children: ReactNode }) {
 
     (sceneId: string) => {
 
-      updateData((current) => ({
+      updateData((current) => {
 
-        ...current,
+        const scene = current.scenes.find((s) => s.id === sceneId)
 
-        scenes: current.scenes.map((scene) =>
+        if (!scene) {
 
-          scene.id === sceneId ? { ...scene, deletedAt: undefined } : scene,
+          return current
 
-        ),
+        }
 
-      }))
+        const activeNames = getActiveScenes(current.scenes).map((s) => s.name)
+
+        const resolvedName = resolveRestoredName(scene.name, activeNames)
+
+        return {
+
+          ...current,
+
+          scenes: current.scenes.map((item) =>
+
+            item.id === sceneId ? { ...item, deletedAt: undefined, name: resolvedName } : item,
+
+          ),
+
+        }
+
+      })
+
+    },
+
+    [updateData],
+
+  )
+
+
+
+  const purgeScene = useCallback(
+
+    (sceneId: string) => {
+
+      updateData((current) => {
+
+        const nextLinks = current.sessionSceneLinks.filter((link) => link.sceneId !== sceneId)
+
+        const nextLastActive = { ...current.lastActiveSceneBySession }
+
+        for (const [sessionId, activeSceneId] of Object.entries(nextLastActive)) {
+
+          if (activeSceneId === sceneId) {
+
+            delete nextLastActive[sessionId]
+
+          }
+
+        }
+
+        return {
+
+          ...current,
+
+          scenes: current.scenes.filter((scene) => scene.id !== sceneId),
+
+          sessionSceneLinks: nextLinks,
+
+          sessions: syncSessionSceneCounts(current.sessions, nextLinks),
+
+          sceneSoundboardEntries: current.sceneSoundboardEntries.filter(
+
+            (entry) => entry.sceneId !== sceneId,
+
+          ),
+
+          sceneSoundscapeSlots: current.sceneSoundscapeSlots.filter(
+
+            (slot) => slot.sceneId !== sceneId,
+
+          ),
+
+          sceneSoundboardSettings: current.sceneSoundboardSettings.filter(
+
+            (settings) => settings.sceneId !== sceneId,
+
+          ),
+
+          sceneSoundscapeSettings: current.sceneSoundscapeSettings.filter(
+
+            (settings) => settings.sceneId !== sceneId,
+
+          ),
+
+          lastActiveSceneBySession: nextLastActive,
+
+        }
+
+      })
 
     },
 
@@ -1844,17 +2038,75 @@ export function CampaignDataProvider({ children }: { children: ReactNode }) {
 
     (fxId: string) => {
 
-      updateData((current) => ({
+      updateData((current) => {
 
-        ...current,
+        const track = current.fxTracks.find((item) => item.id === fxId)
 
-        fxTracks: current.fxTracks.map((track) =>
+        if (!track) {
 
-          track.id === fxId ? { ...track, deletedAt: undefined } : track,
+          return current
 
-        ),
+        }
 
-      }))
+        const activeNames = getActiveFxTracks(current.fxTracks).map((item) => item.name)
+
+        const resolvedName = resolveRestoredName(track.name, activeNames)
+
+        return {
+
+          ...current,
+
+          fxTracks: current.fxTracks.map((item) =>
+
+            item.id === fxId ? { ...item, deletedAt: undefined, name: resolvedName } : item,
+
+          ),
+
+        }
+
+      })
+
+    },
+
+    [updateData],
+
+  )
+
+
+
+  const purgeFx = useCallback(
+
+    (fxId: string) => {
+
+      updateData((current) => {
+
+        const nextFxStats = { ...current.playStats.fxTracks }
+
+        delete nextFxStats[fxId]
+
+        return {
+
+          ...current,
+
+          fxTracks: current.fxTracks.filter((track) => track.id !== fxId),
+
+          sceneSoundboardEntries: current.sceneSoundboardEntries.filter(
+
+            (entry) => entry.fxTrackId !== fxId,
+
+          ),
+
+          playStats: {
+
+            ...current.playStats,
+
+            fxTracks: nextFxStats,
+
+          },
+
+        }
+
+      })
 
     },
 
@@ -1910,6 +2162,7 @@ export function CampaignDataProvider({ children }: { children: ReactNode }) {
         id: createId('category'),
         name,
         trackCount: 0,
+        createdAt: new Date().toISOString(),
         levels: { I: [], II: [], III: [] }
       }
       updateData((current) => ({
@@ -1963,14 +2216,43 @@ export function CampaignDataProvider({ children }: { children: ReactNode }) {
 
   const restoreSoundscapeCategory = useCallback(
     (id: string) => {
-      updateData((current) => ({
-        ...current,
-        soundscapeCategories: current.soundscapeCategories.map((category) =>
-          category.id === id ? { ...category, deletedAt: undefined } : category,
-        ),
-      }))
+      updateData((current) => {
+        const category = current.soundscapeCategories.find((item) => item.id === id)
+        if (!category) {
+          return current
+        }
+        const activeNames = current.soundscapeCategories
+          .filter((item) => !item.deletedAt && item.id !== id)
+          .map((item) => item.name)
+        const resolvedName = resolveRestoredName(category.name, activeNames)
+        return {
+          ...current,
+          soundscapeCategories: current.soundscapeCategories.map((item) =>
+            item.id === id ? { ...item, deletedAt: undefined, name: resolvedName } : item,
+          ),
+        }
+      })
     },
-    [updateData]
+    [updateData],
+  )
+
+  const purgeSoundscapeCategory = useCallback(
+    (id: string) => {
+      updateData((current) => {
+        const nextStats = { ...current.playStats.soundscapeCategories }
+        delete nextStats[id]
+        return {
+          ...current,
+          soundscapeCategories: current.soundscapeCategories.filter((category) => category.id !== id),
+          sceneSoundscapeSlots: current.sceneSoundscapeSlots.filter((slot) => slot.categoryId !== id),
+          playStats: {
+            ...current.playStats,
+            soundscapeCategories: nextStats,
+          },
+        }
+      })
+    },
+    [updateData],
   )
 
   const importSoundscapeTrack = useCallback(
@@ -2019,6 +2301,328 @@ export function CampaignDataProvider({ children }: { children: ReactNode }) {
     })
     return added
   }, [updateData])
+
+  const restoreFxItems = useCallback(
+    (ids: string[]): BulkTrashResult => {
+      const result: BulkTrashResult = { succeeded: [], failed: [] }
+      const blocked = new Set(loadE2EControls().restoreBlockedFxIds ?? [])
+      updateData((current) => {
+        const activeNames = getActiveFxTracks(current.fxTracks).map((track) => track.name)
+        const idsToRestore = new Set<string>()
+
+        for (const id of ids) {
+          if (blocked.has(id)) {
+            result.failed.push({ id, reason: 'Audio blob is missing' })
+            continue
+          }
+          const track = current.fxTracks.find((item) => item.id === id && item.deletedAt)
+          if (!track) {
+            result.failed.push({ id, reason: 'Item not found' })
+            continue
+          }
+          result.succeeded.push(id)
+          idsToRestore.add(id)
+        }
+
+        if (idsToRestore.size === 0) {
+          return current
+        }
+
+        const fxTracks = current.fxTracks.map((track) => {
+          if (!idsToRestore.has(track.id)) {
+            return track
+          }
+          const resolvedName = resolveRestoredName(track.name, activeNames)
+          activeNames.push(resolvedName)
+          return { ...track, deletedAt: undefined, name: resolvedName }
+        })
+
+        return { ...current, fxTracks }
+      })
+      return result
+    },
+    [updateData],
+  )
+
+  const purgeFxItems = useCallback(
+    (ids: string[]): BulkTrashResult => {
+      const result: BulkTrashResult = { succeeded: [], failed: [] }
+      const blocked = new Set(loadE2EControls().purgeBlockedFxIds ?? [])
+      updateData((current) => {
+        const idsToPurge = new Set<string>()
+
+        for (const id of ids) {
+          if (blocked.has(id)) {
+            result.failed.push({ id, reason: 'Storage record is locked' })
+            continue
+          }
+          const track = current.fxTracks.find((item) => item.id === id && item.deletedAt)
+          if (!track) {
+            result.failed.push({ id, reason: 'Item not found' })
+            continue
+          }
+          result.succeeded.push(id)
+          idsToPurge.add(id)
+        }
+
+        if (idsToPurge.size === 0) {
+          return current
+        }
+
+        const nextFxStats = { ...current.playStats.fxTracks }
+        for (const id of idsToPurge) {
+          delete nextFxStats[id]
+        }
+
+        return {
+          ...current,
+          fxTracks: current.fxTracks.filter((track) => !idsToPurge.has(track.id)),
+          sceneSoundboardEntries: current.sceneSoundboardEntries.filter(
+            (entry) => !idsToPurge.has(entry.fxTrackId),
+          ),
+          playStats: {
+            ...current.playStats,
+            fxTracks: nextFxStats,
+          },
+        }
+      })
+      return result
+    },
+    [updateData],
+  )
+
+  const restoreTrashItems = useCallback(
+    (tab: TrashTab, ids: string[]): BulkTrashResult => {
+      if (tab === 'fx') {
+        return restoreFxItems(ids)
+      }
+
+      const result: BulkTrashResult = { succeeded: [], failed: [] }
+      updateData((current) => {
+        let next = current
+
+        for (const id of ids) {
+          switch (tab) {
+            case 'campaigns': {
+              const campaign = next.campaigns.find((item) => item.id === id && item.deletedAt)
+              if (!campaign) {
+                result.failed.push({ id, reason: 'Item not found' })
+                break
+              }
+              const activeNames = getActiveCampaigns(next.campaigns).map((item) => item.name)
+              const resolvedName = resolveRestoredName(campaign.name, activeNames)
+              next = {
+                ...next,
+                campaigns: next.campaigns.map((item) =>
+                  item.id === id ? { ...item, deletedAt: undefined, name: resolvedName } : item,
+                ),
+                sessions: next.sessions.map((session) =>
+                  session.campaignId === id && session.deletedAt
+                    ? { ...session, deletedAt: undefined }
+                    : session,
+                ),
+              }
+              result.succeeded.push(id)
+              break
+            }
+            case 'sessions': {
+              const session = next.sessions.find((item) => item.id === id && item.deletedAt)
+              if (!session) {
+                result.failed.push({ id, reason: 'Item not found' })
+                break
+              }
+              const activeNames = next.sessions
+                .filter(
+                  (item) =>
+                    item.campaignId === session.campaignId && !item.deletedAt && item.id !== id,
+                )
+                .map((item) => item.name)
+              const resolvedName = resolveRestoredName(session.name, activeNames)
+              next = {
+                ...next,
+                sessions: next.sessions.map((item) =>
+                  item.id === id
+                    ? {
+                        ...item,
+                        deletedAt: undefined,
+                        name: resolvedName,
+                      }
+                    : item,
+                ),
+              }
+              result.succeeded.push(id)
+              break
+            }
+            case 'scenes': {
+              const scene = next.scenes.find((item) => item.id === id && item.deletedAt)
+              if (!scene) {
+                result.failed.push({ id, reason: 'Item not found' })
+                break
+              }
+              const activeNames = getActiveScenes(next.scenes).map((item) => item.name)
+              const resolvedName = resolveRestoredName(scene.name, activeNames)
+              next = {
+                ...next,
+                scenes: next.scenes.map((item) =>
+                  item.id === id ? { ...item, deletedAt: undefined, name: resolvedName } : item,
+                ),
+              }
+              result.succeeded.push(id)
+              break
+            }
+            case 'soundscapes': {
+              const category = next.soundscapeCategories.find(
+                (item) => item.id === id && item.deletedAt,
+              )
+              if (!category) {
+                result.failed.push({ id, reason: 'Item not found' })
+                break
+              }
+              const activeNames = next.soundscapeCategories
+                .filter((item) => !item.deletedAt && item.id !== id)
+                .map((item) => item.name)
+              const resolvedName = resolveRestoredName(category.name, activeNames)
+              next = {
+                ...next,
+                soundscapeCategories: next.soundscapeCategories.map((item) =>
+                  item.id === id ? { ...item, deletedAt: undefined, name: resolvedName } : item,
+                ),
+              }
+              result.succeeded.push(id)
+              break
+            }
+            default:
+              result.failed.push({ id, reason: 'Item not found' })
+          }
+        }
+
+        return next
+      })
+      return result
+    },
+    [restoreFxItems, updateData],
+  )
+
+  const purgeTrashItems = useCallback(
+    (tab: TrashTab, ids: string[]): BulkTrashResult => {
+      if (tab === 'fx') {
+        return purgeFxItems(ids)
+      }
+
+      const result: BulkTrashResult = { succeeded: [], failed: [] }
+      updateData((current) => {
+        let next = current
+
+        for (const id of ids) {
+          switch (tab) {
+            case 'campaigns': {
+              const campaign = next.campaigns.find((item) => item.id === id && item.deletedAt)
+              if (!campaign) {
+                result.failed.push({ id, reason: 'Item not found' })
+                break
+              }
+              const nextLastActive = { ...next.lastActiveSessionByCampaign }
+              delete nextLastActive[id]
+              next = {
+                ...next,
+                campaigns: next.campaigns.filter((item) => item.id !== id),
+                lastActiveSessionByCampaign: nextLastActive,
+              }
+              result.succeeded.push(id)
+              break
+            }
+            case 'sessions': {
+              const session = next.sessions.find((item) => item.id === id && item.deletedAt)
+              if (!session) {
+                result.failed.push({ id, reason: 'Item not found' })
+                break
+              }
+              const nextLastActive = { ...next.lastActiveSessionByCampaign }
+              delete nextLastActive[session.campaignId]
+              const nextSceneLastActive = { ...next.lastActiveSceneBySession }
+              delete nextSceneLastActive[id]
+              const nextLinks = next.sessionSceneLinks.filter((link) => link.sessionId !== id)
+              const nextSessions = next.sessions.filter((item) => item.id !== id)
+              next = {
+                ...next,
+                sessions: syncSessionSceneCounts(nextSessions, nextLinks),
+                sessionSceneLinks: nextLinks,
+                lastActiveSessionByCampaign: nextLastActive,
+                lastActiveSceneBySession: nextSceneLastActive,
+              }
+              result.succeeded.push(id)
+              break
+            }
+            case 'scenes': {
+              const scene = next.scenes.find((item) => item.id === id && item.deletedAt)
+              if (!scene) {
+                result.failed.push({ id, reason: 'Item not found' })
+                break
+              }
+              const nextLinks = next.sessionSceneLinks.filter((link) => link.sceneId !== id)
+              const nextLastActive = { ...next.lastActiveSceneBySession }
+              for (const [sessionId, activeSceneId] of Object.entries(nextLastActive)) {
+                if (activeSceneId === id) {
+                  delete nextLastActive[sessionId]
+                }
+              }
+              next = {
+                ...next,
+                scenes: next.scenes.filter((item) => item.id !== id),
+                sessionSceneLinks: nextLinks,
+                sessions: syncSessionSceneCounts(next.sessions, nextLinks),
+                sceneSoundboardEntries: next.sceneSoundboardEntries.filter(
+                  (entry) => entry.sceneId !== id,
+                ),
+                sceneSoundscapeSlots: next.sceneSoundscapeSlots.filter(
+                  (slot) => slot.sceneId !== id,
+                ),
+                sceneSoundboardSettings: next.sceneSoundboardSettings.filter(
+                  (settings) => settings.sceneId !== id,
+                ),
+                sceneSoundscapeSettings: next.sceneSoundscapeSettings.filter(
+                  (settings) => settings.sceneId !== id,
+                ),
+                lastActiveSceneBySession: nextLastActive,
+              }
+              result.succeeded.push(id)
+              break
+            }
+            case 'soundscapes': {
+              const category = next.soundscapeCategories.find(
+                (item) => item.id === id && item.deletedAt,
+              )
+              if (!category) {
+                result.failed.push({ id, reason: 'Item not found' })
+                break
+              }
+              const nextStats = { ...next.playStats.soundscapeCategories }
+              delete nextStats[id]
+              next = {
+                ...next,
+                soundscapeCategories: next.soundscapeCategories.filter((item) => item.id !== id),
+                sceneSoundscapeSlots: next.sceneSoundscapeSlots.filter(
+                  (slot) => slot.categoryId !== id,
+                ),
+                playStats: {
+                  ...next.playStats,
+                  soundscapeCategories: nextStats,
+                },
+              }
+              result.succeeded.push(id)
+              break
+            }
+            default:
+              result.failed.push({ id, reason: 'Item not found' })
+          }
+        }
+
+        return next
+      })
+      return result
+    },
+    [purgeFxItems, updateData],
+  )
 
 
 
@@ -2223,6 +2827,8 @@ export function CampaignDataProvider({ children }: { children: ReactNode }) {
 
       restoreCampaign,
 
+      purgeCampaign,
+
       markCampaignPlayed,
 
       createSession,
@@ -2232,6 +2838,8 @@ export function CampaignDataProvider({ children }: { children: ReactNode }) {
       softDeleteSession,
 
       restoreSession,
+
+      purgeSession,
 
       markSessionOpened,
 
@@ -2250,6 +2858,8 @@ export function CampaignDataProvider({ children }: { children: ReactNode }) {
       softDeleteScene,
 
       restoreScene,
+
+      purgeScene,
 
       getLinkedSessionCountForScene,
 
@@ -2293,6 +2903,16 @@ export function CampaignDataProvider({ children }: { children: ReactNode }) {
 
       restoreFx,
 
+      purgeFx,
+
+      restoreFxItems,
+
+      purgeFxItems,
+
+      restoreTrashItems,
+
+      purgeTrashItems,
+
       downloadFreeTracks,
 
       createSoundscapeCategory,
@@ -2302,6 +2922,8 @@ export function CampaignDataProvider({ children }: { children: ReactNode }) {
       softDeleteSoundscapeCategory,
 
       restoreSoundscapeCategory,
+
+      purgeSoundscapeCategory,
 
       importSoundscapeTrack,
 
@@ -2349,6 +2971,8 @@ export function CampaignDataProvider({ children }: { children: ReactNode }) {
 
       restoreCampaign,
 
+      purgeCampaign,
+
       markCampaignPlayed,
 
       createSession,
@@ -2358,6 +2982,8 @@ export function CampaignDataProvider({ children }: { children: ReactNode }) {
       softDeleteSession,
 
       restoreSession,
+
+      purgeSession,
 
       markSessionOpened,
 
@@ -2376,6 +3002,8 @@ export function CampaignDataProvider({ children }: { children: ReactNode }) {
       softDeleteScene,
 
       restoreScene,
+
+      purgeScene,
 
       getLinkedSessionCountForScene,
 
@@ -2419,6 +3047,16 @@ export function CampaignDataProvider({ children }: { children: ReactNode }) {
 
       restoreFx,
 
+      purgeFx,
+
+      restoreFxItems,
+
+      purgeFxItems,
+
+      restoreTrashItems,
+
+      purgeTrashItems,
+
       downloadFreeTracks,
 
       createSoundscapeCategory,
@@ -2428,6 +3066,8 @@ export function CampaignDataProvider({ children }: { children: ReactNode }) {
       softDeleteSoundscapeCategory,
 
       restoreSoundscapeCategory,
+
+      purgeSoundscapeCategory,
 
       importSoundscapeTrack,
 

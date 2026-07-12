@@ -154,6 +154,10 @@ When('I open the Active Campaigns screen', async ({ page }) => {
 })
 
 When('I tap {string}', async ({ page }, label: string) => {
+  if (label === 'Restore Selected') {
+    await page.locator('[data-trash-restore-selected]').click()
+    return
+  }
   if (label === 'Create Campaign') {
     await ensureCampaignsScreen(page)
     await page.getByRole('button', { name: 'Create Campaign' }).click()

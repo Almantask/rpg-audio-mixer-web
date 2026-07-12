@@ -57,6 +57,11 @@ export interface AppData {
 
 export type TrashTab = 'campaigns' | 'sessions' | 'scenes' | 'soundscapes' | 'fx'
 
+export interface BulkTrashResult {
+  succeeded: string[]
+  failed: { id: string; reason: string }[]
+}
+
 export interface E2EControls {
   campaignListState: 'ready' | 'loading' | 'error'
   sessionsListState: Record<string, 'ready' | 'loading' | 'error'>
@@ -66,10 +71,14 @@ export interface E2EControls {
   sessionScenesListState: Record<string, 'ready' | 'loading' | 'error'>
   homeScreenState?: 'ready' | 'loading' | 'error' | 'offline'
   homeHasCachedData?: boolean
+  attributionsState?: 'ready' | 'loading' | 'error'
   createSessionFails: boolean
   saveSessionFails: boolean
   invalidAudioImport?: boolean
   sessionLocked?: boolean
+  trashListState?: 'ready' | 'loading' | 'error'
+  restoreBlockedFxIds?: string[]
+  purgeBlockedFxIds?: string[]
 }
 
 export const EMPTY_PLAY_STATS: PlayStats = {

@@ -62,3 +62,33 @@ export function filterSoundscapeCategories(
 
   return filtered
 }
+
+export function filterSoundscapeCategoriesForBrowse(
+  categories: SoundscapeCategory[],
+  options: SoundscapeCategoryFilterOptions,
+): SoundscapeCategory[] {
+  let filtered = getActiveSoundscapeCategories(categories)
+
+  if (options.search?.trim()) {
+    const query = options.search.trim().toLowerCase()
+    filtered = filtered.filter((category) => category.name.toLowerCase().includes(query))
+  }
+
+  if (options.type && options.type !== 'ALL') {
+    filtered = filtered.filter((category) => category.type === options.type)
+  }
+
+  switch (options.sort) {
+    case 'name':
+      filtered = [...filtered].sort((a, b) => a.name.localeCompare(b.name))
+      break
+    case 'recent':
+    default:
+      filtered = [...filtered].sort(
+        (a, b) => new Date(b.createdAt ?? 0).getTime() - new Date(a.createdAt ?? 0).getTime(),
+      )
+      break
+  }
+
+  return filtered
+}

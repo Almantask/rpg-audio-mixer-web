@@ -5,7 +5,7 @@ const testDir = defineBddConfig({
   features: 'features/**/*.feature',
   steps: 'e2e/steps/**/*.ts',
   outputDir: '.features-gen',
-  tags: '@iter0 or @iter1 or @iter2 or @iter3 or @iter4 or @iter5 or @iter6 or @iter7',
+  tags: '@iter0 or @iter1 or @iter2 or @iter3 or @iter4 or @iter5 or @iter6 or @iter7 or @iter8',
   missingSteps: 'fail-on-gen',
 })
 

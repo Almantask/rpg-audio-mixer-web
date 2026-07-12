@@ -57,6 +57,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
           <div
             key={toast.id}
             role="status"
+            data-toast-summary={toast.message}
             className="flex items-center gap-3 rounded-md border border-white/10 bg-charcoal-elevated px-4 py-3 text-sm shadow-lg"
           >
             <span>{toast.message}</span>

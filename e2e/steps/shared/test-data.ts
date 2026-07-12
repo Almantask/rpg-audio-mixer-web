@@ -56,6 +56,9 @@ export interface ExtendedE2EControls extends E2EControls {
   importFxFails?: boolean
   invalidAudioImport?: boolean
   storefrontOpen?: boolean
+  restoreBlockedFxIds?: string[]
+  purgeBlockedFxIds?: string[]
+  attributionsState?: 'ready' | 'loading' | 'error'
 }
 
 export const EMPTY_E2E_APP_DATA: E2EAppData = {
@@ -285,6 +288,7 @@ export function buildSoundscapeCategory(
     id: categoryIdForName(name),
     name,
     trackCount,
+    createdAt: new Date().toISOString(),
     levels: {
       I: [`${baseId}-i-1`],
       II: [`${baseId}-ii-1`, `${baseId}-ii-2`],
@@ -884,7 +888,7 @@ export async function openActiveScene(
 }
 
 export async function openLibraryFxTab(page: Page) {
-  await page.goto('/library?tab=sound-effects')
+  await page.goto('/library?tab=fx')
   await page.waitForLoadState('networkidle')
 }
 
@@ -981,8 +985,51 @@ export function tableCellValues(dataTable: { rows: () => string[][] }): string[]
     .filter(Boolean) as string[]
 }
 
-export function tableRows(dataTable: { rows: () => string[][] }): string[][] {
-  return dataTable.rows().map((row) => row.map((cell) => cell?.trim() ?? ''))
+type BddTableRow = string[] | { cells?: Array<{ value?: string } | string> }
+
+export function tableRows(dataTable: unknown): string[][] {
+  if (!dataTable) {
+    return []
+  }
+
+  if (typeof dataTable === 'object' && 'raw' in dataTable && typeof (dataTable as { raw: () => string[][] }).raw === 'function') {
+    return (dataTable as { raw: () => string[][] }).raw()
+  }
+
+  if (typeof dataTable !== 'object') {
+    return []
+  }
+
+  let table = dataTable as {
+    rows?: (() => BddTableRow[]) | BddTableRow[]
+    dataTable?: { rows?: BddTableRow[] }
+  }
+
+  if (table.dataTable) {
+    table = table.dataTable
+  }
+
+  let rows: BddTableRow[] = []
+  if (typeof table.rows === 'function') {
+    rows = table.rows()
+  } else if (Array.isArray(table.rows)) {
+    rows = table.rows
+  }
+
+  return rows.map((row) => {
+    if (Array.isArray(row)) {
+      return row.map((cell) => String(cell ?? '').trim())
+    }
+    if (row && typeof row === 'object' && 'cells' in row) {
+      return (row.cells ?? []).map((cell) => {
+        if (typeof cell === 'string') {
+          return cell.trim()
+        }
+        return String(cell?.value ?? '').trim()
+      })
+    }
+    return []
+  })
 }
 
 export function buildOminousChantCategory(defaultTrackId?: string) {

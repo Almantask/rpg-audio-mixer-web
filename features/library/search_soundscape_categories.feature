@@ -13,7 +13,7 @@ Feature: Search and filter soundscape categories
 
   Scenario: Filter soundscape categories by category type in the sidebar
     Given I am on the Soundscapes tab in the Library
-    And I have categories
+    And I have categories:
       | category  | category_type |
       | Weather   | Environmental |
       | Interior  | Environmental |
@@ -23,17 +23,18 @@ Feature: Search and filter soundscape categories
 
   Scenario: Sort soundscape categories using the sidebar sort control
     Given I am on the Soundscapes tab in the Library
-    And I have categories added in this order
+    And I have categories added in this order:
       | category  |
       | Weather   |
       | Interior  |
       | Monsters  |
     When I set the sort order to "Recently Added" in the sidebar
-    Then soundscape categories appear in this order
+    Then soundscape categories appear in this order:
       | Monsters | Interior | Weather |
 
   Scenario: Filtered empty state on Soundscapes tab offers a clear-filters action
     Given I am on the Soundscapes tab in the Library
+    And I have categories "Weather", "Interior", "Monsters"
     When I search for "nonexistent_category_xyz" in the main search bar
     Then I see "No compositions match your filters"
     And I see a clear-filters action

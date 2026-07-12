@@ -27,6 +27,7 @@ import { Label } from '@/components/ui/label'
 import { useCampaignData } from '@/context/CampaignDataContext'
 
 import { filterFxTracks } from '@/lib/libraryStorage'
+import { filterSoundscapeCategoriesForBrowse } from '@/lib/soundscapeStorage'
 
 import type { FxIntensity, FxType, SoundscapeCategory } from '@/types/library'
 
@@ -83,7 +84,7 @@ const FX_TYPES: Array<FxType | 'ALL'> = [
 
 const INTENSITIES: FxIntensity[] = ['I', 'II', 'III']
 
-const SC_TYPES = ['ALL', 'WEATHER', 'INTERIOR', 'DUNGEON', 'NATURE', 'TOWN', 'COMBAT', 'OTHER']
+const SC_TYPES = ['ALL', 'Environmental', 'Creature']
 
 interface SoundscapeCategoryCardProps {
   category: SoundscapeCategory
@@ -281,24 +282,15 @@ export function LibraryPage() {
 
   )
 
-  const filteredCategories = useMemo(() => {
-    let list = (data.soundscapeCategories ?? []).filter((c) => !c.deletedAt)
-
-    if (scSearch.trim()) {
-      const q = scSearch.trim().toLowerCase()
-      list = list.filter((c) => c.name.toLowerCase().includes(q))
-    }
-
-    if (scType !== 'ALL') {
-      list = list.filter((c) => c.type === scType)
-    }
-
-    if (scSort === 'name') {
-      list = [...list].sort((a, b) => a.name.localeCompare(b.name))
-    }
-
-    return list
-  }, [data.soundscapeCategories, scSearch, scType, scSort])
+  const filteredCategories = useMemo(
+    () =>
+      filterSoundscapeCategoriesForBrowse(data.soundscapeCategories ?? [], {
+        search: scSearch,
+        type: scType,
+        sort: scSort,
+      }),
+    [data.soundscapeCategories, scSearch, scType, scSort],
+  )
 
   const handleFreeCompositions = async () => {
     setScDownloading(true)
@@ -650,9 +642,23 @@ export function LibraryPage() {
               ) : activeFxTracks.length === 0 ? (
                 <FxLibraryEmptyState />
               ) : filteredTracks.length === 0 ? (
-                <p className="py-8 text-center text-muted" data-fx-no-match>
-                  No effects match your filters
-                </p>
+                <div className="py-8 text-center text-muted">
+                  <p className="mb-4" data-fx-no-match>
+                    No effects match your filters
+                  </p>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={() => {
+                      setSearch('')
+                      setType('ALL')
+                      setMaxIntensity('III')
+                      setSort('recent')
+                    }}
+                  >
+                    Clear Filters
+                  </Button>
+                </div>
               ) : (
                 <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4" data-fx-grid>
                   {filteredTracks.map((track) => (

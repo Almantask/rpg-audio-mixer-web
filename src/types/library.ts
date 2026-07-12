@@ -38,6 +38,7 @@ export interface SoundscapeCategory {
   id: string
   name: string
   trackCount: number
+  createdAt?: string
   deletedAt?: string
   defaultTrackId?: string
   levels?: {

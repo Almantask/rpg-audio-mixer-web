@@ -549,6 +549,11 @@ Then('I do not see {string} in the picker grid', async ({ page }, name: string) 
 })
 
 Then('I see a clear-filters action', async ({ page }) => {
+  const libraryClear = page.getByRole('button', { name: 'Clear Filters', exact: true })
+  if (await libraryClear.count() > 0) {
+    await expect(libraryClear).toBeVisible()
+    return
+  }
   const fxFilters = page.locator('[data-fx-picker-clear-filters]')
   const scFilters = page.locator('[data-sc-picker-clear-filters]')
   if (await fxFilters.count() > 0) {
