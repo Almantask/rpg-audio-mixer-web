@@ -1,3 +1,5 @@
+import { resolveAudioUrl } from '@/lib/resolveAudioUrl'
+
 type PreviewListener = (trackId: string | null, trackName: string | null, playing: boolean) => void
 
 class AudioPreviewManager {
@@ -51,7 +53,7 @@ class AudioPreviewManager {
     }
 
     this.stop()
-    this.audio = new Audio(audioUrl)
+    this.audio = new Audio(resolveAudioUrl(audioUrl))
     this.currentTrackId = trackId
     this.currentTrackName = trackName
     this.audio.addEventListener('ended', () => {

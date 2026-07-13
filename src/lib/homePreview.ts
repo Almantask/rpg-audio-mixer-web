@@ -1,5 +1,6 @@
 import { publishAudioState } from '@/lib/audio/audioState'
 import { getSharedSceneAudioManager } from '@/lib/audio/sceneAudioManager'
+import { resolveAudioUrl } from '@/lib/resolveAudioUrl'
 
 export type HomePreviewKind = 'soundscape' | 'fx'
 
@@ -138,7 +139,7 @@ class HomePreviewManager {
     this.kind = 'soundscape'
     this.currentId = id
     this.currentName = name
-    this.audio = new Audio(audioUrl)
+    this.audio = new Audio(resolveAudioUrl(audioUrl))
     this.audio.loop = true
     this.attachAudioListeners()
     void this.audio.play()
@@ -163,7 +164,7 @@ class HomePreviewManager {
     this.kind = 'fx'
     this.currentId = id
     this.currentName = name
-    this.audio = new Audio(audioUrl)
+    this.audio = new Audio(resolveAudioUrl(audioUrl))
     this.attachAudioListeners()
     void this.audio.play()
     this.startProgressLoop()

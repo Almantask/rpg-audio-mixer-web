@@ -1,4 +1,5 @@
 import fs from 'node:fs'
+import { cpSync } from 'node:fs'
 import path from 'node:path'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
@@ -35,6 +36,10 @@ function serveAssetsAudioPlugin() {
     },
     configurePreviewServer(server: { middlewares: Connect.Server }) {
       server.middlewares.use(middleware)
+    },
+    closeBundle() {
+      const outDir = path.resolve(__dirname, 'dist/assets/audio')
+      cpSync(assetsRoot, outDir, { recursive: true })
     },
   }
 }

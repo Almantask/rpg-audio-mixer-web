@@ -1,4 +1,5 @@
 import type { SoundscapeIntensity } from '@/types/scene'
+import { resolveAudioUrl } from '@/lib/resolveAudioUrl'
 import { getAudioContext, resumeAudioContext } from './audioContextManager'
 import { publishAudioState, type PlayingTrackSnapshot } from './audioState'
 import { mapVolumeCubic } from './volume'
@@ -580,18 +581,19 @@ export class SceneAudioManager {
   }
 
   private async loadBuffer(audioUrl: string): Promise<AudioBuffer> {
-    const cached = this.bufferCache.get(audioUrl)
+    const resolvedUrl = resolveAudioUrl(audioUrl)
+    const cached = this.bufferCache.get(resolvedUrl)
     if (cached) {
       return cached
     }
-    const response = await fetch(audioUrl)
+    const response = await fetch(resolvedUrl)
     if (!response.ok) {
       throw new Error(`Failed to load audio (${response.status}): ${audioUrl}`)
     }
     const arrayBuffer = await response.arrayBuffer()
     try {
       const buffer = await this.ctx.decodeAudioData(arrayBuffer)
-      this.bufferCache.set(audioUrl, buffer)
+      this.bufferCache.set(resolvedUrl, buffer)
       return buffer
     } catch (error) {
       throw new Error(`Unable to decode audio: ${audioUrl}`, { cause: error })
