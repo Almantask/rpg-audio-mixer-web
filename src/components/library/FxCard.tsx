@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-import { Pause, Play, Pencil, Trash2 } from 'lucide-react'
+import { Pause, Play, Pencil, Trash2, X } from 'lucide-react'
 
 import type { FxTrack } from '@/types/library'
 
@@ -448,6 +448,8 @@ export function FxMiniPlayer() {
   const [trackId, setTrackId] = useState<string | null>(null)
   const [trackName, setTrackName] = useState<string | null>(null)
   const [playing, setPlaying] = useState(false)
+  const [rendered, setRendered] = useState(false)
+  const [phase, setPhase] = useState<'enter' | 'exit'>('exit')
 
   useEffect(() => {
     return audioPreview.subscribe((id, name, isPlaying) => {
@@ -457,7 +459,19 @@ export function FxMiniPlayer() {
     })
   }, [])
 
-  if (!trackName) {
+  useEffect(() => {
+    if (trackName) {
+      setRendered(true)
+      setPhase('enter')
+      return
+    }
+
+    setPhase('exit')
+    const timeout = window.setTimeout(() => setRendered(false), 180)
+    return () => window.clearTimeout(timeout)
+  }, [trackName])
+
+  if (!rendered || !trackName) {
     return null
   }
 
@@ -466,45 +480,48 @@ export function FxMiniPlayer() {
   return (
 
     <div
-
-      className="sticky bottom-0 mt-6 flex items-center justify-between border-t border-white/10 bg-charcoal-elevated p-4"
-
+      className={cn(
+        'sticky bottom-0 mt-6 flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-charcoal-elevated/95 p-4 shadow-2xl shadow-black/30 backdrop-blur-[2px]',
+        phase === 'enter' ? 'aa-mini-player-in' : 'aa-mini-player-out',
+      )}
       data-mini-player
-
     >
+      <span className="min-w-0 truncate" data-mini-player-track title={trackName}>
+        {trackName}
+      </span>
 
-      <span data-mini-player-track>{trackName}</span>
+      <div className="flex items-center gap-1">
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          aria-label="Close mini player"
+          data-mini-player-close
+          onClick={() => audioPreview.stop()}
+        >
+          <X className="h-4 w-4" />
+        </Button>
 
-      <Button
-
-        type="button"
-
-        variant="ghost"
-
-        size="icon"
-
-        aria-label={playing ? 'Pause preview' : 'Play preview'}
-
-        data-mini-player-pause={playing ? true : undefined}
-
-        data-mini-player-play={playing ? undefined : true}
-
-        onClick={() => {
-          if (playing) {
-            audioPreview.pause()
-            return
-          }
-          if (trackId && trackName) {
-            audioPreview.play(trackId, '', trackName)
-          }
-        }}
-
-      >
-
-        {playing ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-
-      </Button>
-
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          aria-label={playing ? 'Pause preview' : 'Play preview'}
+          data-mini-player-pause={playing ? true : undefined}
+          data-mini-player-play={playing ? undefined : true}
+          onClick={() => {
+            if (playing) {
+              audioPreview.pause()
+              return
+            }
+            if (trackId && trackName) {
+              audioPreview.play(trackId, '', trackName)
+            }
+          }}
+        >
+          {playing ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+        </Button>
+      </div>
     </div>
 
   )

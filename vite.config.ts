@@ -5,6 +5,8 @@ import tailwindcss from '@tailwindcss/vite'
 import type { Connect } from 'vite'
 import { defineConfig } from 'vitest/config'
 
+const base = process.env.VITE_BASE ?? '/'
+
 function serveAssetsAudioPlugin() {
   const assetsRoot = path.resolve(__dirname, 'assets/audio')
 
@@ -38,6 +40,7 @@ function serveAssetsAudioPlugin() {
 }
 
 export default defineConfig({
+  base,
   plugins: [react(), tailwindcss(), serveAssetsAudioPlugin()],
   resolve: {
     alias: {

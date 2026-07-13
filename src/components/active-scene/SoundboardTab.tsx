@@ -1,4 +1,4 @@
-import { useCallback, useState, type DragEvent } from 'react'
+import { useCallback, useRef, useState, type DragEvent } from 'react'
 import { GripVertical, Pause, Play, Plus, Trash2 } from 'lucide-react'
 import type { FxTrack } from '@/types/library'
 import type { SceneSoundboardEntry } from '@/types/scene'
@@ -6,6 +6,7 @@ import { useCampaignData } from '@/context/CampaignDataContext'
 import { useSceneAudio } from '@/context/SceneAudioContext'
 import { getHotkeyLabel } from '@/lib/sceneStorage'
 import { cn } from '@/lib/utils'
+import { useFlipReorderAnimation } from '@/hooks/useFlipReorderAnimation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 
@@ -47,6 +48,7 @@ function SoundboardTile({
   return (
     <Card
       data-soundboard-tile={entry.track.name}
+      data-flip-id={entry.id}
       data-soundboard-tile-state={entry.track.name}
       data-state={playing ? 'playing' : 'idle'}
       className={cn(
@@ -127,6 +129,9 @@ export function SoundboardTab({ sceneId, entries, onRemove, onAddSound, locked =
   const { playback, triggerSoundboard, stopSoundboardFx, setSoundboardMasterVolume, isSoundboardPlaying } =
     useSceneAudio()
   const [draggingId, setDraggingId] = useState<string | null>(null)
+  const [dragOverId, setDragOverId] = useState<string | null>(null)
+  const gridRef = useRef<HTMLDivElement | null>(null)
+  useFlipReorderAnimation(gridRef, [entries.map((entry) => entry.id).join('|')], { durationMs: 180 })
 
   const atCap = entries.length >= MAX_TILES
   const isEmpty = entries.length === 0
@@ -186,7 +191,11 @@ export function SoundboardTab({ sceneId, entries, onRemove, onAddSound, locked =
         </p>
       ) : null}
 
-      <div className="grid min-w-0 grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4" data-soundboard-grid>
+      <div
+        ref={gridRef}
+        className="grid min-w-0 grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4"
+        data-soundboard-grid
+      >
         {entries.map((entry, index) => {
           const hotkey = getHotkeyLabel(index)
           const playing = isSoundboardPlaying(entry.fxTrackId)
@@ -208,6 +217,7 @@ export function SoundboardTab({ sceneId, entries, onRemove, onAddSound, locked =
                   return
                 }
                 setDraggingId(entry.id)
+                setDragOverId(null)
                 event.dataTransfer.effectAllowed = 'move'
                 event.dataTransfer.setData('text/plain', entry.id)
               }}
@@ -216,17 +226,23 @@ export function SoundboardTab({ sceneId, entries, onRemove, onAddSound, locked =
                   return
                 }
                 event.preventDefault()
+                const sourceId = event.dataTransfer.getData('text/plain') || draggingId
+                if (!sourceId || sourceId === entry.id) {
+                  return
+                }
+                if (dragOverId === entry.id) {
+                  return
+                }
+                setDragOverId(entry.id)
+                reorderEntries(sourceId, entry.id)
               }}
               onDrop={(event) => {
                 if (locked) {
                   return
                 }
                 event.preventDefault()
-                const sourceId = event.dataTransfer.getData('text/plain') || draggingId
-                if (sourceId) {
-                  reorderEntries(sourceId, entry.id)
-                }
                 setDraggingId(null)
+                setDragOverId(null)
               }}
             />
           )

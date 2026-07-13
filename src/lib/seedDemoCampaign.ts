@@ -66,7 +66,7 @@ function orderedBundledFxTracks(fxTracks: FxTrack[], now: string): FxTrack[] {
   return tracks
 }
 
-export interface DemoCampaignSeed extends Pick<
+export type DemoCampaignSeed = Pick<
   AppData,
   | 'campaigns'
   | 'sessions'
@@ -78,7 +78,7 @@ export interface DemoCampaignSeed extends Pick<
   | 'sceneSoundboardSettings'
   | 'lastActiveSessionByCampaign'
   | 'lastActiveSceneBySession'
-> {}
+>
 
 export function createDemoCampaignData(
   library?: {

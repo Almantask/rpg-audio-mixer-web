@@ -3,6 +3,7 @@ import { Outlet, useLocation } from 'react-router-dom'
 import { Sidebar, TopBar } from './Sidebar'
 import { cn } from '@/lib/utils'
 import { homePreview } from '@/lib/homePreview'
+import { audioPreview } from '@/lib/audioPreview'
 
 export function AppShell() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -11,6 +12,9 @@ export function AppShell() {
   useEffect(() => {
     if (location.pathname !== '/') {
       homePreview.stop()
+    }
+    if (!location.pathname.startsWith('/library')) {
+      audioPreview.stop()
     }
   }, [location.pathname])
 
@@ -34,7 +38,7 @@ export function AppShell() {
 
       <div className="flex min-h-screen flex-1 flex-col">
         <TopBar onMenuToggle={() => setSidebarOpen((open) => !open)} />
-        <main className="flex-1 overflow-y-auto p-6">
+        <main key={location.pathname} className="flex-1 overflow-y-auto p-6 aa-screen-enter">
           <Outlet />
         </main>
       </div>

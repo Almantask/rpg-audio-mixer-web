@@ -35,7 +35,25 @@ export function DialogContent({
   'aria-labelledby'?: string
 } & React.HTMLAttributes<HTMLDivElement>) {
   const ctx = React.useContext(DialogContext)
-  if (!ctx?.open) {
+  const open = Boolean(ctx?.open)
+  const [rendered, setRendered] = React.useState(open)
+  const [phase, setPhase] = React.useState<'enter' | 'exit'>(open ? 'enter' : 'exit')
+
+  React.useEffect(() => {
+    if (!ctx) {
+      return
+    }
+    if (open) {
+      setRendered(true)
+      setPhase('enter')
+      return
+    }
+    setPhase('exit')
+    const timeout = window.setTimeout(() => setRendered(false), 180)
+    return () => window.clearTimeout(timeout)
+  }, [ctx, open])
+
+  if (!ctx || !rendered) {
     return null
   }
 
@@ -44,7 +62,10 @@ export function DialogContent({
       <button
         type="button"
         aria-label="Close dialog overlay"
-        className="absolute inset-0 bg-black/60"
+        className={cn(
+          'absolute inset-0 bg-black/55 backdrop-blur-[2px]',
+          phase === 'enter' ? 'aa-dialog-overlay-in' : 'aa-dialog-overlay-out',
+        )}
         onClick={() => ctx.onOpenChange(false)}
       />
       <div
@@ -52,7 +73,9 @@ export function DialogContent({
         aria-modal="true"
         aria-labelledby={ariaLabelledBy}
         className={cn(
-          'relative z-10 w-full max-w-md rounded-lg border border-white/10 bg-charcoal-elevated p-6 shadow-xl',
+          'relative z-10 w-full max-w-md rounded-xl border border-white/10 bg-charcoal-elevated/95 p-6 shadow-2xl shadow-black/40',
+          phase === 'exit' ? 'pointer-events-none' : null,
+          phase === 'enter' ? 'aa-dialog-content-in' : 'aa-dialog-content-out',
           className,
         )}
         {...props}

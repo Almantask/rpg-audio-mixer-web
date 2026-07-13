@@ -11,6 +11,100 @@
 }
 
 @layer base {
+  :root {
+    --aa-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+    --aa-ease-in: cubic-bezier(0.32, 0, 0.67, 0);
+    --aa-dur-fast: 140ms;
+    --aa-dur: 180ms;
+    --aa-dur-slow: 240ms;
+  }
+
+  @keyframes aa-screen-enter {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes aa-screen-exit {
+    from {
+      opacity: 1;
+      transform: translateX(0);
+    }
+    to {
+      opacity: 0;
+      transform: translateX(-8px);
+    }
+  }
+
+  @keyframes aa-dialog-overlay-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes aa-dialog-overlay-out {
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0;
+    }
+  }
+
+  @keyframes aa-dialog-content-in {
+    from {
+      opacity: 0;
+      transform: translateY(8px) scale(0.98);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  @keyframes aa-dialog-content-out {
+    from {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+    to {
+      opacity: 0;
+      transform: translateY(8px) scale(0.98);
+    }
+  }
+
+  @keyframes aa-mini-player-in {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes aa-mini-player-out {
+    from {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    to {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+  }
+}
+
+@layer base {
   * {
     @apply border-white/10;
   }
@@ -22,5 +116,54 @@
 
   #root {
     @apply min-h-screen;
+  }
+}
+
+@layer utilities {
+  .aa-screen-enter {
+    animation: aa-screen-enter var(--aa-dur) var(--aa-ease-out) both;
+  }
+
+  .aa-screen-exit {
+    animation: aa-screen-exit var(--aa-dur-fast) var(--aa-ease-in) both;
+  }
+
+  .aa-dialog-overlay-in {
+    animation: aa-dialog-overlay-in var(--aa-dur-fast) var(--aa-ease-out) both;
+  }
+
+  .aa-dialog-overlay-out {
+    animation: aa-dialog-overlay-out var(--aa-dur-fast) var(--aa-ease-in) both;
+  }
+
+  .aa-dialog-content-in {
+    animation: aa-dialog-content-in var(--aa-dur) var(--aa-ease-out) both;
+  }
+
+  .aa-dialog-content-out {
+    animation: aa-dialog-content-out var(--aa-dur) var(--aa-ease-in) both;
+  }
+
+  .aa-mini-player-in {
+    animation: aa-mini-player-in var(--aa-dur) var(--aa-ease-out) both;
+  }
+
+  .aa-mini-player-out {
+    animation: aa-mini-player-out var(--aa-dur) var(--aa-ease-in) both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  @layer utilities {
+    .aa-screen-enter,
+    .aa-screen-exit,
+    .aa-dialog-overlay-in,
+    .aa-dialog-overlay-out,
+    .aa-dialog-content-in,
+    .aa-dialog-content-out,
+    .aa-mini-player-in,
+    .aa-mini-player-out {
+      animation: none !important;
+    }
   }
 }

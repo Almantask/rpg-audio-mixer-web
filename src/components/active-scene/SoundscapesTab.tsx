@@ -1,10 +1,11 @@
-import { useCallback, useMemo, useState, type DragEvent } from 'react'
+import { useCallback, useMemo, useRef, useState, type DragEvent } from 'react'
 import { Dices, GripVertical, Pause, Play, Plus, Trash2, Volume2, VolumeX } from 'lucide-react'
 import type { SceneSoundscapeSlot, SoundscapeIntensity } from '@/types/scene'
 import type { SoundscapeCategory } from '@/types/library'
 import { useCampaignData } from '@/context/CampaignDataContext'
 import { useSceneAudio } from '@/context/SceneAudioContext'
 import { cn } from '@/lib/utils'
+import { useFlipReorderAnimation } from '@/hooks/useFlipReorderAnimation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 
@@ -116,6 +117,7 @@ function SoundscapeCategoryCard({
   return (
     <Card
       data-soundscape-category={categoryName}
+      data-flip-id={slot.id}
       className={cn(
         'border-white/10 transition-shadow',
         playing && 'border-gold/60 shadow-[0_0_16px_rgba(212,175,55,0.35)]',
@@ -280,6 +282,7 @@ export function SoundscapesTab({
 }: SoundscapesTabProps) {
   const { reorderSoundscapeSlots } = useCampaignData()
   const [draggingId, setDraggingId] = useState<string | null>(null)
+  const [dragOverId, setDragOverId] = useState<string | null>(null)
 
   const reorderSlots = useCallback(
     (sourceId: string, targetId: string) => {
@@ -301,6 +304,12 @@ export function SoundscapesTab({
   )
 
   const sortedSlots = useMemo(() => [...slots].sort((a, b) => a.order - b.order), [slots])
+  const listRef = useRef<HTMLDivElement | null>(null)
+  useFlipReorderAnimation(
+    listRef,
+    [sortedSlots.map((slot) => slot.id).join('|')],
+    { durationMs: 180 },
+  )
 
   return (
     <div data-soundscapes-tab>
@@ -311,7 +320,7 @@ export function SoundscapesTab({
           No soundscape categories yet. Add one to begin layering ambience.
         </p>
       ) : (
-        <div className="mb-6 space-y-4" data-soundscape-category-list>
+        <div ref={listRef} className="mb-6 space-y-4" data-soundscape-category-list>
           {sortedSlots.map((slot) => (
             <SoundscapeCategoryCard
               key={slot.id}
@@ -324,6 +333,7 @@ export function SoundscapesTab({
                   return
                 }
                 setDraggingId(slot.id)
+                setDragOverId(null)
                 event.dataTransfer.effectAllowed = 'move'
                 event.dataTransfer.setData('text/plain', slot.id)
               }}
@@ -332,17 +342,23 @@ export function SoundscapesTab({
                   return
                 }
                 event.preventDefault()
+                const sourceId = event.dataTransfer.getData('text/plain') || draggingId
+                if (!sourceId || sourceId === slot.id) {
+                  return
+                }
+                if (dragOverId === slot.id) {
+                  return
+                }
+                setDragOverId(slot.id)
+                reorderSlots(sourceId, slot.id)
               }}
               onDrop={(event) => {
                 if (locked) {
                   return
                 }
                 event.preventDefault()
-                const sourceId = event.dataTransfer.getData('text/plain') || draggingId
-                if (sourceId) {
-                  reorderSlots(sourceId, slot.id)
-                }
                 setDraggingId(null)
+                setDragOverId(null)
               }}
             />
           ))}
