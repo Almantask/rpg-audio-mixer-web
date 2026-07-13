@@ -17,7 +17,7 @@
     "paths": {
       "@/*": ["./src/*"]
     },
-    "types": ["node"]
+    "types": ["node", "vite/client"]
   },
   "include": ["e2e/**/*.ts", "e2e/**/*.d.ts", ".features-gen/**/*.ts"]
 }
