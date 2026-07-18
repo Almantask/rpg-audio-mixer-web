@@ -8,8 +8,8 @@ const playScene = vi.fn(async () => undefined)
 const stopAll = vi.fn()
 const setSoundscapeMasterVolume = vi.fn()
 const setSoundscapeMuted = vi.fn()
-const canPlaySoundscape = vi.fn(() => true)
-const hasLoadedSoundscapeTrack = vi.fn(() => true)
+const canPlaySoundscape = vi.fn<(slotId: string) => boolean>(() => true)
+const hasLoadedSoundscapeTrack = vi.fn<(slotId: string) => boolean>(() => true)
 const reorderSoundscapeSlots = vi.fn()
 
 function tile(partial: Partial<SoundscapeTileState> & Pick<SoundscapeTileState, 'slotId' | 'categoryName'>): SoundscapeTileState {
