@@ -22,13 +22,6 @@ Then('{string} appears above {string}', async ({ page }, first: string, second: 
     return
   }
 
-  const firstLocator = page
-    .locator(`[data-campaign-title="${first}"], [data-session-number="${first}"]`)
-    .first()
-  const secondLocator = page
-    .locator(`[data-campaign-title="${second}"], [data-session-number="${second}"]`)
-    .first()
-
   const isCampaignOrder = (await page.locator(`[data-campaign-title="${first}"]`).count()) > 0
 
   if (isCampaignOrder) {
