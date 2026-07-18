@@ -16,7 +16,9 @@
     "test:watch": "vitest",
     "bddgen": "bddgen",
     "test:e2e": "bddgen && playwright test",
-    "test:acceptance": "bddgen && playwright test"
+    "test:acceptance": "bddgen && playwright test",
+    "test:acceptance:feature": "playwright test",
+    "test:acceptance:iter": "playwright test --grep"
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.3.0",

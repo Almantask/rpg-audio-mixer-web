@@ -280,3 +280,16 @@ A feature-test iteration is complete only when:
 - Modified acceptance files pass lint and typecheck.
 - A final full-suite run has no failures in the target iteration.
 
+## Speed & Stability Improvements (Phase A–D)
+
+As part of the test speed and stability audit:
+- **Sleeps to Conditions**: Removed all fixed `waitForTimeout` calls and replaced them with:
+  - Playwright `expect.poll` for animation tracking.
+  - Asserting closing of dialog elements (`expect(dialog).toHaveCount(0)`).
+  - Checking native attributes instead of arbitrary sleep.
+  - Relying on the subsequent assertions which natively poll.
+- **Short Audio Seeds**: Updated `seedSoundboardEffects` to avoid forcing a `120` second duration for regular one-shot seeds. Now, only scenarios requesting `longAudio` will get the `120`s overrides.
+- **CI Configuration**: Set CI workers to `2` to safely speed up test runs under parallel load without introducing flakes.
+- **Shared Storage Rejection**: Confirmed that suite-wide shared mutable state databases or shared orchestrations across workers must be rejected in favor of independent scenario/feature level seeding (`seedE2EData`), ensuring thread-safe runs.
+- **Workflow Guardrails**: Enabled a CI check that fails builds if any new `waitForTimeout` is introduced.
+

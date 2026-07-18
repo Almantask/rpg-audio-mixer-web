@@ -31,13 +31,18 @@ npx playwright test ".features-gen/features/<path>/<feature>.feature.spec.js" --
 ### Commands
 
 ```powershell
-# Focused
+# Warm server (start once)
+npm run dev
+
+# Focused Iteration (run one feature while server is running)
 npx bddgen
-.\ai\skills\author-acceptance-tests\scripts\run_acceptance_tests.ps1 -FeaturePath ".features-gen/features/<path>/<feature>.feature.spec.js"
+npm run test:acceptance:feature -- .features-gen/features/<path>/<feature>.feature.spec.js --workers=1 --reporter=line
+
+# Iteration slice (run by tag expression)
+npm run test:acceptance:iter -- "@iterN" --workers=1
 
 # Full suite
-npx bddgen
-npx playwright test --reporter=line
+npm run test:acceptance
 ```
 
 Test runs require the user's explicit IDE approval. On non-`main` branches, also trigger CI:
@@ -74,10 +79,11 @@ Iteration post-mortems: `learnings/feature-tests.md`.
 - **Pass** → sign off against the checklist above.
 - **Fail** → structured log with diagnosis category, assertion details, and fix layer; hand production defects to `@fe-developer`.
 
-## Flaky tests
+## Flaky tests & Test Isolation
 
-1. Replace fixed timeouts with Playwright auto-wait.
-2. Ensure test independence — explicit setup, no shared storage leaks.
-3. Clean cache: `.\ai\skills\author-acceptance-tests\scripts\clean_build.ps1`
+1. **Replace fixed timeouts** with Playwright auto-wait or `expect.poll` assertions. Never introduce `waitForTimeout` calls in step definitions.
+2. **Ensure test independence** — always seed data per scenario (or per feature) using `seedE2EData` / builders. Avoid shared mutable browser profile / `localStorage` state across tests.
+3. **Reject suite-wide shared create/interact/delete setups** on `localStorage`. The data model cannot safely share one mutable world across parallel workers.
+4. **Clean cache**: `.\ai\skills\author-acceptance-tests\scripts\clean_build.ps1`
 
 **Git Policy:** Do NOT commit changes. Leave all changes uncommitted for the user to review and commit manually.

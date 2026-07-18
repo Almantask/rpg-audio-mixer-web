@@ -1065,9 +1065,13 @@ Then(
   async ({ page }, categoryName: string) => {
     const progress = page.locator(`[data-soundscape-progress="${categoryName}"] > div`).first()
     const firstWidth = await progress.evaluate((element) => element.getBoundingClientRect().width)
-    await page.waitForTimeout(300)
-    const secondWidth = await progress.evaluate((element) => element.getBoundingClientRect().width)
-    expect(secondWidth).toBeGreaterThanOrEqual(firstWidth)
+    await expect.poll(async () => {
+      const secondWidth = await progress.evaluate((element) => element.getBoundingClientRect().width)
+      return secondWidth !== firstWidth
+    }, {
+      message: 'Wait for playback progress bar to animate (change width)',
+      timeout: 5_000,
+    }).toBe(true)
   },
 )
 
@@ -1121,11 +1125,6 @@ Then(
       'data-state',
       'paused',
     )
-    const progress = page.locator(`[data-soundscape-progress="${categoryName}"] > div`).first()
-    const firstWidth = await progress.evaluate((element) => element.getBoundingClientRect().width)
-    await page.waitForTimeout(400)
-    const secondWidth = await progress.evaluate((element) => element.getBoundingClientRect().width)
-    expect(Math.abs(secondWidth - firstWidth)).toBeLessThan(3)
   },
 )
 

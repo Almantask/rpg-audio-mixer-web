@@ -10,14 +10,12 @@ const testDir = defineBddConfig({
   // Existing steps often omit unused Cucumber params; enforce later when steps are audited.
   arityCheck: false,
 })
-
-
 export default defineConfig({
   testDir,
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
-  workers: process.env.CI ? 1 : undefined,
+  workers: process.env.CI ? 2 : undefined,
   reporter: process.env.CI ? [['list'], ['html', { open: 'never' }]] : 'html',
   use: {
     baseURL: 'http://127.0.0.1:5173',

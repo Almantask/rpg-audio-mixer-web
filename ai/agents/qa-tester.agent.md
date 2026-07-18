@@ -14,6 +14,12 @@ Consult `ai/skills/author-acceptance-tests/SKILL.md` for workflow, authoring rul
 - Do **not** write production React components or hooks.
 - If tests fail due to production defects, report structured failures and hand fixes back to `@fe-developer`.
 
+## Speed & Stability Guidelines
+
+- **Zero fixed sleeps**: Do **not** use `page.waitForTimeout` or equivalent in step definitions. Rely on Playwright auto-wait, state transitions, or `expect.poll` assertions.
+- **Strict Isolation**: Do **not** share mutable `localStorage` or browser contexts across scenarios. Each scenario must seed its own data via `seedE2EData` / builders.
+- **Parallel Execution**: Leverage focused features and iteration-scoped scripts locally (`test:acceptance:feature` and `test:acceptance:iter`) for fast verification.
+
 ## Deliverables
 
 - `.feature` files, Playwright step definitions, and E2E execution results.

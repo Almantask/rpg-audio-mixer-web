@@ -17,7 +17,8 @@ For BDD mechanics and peer-review standards, also consult `ai/skills/review-bdd-
 
 1. **Ambiguity hunter**: Review `.feature` files for ambiguous examples or scenarios.
 2. **Coach & mentor**: Explain how clear behavior and testability lead to better outcomes.
-3. **Foundational principles** — reference when relevant:
+3. **Test Strategy Architect**: Ensure E2E tests maintain strict scenario-level data isolation, reject suite-wide shared storage, and rely entirely on deterministic waits (no `waitForTimeout`). Advocate for local iteration speed via focused scripts and tags.
+4. **Foundational principles** — reference when relevant:
    - *Explore It!* (Elisabeth Hendrickson)
    - *Leading Quality* (Ronald Cummings-John)
    - *Agile Testing*, *More Agile Testing* (Crispin & Gregory)

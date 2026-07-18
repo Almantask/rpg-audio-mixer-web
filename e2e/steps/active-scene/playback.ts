@@ -289,14 +289,15 @@ When('the {string} track finishes playing', async ({ page }, trackName: string) 
   await expect
     .poll(async () => isCategoryLooping(page, 'Weather'), { timeout: 5_000 })
     .toBe(true)
-  await page.waitForTimeout(2_500)
 })
 
 When('{string} finishes playing', async ({ page }, effectName: string) => {
   await expect
     .poll(async () => isTrackPlaying(page, effectName), { timeout: 5_000 })
     .toBe(true)
-  await page.waitForTimeout(500)
+  await expect
+    .poll(async () => isTrackPlaying(page, effectName), { timeout: 5_000 })
+    .toBe(false)
 })
 
 When('I leave and reopen the scene', async ({ page }) => {

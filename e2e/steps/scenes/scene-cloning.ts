@@ -153,7 +153,7 @@ When(
     await page.locator('[data-soundscape-add]').click()
     await page.locator(`[data-sc-picker-check="${categoryIdForName(categoryName)}"]`).check()
     await page.locator('[data-picker-commit]').click()
-    await page.waitForTimeout(200)
+    await expect(page.getByText(/added/)).toBeVisible()
   }
 )
 
@@ -178,7 +178,7 @@ When(
     
     await page.locator('[data-active-scene-tab="Soundscapes"]').click()
     await page.locator(`input[aria-label="${categoryName} volume"]`).fill(String(volume))
-    await page.waitForTimeout(200)
+    await expect(page.locator(`input[aria-label="${categoryName} volume"]`)).toHaveValue(String(volume))
   }
 )
 

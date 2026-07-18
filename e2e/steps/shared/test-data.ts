@@ -439,7 +439,7 @@ export function seedSoundboardEffects(sceneId: string, effectNames: string[], op
       name,
       options?.longAudio
         ? { audioUrl: LONG_FX_AUDIO_URL, durationSeconds: 120 }
-        : { durationSeconds: 120 },
+        : {},
     ),
   )
   const sceneSoundboardEntries = fxTracks.map((fx, index) =>

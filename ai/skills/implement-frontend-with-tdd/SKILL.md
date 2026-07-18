@@ -150,7 +150,7 @@ describe('SceneCard', () => {
 |---|---|---|
 | Unit | Pure functions, hooks, mappers | Vitest |
 | Component | Render, interaction, a11y roles | Vitest + RTL |
-| E2E / acceptance | Full user flows | **Outside this skill's scope** |
+| E2E / acceptance | Full user flows | **Outside this skill's scope** (Treated separately with strict isolation and no-timeout rules in BDD scope) |
 
 ---
 
@@ -165,6 +165,9 @@ pnpm test
 ```
 
 All three must pass. Fix issues — do not suppress lint rules without justification.
+
+> [!NOTE]
+> New pure logic (audio manager helpers, storage merges, volume math, etc.) should always be covered by Vitest unit tests first before adding Playwright coverage. Keep E2E/Playwright tests reserved for real browser/web audio behavior.
 
 ---
 

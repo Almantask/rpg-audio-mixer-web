@@ -9,6 +9,7 @@ import {
   mergeE2EData,
   openActiveScene,
   resetE2EData,
+  buildSoundscapeTracksForCategory,
 } from '../shared/test-data'
 
 async function tapSoundboardEffect(page: Page, effectName: string) {
@@ -29,11 +30,14 @@ Given(
     const sceneId = 'scene-battle'
     const sc1 = buildSoundscapeCategory(sc1Name)
     const sc2 = buildSoundscapeCategory(sc2Name)
+    const tracks1 = buildSoundscapeTracksForCategory(sc1Name)
+    const tracks2 = buildSoundscapeTracksForCategory(sc2Name)
     const fx = buildFxTrack('Scream')
     
     await mergeE2EData(page, {
       scenes: [buildScene(sceneName, { id: sceneId })],
       soundscapeCategories: [sc1, sc2],
+      soundscapeTracks: [...tracks1, ...tracks2],
       sceneSoundscapeSlots: [
         buildSceneSoundscapeSlot(sceneId, sc1.id, 0),
         buildSceneSoundscapeSlot(sceneId, sc2.id, 1),
@@ -43,13 +47,11 @@ Given(
     })
   }
 )
-
 Given('the {string} scene is playing', async ({ page }, sceneName: string) => {
   await openActiveScene(page, sceneName, 'Soundscapes')
   await page.locator('[data-play-scene]').click()
-  await page.waitForTimeout(500)
+  await expect(page.locator('[data-stop-scene]')).toBeVisible()
 })
-
 Given('I have triggered {string} from the soundboard', async ({ page }, effectName: string) => {
   await page.locator('[data-active-scene-tab="Soundboard"]').click()
   await tapSoundboardEffect(page, effectName)

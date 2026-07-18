@@ -60,10 +60,11 @@ Every judgement must be traceable to a principle from these books — not person
 
 ### 5. Step Definitions (Playwright layer)
 
-- **No fixed sleeps** — use Playwright auto-wait and `expect` (`CRITICAL` if `waitForTimeout` used)
-- Assertions only in `Then` steps
-- Real browser stack — mock network/clock at boundaries only, not entire React tree
-- Flaky patterns: shared storage without reset, order-dependent state (`HIGH`)
+- **No fixed sleeps** — use Playwright auto-wait, state transitions, or `expect.poll` assertions (`CRITICAL` if `waitForTimeout` is used; checked by CI guardrail).
+- Assertions only in `Then` steps.
+- Real browser stack — mock network/clock at boundaries only, not entire React tree.
+- **Test Isolation** — every scenario/feature must seed its own data via `seedE2EData` / builders. Reject suite-wide shared mutable state databases or shared `localStorage` setups across workers (`CRITICAL`).
+- Flaky patterns: shared storage without reset, order-dependent state (`HIGH`).
 
 ### 6. Warnings & Deprecations
 

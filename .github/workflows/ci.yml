@@ -51,8 +51,27 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Get Playwright version
+        id: playwright-version
+        run: echo "PLAYWRIGHT_VERSION=$(node -p "require('@playwright/test/package.json').version")" >> $GITHUB_ENV
+
+      - name: Cache Playwright binaries
+        uses: actions/cache@v4
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ env.PLAYWRIGHT_VERSION }}
+
       - name: Install Playwright browsers
         run: npx playwright install chromium --with-deps
+
+      - name: Verify no waitForTimeout in E2E steps
+        run: |
+          if grep -q "waitForTimeout" e2e/steps/; then
+            echo "Error: Found waitForTimeout in E2E steps. Use Playwright auto-wait or expect.poll instead."
+            grep -rn "waitForTimeout" e2e/steps/
+            exit 1
+          fi
 
       - name: Generate BDD tests
         run: npm run bddgen
