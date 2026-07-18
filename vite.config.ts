@@ -66,5 +66,19 @@ export default defineConfig({
     globals: true,
     include: ['src/**/*.{test,spec}.{ts,tsx}'],
     exclude: ['node_modules', 'dist', '.features-gen', 'e2e'],
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'lcov'],
+      reportsDirectory: './coverage',
+      include: ['src/**/*.{ts,tsx}'],
+      exclude: [
+        'src/**/*.{test,spec}.{ts,tsx}',
+        'src/test/**',
+        'node_modules',
+        'dist',
+        '.features-gen',
+        'e2e',
+      ],
+    },
   },
 })
