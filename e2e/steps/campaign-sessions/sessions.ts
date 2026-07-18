@@ -417,7 +417,6 @@ Then('I see the scene list for {string}', async ({ page }, sessionLabel: string)
   const screen = page.getByRole('region', { name: 'Session Scenes screen' })
   await expect(screen).toBeVisible()
   await expect(screen.getByRole('heading', { level: 2 })).toContainText(sessionLabel)
-  await expect(screen.getByText('Session Scenes', { exact: true })).toBeVisible()
 })
 
 Then('I see the session edit dialog', async ({ page }) => {

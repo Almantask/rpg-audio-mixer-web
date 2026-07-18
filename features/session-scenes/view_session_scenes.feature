@@ -5,11 +5,17 @@ Feature: View session scenes
   I want to see scenes linked to a session
   So that I can pick the right audio for tonight's play.
 
-  Scenario: Session Scenes page shows combined session title and subtitle
-    Given I have session "Session 14 – The Howling Crags"
+  Scenario: Session Scenes page shows session description under the title
+    Given I have session "Session 14" in "Curse of Strahd" with:
+      | name              | date       | description                      |
+      | The Howling Crags | 2026-01-01 | The party climbs the windy ridge |
     When I open "Session 14 – The Howling Crags"
     Then I see the page title "Session 14 – The Howling Crags"
-    And I see the subtitle "Session Scenes"
+    And I see the subtitle "The party climbs the windy ridge"
+
+  Scenario: Session Scenes omits subtitle when description is empty
+    Given I am viewing Session Scenes for "Session 1" in campaign "Curse of Strahd"
+    Then I do not see the subtitle "Session Scenes"
 
   Scenario: Tapping the campaign breadcrumb returns to Campaign Sessions
     Given I am viewing Session Scenes for "Session 1" in campaign "Curse of Strahd"
@@ -20,7 +26,7 @@ Feature: View session scenes
     Given I am viewing Session Scenes for "Session 1" in campaign "Curse of Strahd"
     When I tap "SESSION 1" in the breadcrumb
     Then I am still viewing Session Scenes for "Session 1"
-    And I see the subtitle "Session Scenes"
+    And I do not see the subtitle "Session Scenes"
 
   Scenario: Browser back from Session Scenes returns to Campaign Sessions
     Given I opened "Session 1" from the sessions list for "Curse of Strahd"

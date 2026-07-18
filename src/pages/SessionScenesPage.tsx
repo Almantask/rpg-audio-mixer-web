@@ -47,6 +47,7 @@ export function SessionScenesPage() {
   const campaignName = campaign?.name ?? campaignId
   const sessionLabel = session ? `Session ${session.number}` : sessionId
   const pageTitle = session ? formatSessionPageTitle(session) : sessionLabel
+  const pageSubtitle = session?.description?.trim() || undefined
 
   const availableToImport = useMemo(
     () => getUnlinkedScenesForSession(data.scenes, sessionId, data.sessionSceneLinks),
@@ -61,7 +62,7 @@ export function SessionScenesPage() {
         <p className="mb-2 text-xs uppercase tracking-widest text-muted" data-session-breadcrumb>
           Campaign &gt; {campaignName.toUpperCase()} &gt; {sessionLabel.toUpperCase()}
         </p>
-        <PageHeader title={pageTitle} subtitle="Session Scenes" />
+        <PageHeader title={pageTitle} subtitle={pageSubtitle} />
         <SceneCardSkeleton />
       </ScreenLandmark>
     )
@@ -95,7 +96,7 @@ export function SessionScenesPage() {
         </button>
       </nav>
 
-      <PageHeader title={pageTitle} subtitle="Session Scenes" />
+      <PageHeader title={pageTitle} subtitle={pageSubtitle} />
       <p className="sr-only" data-session-label={sessionLabel}>
         {sessionLabel}
       </p>

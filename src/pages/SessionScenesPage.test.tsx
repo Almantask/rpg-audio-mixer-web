@@ -22,7 +22,11 @@ function buildCampaign(name: string): Campaign {
   }
 }
 
-function buildSession(name: string, number = 1): Session {
+function buildSession(
+  name: string,
+  number = 1,
+  overrides: Partial<Session> = {},
+): Session {
   return {
     id: SESSION_ID,
     campaignId: CAMPAIGN_ID,
@@ -30,6 +34,7 @@ function buildSession(name: string, number = 1): Session {
     number,
     date: '2026-01-01',
     sceneCount: 0,
+    ...overrides,
   }
 }
 
@@ -71,11 +76,11 @@ function renderSessionScenesPage() {
   )
 }
 
-function seedEmptySession() {
+function seedEmptySession(overrides: Partial<Session> = {}) {
   saveAppData({
     ...EMPTY_APP_DATA,
     campaigns: [buildCampaign('Echoes of the Void')],
-    sessions: [buildSession('Opening Night')],
+    sessions: [buildSession('Opening Night', 1, overrides)],
   })
 }
 
@@ -95,6 +100,23 @@ describe('SessionScenesPage', () => {
   beforeEach(() => {
     window.localStorage.clear()
     window.sessionStorage.clear()
+  })
+
+  it('shows the session description under the page title', () => {
+    seedEmptySession({ description: 'The party climbs the windy ridge' })
+    renderSessionScenesPage()
+
+    expect(screen.getByRole('heading', { level: 2, name: 'Session 1 – Opening Night' })).toBeInTheDocument()
+    expect(screen.getByText('The party climbs the windy ridge')).toBeInTheDocument()
+    expect(screen.queryByText('Session Scenes')).not.toBeInTheDocument()
+  })
+
+  it('omits the subtitle when the session has no description', () => {
+    seedEmptySession()
+    renderSessionScenesPage()
+
+    expect(screen.getByRole('heading', { level: 2, name: 'Session 1 – Opening Night' })).toBeInTheDocument()
+    expect(screen.queryByText('Session Scenes')).not.toBeInTheDocument()
   })
 
   it('shows New Scene to the left of Import Scene in the empty state', () => {
@@ -148,7 +170,7 @@ describe('SessionScenesPage', () => {
     await user.click(screen.getByRole('button', { name: 'Create' }))
 
     expect(screen.getByText('Tavern')).toBeInTheDocument()
-    expect(screen.getByText('Session Scenes')).toBeInTheDocument()
+    expect(screen.getByRole('region', { name: 'Session Scenes screen' })).toBeInTheDocument()
     expect(screen.queryByText('Global Scenes')).not.toBeInTheDocument()
 
     const stored = JSON.parse(window.localStorage.getItem('arcanum-audio-data') ?? '{}') as {
