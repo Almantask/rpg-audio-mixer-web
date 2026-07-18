@@ -152,6 +152,13 @@ Then('no track begins playing in the {string} category', async ({ page }, catego
   )
 })
 
+Then('the {string} category is idle', async ({ page }, categoryName: string) => {
+  await expect(page.locator(`[data-soundscape-playback-state="${categoryName}"]`)).toHaveAttribute(
+    'data-state',
+    'idle',
+  )
+})
+
 Then(
   'the {string} audio fades out while the {string} audio fades in simultaneously',
   async ({ page }, _from: string, to: string) => {

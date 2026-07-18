@@ -3,7 +3,7 @@ import { useCallback, useMemo, useState, useEffect } from 'react'
 import { Link, useLocation, useParams, useSearchParams, useBlocker } from 'react-router-dom'
 
 
-import { Lock, Square } from 'lucide-react'
+import { Lock } from 'lucide-react'
 
 import { PageHeader, ScreenLandmark } from '@/components/layout/AppShell'
 
@@ -74,64 +74,6 @@ export function ActiveScenePage() {
       <ActiveScenePageContent />
 
     </SceneAudioProvider>
-
-  )
-
-}
-
-
-
-function ActiveSceneHeaderActions({ locked, onToggleLock }: { locked: boolean; onToggleLock: () => void }) {
-
-  const { stopAll } = useSceneAudio()
-
-  return (
-
-    <div className="mb-4 flex items-center justify-end gap-2">
-
-      <Button
-
-        type="button"
-
-        variant="outline"
-
-        data-stop-all
-
-        aria-label="Stop All"
-
-        onClick={stopAll}
-
-      >
-
-        <Square className="mr-2 h-4 w-4" />
-
-        Stop All
-
-      </Button>
-
-      <Button
-
-        type="button"
-
-        variant="ghost"
-
-        size="icon"
-
-        aria-label={locked ? 'Unlock session' : 'Lock session'}
-
-        aria-pressed={locked}
-
-        data-session-lock
-
-        onClick={onToggleLock}
-
-      >
-
-        <Lock className={cn('h-4 w-4', locked && 'text-gold')} />
-
-      </Button>
-
-    </div>
 
   )
 
@@ -384,90 +326,60 @@ function ActiveScenePageContent() {
 
 
 
-      <PageHeader title={sceneName} subtitle="Soundscapes and soundboard controls." />
-
-
-
-      <ActiveSceneHeaderActions
-
-        locked={sessionLocked}
-
-        onToggleLock={() => setSessionLocked((current) => !current)}
-
-      />
-
-
+      <PageHeader title={sceneName} />
 
       {scene?.description ? (
-
         <p className="mb-6 text-muted" data-scene-description>
-
           {scene.description}
-
         </p>
-
       ) : null}
 
-
-
-      <div role="tablist" aria-label="Active scene tabs" className="mb-6 flex gap-6 border-b border-white/10">
-
-        <button
-
+      <div
+        data-testid="active-scene-tabs-row"
+        className="mb-6 flex items-center gap-2 border-b border-white/10"
+      >
+        <div role="tablist" aria-label="Active scene tabs" className="flex gap-6">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={tab === 'soundscapes'}
+            data-active-scene-tab="Soundscapes"
+            data-active={tab === 'soundscapes' ? 'true' : undefined}
+            className={cn(
+              'px-2 pb-2 uppercase tracking-wide',
+              tab === 'soundscapes' ? 'border-b-2 border-gold text-gold' : 'text-muted',
+            )}
+            onClick={() => setActiveTab('soundscapes')}
+          >
+            Soundscapes
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={tab === 'soundboard'}
+            data-active-scene-tab="Soundboard"
+            data-active={tab === 'soundboard' ? 'true' : undefined}
+            className={cn(
+              'px-2 pb-2 uppercase tracking-wide',
+              tab === 'soundboard' ? 'border-b-2 border-gold text-gold' : 'text-muted',
+            )}
+            onClick={() => setActiveTab('soundboard')}
+          >
+            Soundboard
+          </button>
+        </div>
+        <Button
           type="button"
-
-          role="tab"
-
-          aria-selected={tab === 'soundscapes'}
-
-          data-active-scene-tab="Soundscapes"
-
-          data-active={tab === 'soundscapes' ? 'true' : undefined}
-
-          className={cn(
-
-            'px-2 pb-2 uppercase tracking-wide',
-
-            tab === 'soundscapes' ? 'border-b-2 border-gold text-gold' : 'text-muted',
-
-          )}
-
-          onClick={() => setActiveTab('soundscapes')}
-
+          variant="ghost"
+          size="icon"
+          aria-label={sessionLocked ? 'Unlock session' : 'Lock session'}
+          aria-pressed={sessionLocked}
+          data-session-lock
+          className="-mt-1 shrink-0"
+          onClick={() => setSessionLocked((current) => !current)}
         >
-
-          Soundscapes
-
-        </button>
-
-        <button
-
-          type="button"
-
-          role="tab"
-
-          aria-selected={tab === 'soundboard'}
-
-          data-active-scene-tab="Soundboard"
-
-          data-active={tab === 'soundboard' ? 'true' : undefined}
-
-          className={cn(
-
-            'px-2 pb-2 uppercase tracking-wide',
-
-            tab === 'soundboard' ? 'border-b-2 border-gold text-gold' : 'text-muted',
-
-          )}
-
-          onClick={() => setActiveTab('soundboard')}
-
-        >
-
-          Soundboard
-
-        </button>
-
+          <Lock className={cn('h-4 w-4', sessionLocked && 'text-gold')} />
+        </Button>
       </div>
 
 

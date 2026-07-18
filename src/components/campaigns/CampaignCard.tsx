@@ -4,6 +4,7 @@ import type { Campaign } from '@/types/campaign'
 import { formatSessionCount } from '@/lib/campaignStorage'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
+import { HeroCardSurface } from '@/components/shared/HeroCardSurface'
 import { SwipeToDelete } from '@/components/shared/SwipeToDelete'
 
 interface CampaignCardProps {
@@ -31,49 +32,36 @@ export function CampaignCard({
 
   return (
     <SwipeToDelete onSwipeDelete={onDelete}>
-      <Card
+      <HeroCardSurface
         data-campaign-card={campaign.name}
-        className="border-parchment/10 bg-charcoal-elevated transition-all duration-200 hover:-translate-y-px hover:border-gold/30"
+        coverArtUrl={campaign.coverArtUrl}
+        coverProps={{ 'data-campaign-cover': campaign.name }}
       >
-        <CardContent className="flex items-center gap-4 p-4">
-          <div
-            aria-hidden="true"
-            className="h-24 w-24 shrink-0 overflow-hidden rounded-lg border border-gold/20 bg-gradient-to-br from-gold/20 via-charcoal to-violet/20"
-          >
-            {campaign.coverArtUrl ? (
-              <img
-                src={campaign.coverArtUrl}
-                alt=""
-                className="h-full w-full object-cover"
-                data-campaign-cover={campaign.name}
-              />
-            ) : null}
-          </div>
-
+        <div className="flex h-full min-h-[9.5rem] w-full min-w-0 flex-col justify-end gap-4 p-4 sm:flex-row sm:items-end sm:justify-between sm:p-5">
           <div className="min-w-0 flex-1">
+            <p
+              className="text-xs font-semibold uppercase tracking-[0.18em] text-gold/90"
+              data-campaign-session-count={campaign.name}
+            >
+              {formatSessionCount(sessionCount)}
+            </p>
             <h3
-              className="font-serif text-xl tracking-wide text-gold"
+              className="mt-2 break-words font-serif text-2xl tracking-wide text-gold sm:text-3xl"
               data-campaign-title={campaign.name}
             >
               {campaign.name}
             </h3>
             {campaign.description ? (
               <p
-                className="mt-1 line-clamp-2 text-sm text-muted"
+                className="mt-2 line-clamp-2 text-sm text-muted sm:text-base"
                 data-campaign-description={campaign.name}
               >
                 {campaign.description}
               </p>
             ) : null}
-            <p
-              className="mt-2 text-xs font-medium uppercase tracking-wider text-muted"
-              data-campaign-session-count={campaign.name}
-            >
-              {formatSessionCount(sessionCount)}
-            </p>
           </div>
 
-          <div className="flex shrink-0 items-center gap-2">
+          <div className="flex w-full shrink-0 flex-wrap items-center gap-2 sm:w-auto sm:justify-end">
             <Button
               type="button"
               aria-label={`Edit ${campaign.name}`}
@@ -97,13 +85,14 @@ export function CampaignCard({
             <Button
               type="button"
               data-campaign-cta={campaign.name}
+              className="min-h-11 min-w-[7rem] flex-1 sm:flex-none"
               onClick={handleOpen}
             >
               {ctaLabel}
             </Button>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </HeroCardSurface>
     </SwipeToDelete>
   )
 }
@@ -133,14 +122,15 @@ export function CampaignsEmptyState() {
 
 export function CampaignCardSkeleton() {
   return (
-    <Card aria-label="Loading campaign" data-testid="campaign-skeleton">
-      <CardContent className="flex items-center gap-4 p-4">
-        <SkeletonBlock className="h-20 w-20" />
-        <div className="flex-1 space-y-2">
-          <SkeletonBlock className="h-5 w-1/2" />
-          <SkeletonBlock className="h-4 w-3/4" />
-          <SkeletonBlock className="h-4 w-1/4" />
-        </div>
+    <Card
+      aria-label="Loading campaign"
+      data-testid="campaign-skeleton"
+      className="min-h-[9.5rem] overflow-hidden border-gold/25 bg-gradient-to-br from-ink-overlay via-charcoal-elevated to-charcoal"
+    >
+      <CardContent className="flex min-h-[9.5rem] flex-col justify-end gap-3 p-5">
+        <SkeletonBlock className="h-3 w-24" />
+        <SkeletonBlock className="h-7 w-1/2" />
+        <SkeletonBlock className="h-4 w-2/3" />
       </CardContent>
     </Card>
   )

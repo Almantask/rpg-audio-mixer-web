@@ -5,9 +5,12 @@ Feature: Browse FX library
   I want to browse my FX collection in the Library
   So that I can find and play sound effects.
 
-  Scenario: FX tab shows browse subtitle
+  Scenario: FX tab shows action buttons without browse subtitle
     Given I am on the Sound Effects tab in the Library
-    Then I see the subtitle "Browse, import, and manage your sound effects."
+    Then I do not see the subtitle "Browse, import, and manage your sound effects."
+    And I see an "Import FX" button
+    And I see a "Buy More" button
+    And I see a "Free Tracks" button
 
   Scenario: Multiple FX tracks appear in the FX library card grid
     Given I have imported "Wolf Howl", "Thunder Crack", "Door Creak"

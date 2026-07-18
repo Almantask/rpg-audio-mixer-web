@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils'
 import { useFlipReorderAnimation } from '@/hooks/useFlipReorderAnimation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
+import { Tooltip } from '@/components/ui/tooltip'
 
 interface SoundscapesTabProps {
   sceneId: string
@@ -29,28 +30,58 @@ interface SoundscapeCategoryCardProps {
   onDrop: (event: DragEvent<HTMLDivElement>) => void
 }
 
-function SoundscapeMasterControls() {
+function SoundscapeMasterControls({
+  slotIds,
+}: {
+  slotIds: string[]
+}) {
   const {
     playback,
     setSoundscapeMasterVolume,
     setSoundscapeMuted,
     playScene,
+    stopAll,
+    canPlaySoundscape,
   } = useSceneAudio()
+
+  const hasIdleStartable = slotIds.some((slotId) => {
+    const tile = playback.soundscapes[slotId]
+    if (tile?.playing || tile?.paused) {
+      return false
+    }
+    return canPlaySoundscape(slotId)
+  })
+  const anyPlaying = slotIds.some((slotId) => playback.soundscapes[slotId]?.playing)
+  const showStopScene = anyPlaying && !hasIdleStartable
 
   return (
     <Card className="mb-6 border-white/10">
       <CardContent className="flex flex-col gap-4 p-4 md:flex-row md:items-center">
-        <Button
-          type="button"
-          variant="outline"
-          aria-label="Play Scene"
-          data-play-scene
-          onClick={() => {
-            void playScene()
-          }}
-        >
-          Play Scene
-        </Button>
+        {showStopScene ? (
+          <Button
+            type="button"
+            variant="outline"
+            aria-label="Stop Scene"
+            data-stop-scene
+            onClick={() => {
+              stopAll()
+            }}
+          >
+            Stop Scene
+          </Button>
+        ) : (
+          <Button
+            type="button"
+            variant="outline"
+            aria-label="Play Scene"
+            data-play-scene
+            onClick={() => {
+              void playScene()
+            }}
+          >
+            Play Scene
+          </Button>
+        )}
         <Button
           type="button"
           variant="ghost"
@@ -231,40 +262,28 @@ function SoundscapeCategoryCard({
                   ? '1 track'
                   : `${trackCount} tracks`
                 : EMPTY_INTENSITY_LEVEL_HINT
-              const intensityButton = (
-                <button
-                  type="button"
-                  aria-pressed={intensity === level}
-                  aria-label={enabled ? `Intensity ${level}, ${levelHint}` : levelHint}
-                  disabled={!enabled}
-                  data-soundscape-intensity-level={`${categoryName}-${level}`}
-                  className={cn(
-                    'min-h-[44px] min-w-[44px] rounded border px-3 py-2 text-sm',
-                    intensity === level ? 'border-gold text-gold' : 'border-white/20 text-muted',
-                    !enabled && 'pointer-events-none cursor-not-allowed opacity-40',
-                  )}
-                  onClick={() => updateSlotIntensity(slot.id, level)}
-                >
-                  {level}
-                </button>
-              )
-
               return (
-                <div key={level} className="group/intensity relative z-10">
-                  {intensityButton}
-                  <span
-                    role="tooltip"
+                <Tooltip
+                  key={level}
+                  content={levelHint}
+                  align={level === 'I' ? 'start' : level === 'III' ? 'end' : 'center'}
+                >
+                  <button
+                    type="button"
+                    aria-pressed={intensity === level}
+                    aria-label={enabled ? `Intensity ${level}, ${levelHint}` : levelHint}
+                    disabled={!enabled}
+                    data-soundscape-intensity-level={`${categoryName}-${level}`}
                     className={cn(
-                      'pointer-events-none absolute bottom-full z-50 mb-2 w-max max-w-[13.5rem] rounded-md border border-parchment/15 bg-ink-overlay px-2.5 py-2 text-center text-[11px] leading-snug text-parchment opacity-0 shadow-lg transition-opacity',
-                      'group-hover/intensity:opacity-100 group-focus-within/intensity:opacity-100',
-                      level === 'I' && 'left-0',
-                      level === 'II' && 'left-1/2 -translate-x-1/2',
-                      level === 'III' && 'right-0',
+                      'min-h-[44px] min-w-[44px] rounded border px-3 py-2 text-sm',
+                      intensity === level ? 'border-gold text-gold' : 'border-white/20 text-muted',
+                      !enabled && 'pointer-events-none cursor-not-allowed opacity-40',
                     )}
+                    onClick={() => updateSlotIntensity(slot.id, level)}
                   >
-                    {levelHint}
-                  </span>
-                </div>
+                    {level}
+                  </button>
+                </Tooltip>
               )
             })}
           </div>
@@ -332,7 +351,7 @@ export function SoundscapesTab({
 
   return (
     <div data-soundscapes-tab>
-      <SoundscapeMasterControls />
+      <SoundscapeMasterControls slotIds={sortedSlots.map((slot) => slot.id)} />
 
       {sortedSlots.length === 0 ? (
         <p className="mb-6 text-center text-muted" data-soundscape-empty>

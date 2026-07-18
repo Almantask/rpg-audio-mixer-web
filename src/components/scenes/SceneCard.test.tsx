@@ -68,3 +68,29 @@ describe('SceneCard description', () => {
     ).toHaveTextContent(scene.description!)
   })
 })
+
+describe('SceneCard hero surface', () => {
+  it('renders as a cinematic hero card with cover art background', () => {
+    renderSceneCard({ coverArtUrl: 'https://example.com/scene.jpg' })
+
+    const card = document.querySelector(`[data-scene-card="${scene.name}"]`)
+    expect(card?.className).toMatch(/border-gold\/25/)
+    expect(document.querySelector('[data-hero-cover]')).toBeTruthy()
+    expect(document.querySelector(`[data-scene-cover="${scene.name}"]`)).toBeTruthy()
+  })
+
+  it('falls back to a dark gradient when cover art is missing', () => {
+    renderSceneCard({ coverArtUrl: undefined })
+
+    expect(document.querySelector('[data-hero-cover]')).toBeNull()
+    expect(document.querySelector('[data-hero-fallback]')).toBeTruthy()
+  })
+
+  it('uses gold serif title like the home hero', () => {
+    renderSceneCard()
+
+    const title = screen.getByText(scene.name)
+    expect(title.className).toMatch(/font-serif/)
+    expect(title.className).toMatch(/text-gold/)
+  })
+})

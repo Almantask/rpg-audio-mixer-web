@@ -112,13 +112,7 @@ export function ScenesPage() {
 
       <ScreenLandmark screenName="Scenes screen">
 
-        <PageHeader
-
-          title="Scenes"
-
-          subtitle="Curate and manage your immersive environments."
-
-        />
+        <PageHeader title="Scenes" />
 
         <div className="space-y-4" data-testid="scenes-loading">
 
@@ -144,7 +138,7 @@ export function ScenesPage() {
 
     <ScreenLandmark screenName="Scenes screen">
 
-      <PageHeader title="Scenes" subtitle="Curate and manage your immersive environments." />
+      <PageHeader title="Scenes" />
 
 
 

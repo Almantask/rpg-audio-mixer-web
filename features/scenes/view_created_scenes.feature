@@ -8,7 +8,6 @@ Feature: View created scenes
   Scenario: The Scenes screen shows the page header and search bar
     When I view Scenes
     Then I see the page title "Scenes"
-    And I see the subtitle "Curate and manage your immersive environments."
     And I see the search field with placeholder "Search scenes by name or tag…"
 
   Scenario: Scenes reflects a scene created elsewhere

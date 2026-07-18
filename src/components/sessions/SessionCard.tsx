@@ -5,6 +5,7 @@ import { formatSessionDate } from '@/lib/dateFormat'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
+import { HeroCardSurface } from '@/components/shared/HeroCardSurface'
 import { SwipeToDelete } from '@/components/shared/SwipeToDelete'
 
 interface SessionCardProps {
@@ -34,77 +35,78 @@ export function SessionCard({
 
   return (
     <SwipeToDelete onSwipeDelete={onDelete}>
-      <Card data-session-card={sessionLabel}>
-        <CardContent className="p-4">
-          <div className="mb-3 flex items-start justify-between gap-2">
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-gold" data-session-number={sessionLabel}>
+      <HeroCardSurface
+        data-session-card={sessionLabel}
+        coverArtUrl={session.coverArtUrl}
+        coverProps={{ 'data-session-cover': sessionLabel }}
+      >
+        <div className="flex h-full min-h-[9.5rem] w-full min-w-0 flex-col justify-end gap-4 p-4 sm:flex-row sm:items-end sm:justify-between sm:p-5">
+          <button
+            type="button"
+            className="min-w-0 flex-1 text-left"
+            data-session-body={sessionLabel}
+            onClick={handleOpen}
+          >
+            <div className="flex flex-wrap items-center gap-2">
+              <p
+                className="text-xs font-semibold uppercase tracking-[0.18em] text-gold/90"
+                data-session-number={sessionLabel}
+              >
                 {sessionLabel}
-              </span>
+              </p>
               {showLastActive ? (
                 <Badge data-last-active={sessionLabel}>Last Active</Badge>
               ) : null}
             </div>
-            <div className="flex gap-1">
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                aria-label={`Edit ${sessionLabel}`}
-                data-edit-session={sessionLabel}
-                onClick={(event) => {
-                  event.stopPropagation()
-                  onEdit()
-                }}
-              >
-                <Pencil className="h-4 w-4" aria-hidden="true" />
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                aria-label={`Delete ${sessionLabel}`}
-                data-delete-session={sessionLabel}
-                onClick={(event) => {
-                  event.stopPropagation()
-                  onDelete()
-                }}
-              >
-                <Trash2 className="h-4 w-4" aria-hidden="true" />
-              </Button>
-            </div>
-          </div>
-
-          <button
-            type="button"
-            className="flex w-full items-start gap-3 text-left"
-            data-session-body={sessionLabel}
-            onClick={handleOpen}
-          >
-            <div
-              aria-hidden="true"
-              className="h-16 w-16 shrink-0 overflow-hidden rounded-md bg-charcoal"
+            <h3
+              className="mt-2 break-words font-serif text-2xl tracking-wide text-gold sm:text-3xl"
+              data-session-name={sessionLabel}
             >
-              {session.coverArtUrl ? (
-                <img src={session.coverArtUrl} alt="" className="h-full w-full object-cover" />
-              ) : null}
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="font-medium text-white" data-session-name={sessionLabel}>
-                {session.name}
+              {session.name}
+            </h3>
+            <p
+              className="mt-2 text-sm text-muted sm:text-base"
+              data-session-metadata={sessionLabel}
+            >
+              {formatSessionDate(session.date)} · {session.sceneCount} Scenes
+            </p>
+            {session.description ? (
+              <p className="mt-2 line-clamp-2 text-sm italic text-muted">
+                {session.description}
               </p>
-              <p className="mt-1 text-sm text-muted" data-session-metadata={sessionLabel}>
-                {formatSessionDate(session.date)} · {session.sceneCount} Scenes
-              </p>
-              {session.description ? (
-                <p className="mt-2 line-clamp-2 text-sm italic text-muted">
-                  {session.description}
-                </p>
-              ) : null}
-            </div>
+            ) : null}
           </button>
-        </CardContent>
-      </Card>
+
+          <div className="flex w-full shrink-0 items-center gap-1 sm:w-auto sm:justify-end">
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              aria-label={`Edit ${sessionLabel}`}
+              data-edit-session={sessionLabel}
+              onClick={(event) => {
+                event.stopPropagation()
+                onEdit()
+              }}
+            >
+              <Pencil className="h-4 w-4" aria-hidden="true" />
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              aria-label={`Delete ${sessionLabel}`}
+              data-delete-session={sessionLabel}
+              onClick={(event) => {
+                event.stopPropagation()
+                onDelete()
+              }}
+            >
+              <Trash2 className="h-4 w-4" aria-hidden="true" />
+            </Button>
+          </div>
+        </div>
+      </HeroCardSurface>
     </SwipeToDelete>
   )
 }
@@ -134,11 +136,15 @@ export function SessionsEmptyState() {
 
 export function SessionCardSkeleton() {
   return (
-    <Card aria-label="Loading session" data-testid="session-skeleton">
-      <CardContent className="space-y-3 p-4">
-        <div className="h-4 w-1/3 animate-pulse rounded bg-white/10" />
+    <Card
+      aria-label="Loading session"
+      data-testid="session-skeleton"
+      className="min-h-[9.5rem] overflow-hidden border-gold/25 bg-gradient-to-br from-ink-overlay via-charcoal-elevated to-charcoal"
+    >
+      <CardContent className="flex min-h-[9.5rem] flex-col justify-end space-y-3 p-5">
+        <div className="h-3 w-24 animate-pulse rounded bg-white/10" />
+        <div className="h-7 w-1/2 animate-pulse rounded bg-white/10" />
         <div className="h-4 w-2/3 animate-pulse rounded bg-white/10" />
-        <div className="h-4 w-1/2 animate-pulse rounded bg-white/10" />
       </CardContent>
     </Card>
   )

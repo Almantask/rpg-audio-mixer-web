@@ -17,6 +17,17 @@ function renderCreditsPage() {
 }
 
 describe('CreditsPage', () => {
+  it('shows the Credits heading without a page subtitle', () => {
+    window.localStorage.clear()
+    window.sessionStorage.clear()
+    renderCreditsPage()
+
+    expect(screen.getByRole('heading', { name: 'Credits' })).toBeInTheDocument()
+    expect(
+      screen.queryByText('App info, support links, and legal.'),
+    ).not.toBeInTheDocument()
+  })
+
   it('renders support actions and legal links', () => {
     window.localStorage.clear()
     window.sessionStorage.clear()

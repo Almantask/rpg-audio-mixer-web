@@ -41,7 +41,7 @@ export function CampaignsPage() {
   if (e2e.campaignListState === 'error') {
     return (
       <ScreenLandmark screenName="Active Campaigns screen">
-        <PageHeader title="Active Campaigns" subtitle="Manage your campaigns." />
+        <PageHeader title="Active Campaigns" />
         <CampaignsErrorState
           onRetry={() => {
             setE2EControls({ campaignListState: 'ready' })
@@ -55,7 +55,7 @@ export function CampaignsPage() {
   if (e2e.campaignListState === 'loading') {
     return (
       <ScreenLandmark screenName="Active Campaigns screen">
-        <PageHeader title="Active Campaigns" subtitle="Manage your campaigns." />
+        <PageHeader title="Active Campaigns" />
         <div className="space-y-4" data-testid="campaigns-loading">
           <CampaignCardSkeleton />
           <CampaignCardSkeleton />
@@ -68,7 +68,7 @@ export function CampaignsPage() {
 
   return (
     <ScreenLandmark screenName="Active Campaigns screen">
-      <PageHeader title="Active Campaigns" subtitle="Manage your campaigns." />
+      <PageHeader title="Active Campaigns" />
 
       {isEmpty ? <CampaignsEmptyState /> : null}
 

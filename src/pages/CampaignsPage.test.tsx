@@ -24,6 +24,7 @@ describe('CampaignsPage', () => {
     renderCampaignsPage()
 
     expect(screen.getByRole('heading', { name: 'Active Campaigns' })).toBeInTheDocument()
+    expect(screen.queryByText('Manage your campaigns.')).not.toBeInTheDocument()
     expect(screen.getByText('No campaigns yet')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Create Campaign' })).toBeInTheDocument()
   })

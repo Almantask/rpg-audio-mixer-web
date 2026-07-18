@@ -113,18 +113,25 @@ describe('SoundscapeCategoryCard', () => {
     expect(screen.getByRole('button', { name: 'Preview Forest level I' })).toBeEnabled()
   })
 
-  it('shows an empty-level hint for intensities with no tracks', () => {
+  it('portals an empty-level hint above the card when hovering a level with no tracks', async () => {
+    const user = userEvent.setup()
     render(
       <MemoryRouter>
         <SoundscapeCategoryCard category={category} onDelete={() => undefined} />
       </MemoryRouter>,
     )
 
-    expect(
-      screen.getByRole('tooltip', {
-        name: '0 tracks. To have this level available add at least 1 track.',
-      }),
-    ).toBeInTheDocument()
+    const emptyLevel = screen.getByRole('button', {
+      name: '0 tracks. To have this level available add at least 1 track.',
+    })
+    const card = emptyLevel.closest('[data-sc-card]')
+    await user.hover(emptyLevel)
+
+    const tooltip = await screen.findByRole('tooltip', {
+      name: '0 tracks. To have this level available add at least 1 track.',
+    })
+    expect(tooltip.parentElement).toBe(document.body)
+    expect(card?.contains(tooltip)).toBe(false)
   })
 
   it('previews the first track at the selected intensity level', async () => {

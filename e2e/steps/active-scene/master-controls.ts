@@ -58,7 +58,7 @@ Given('I have triggered {string} from the soundboard', async ({ page }, effectNa
 
 Then('the {string} soundscape should fade out and stop', async ({ page }, categoryName: string) => {
   const playbackState = page.locator(`[data-soundscape-playback-state="${categoryName}"]`)
-  await expect(playbackState).toHaveAttribute('data-state', 'paused')
+  await expect(playbackState).toHaveAttribute('data-state', 'idle', { timeout: 5000 })
 })
 
 Then('the {string} sound effect should stop immediately', async ({ page }, effectName: string) => {

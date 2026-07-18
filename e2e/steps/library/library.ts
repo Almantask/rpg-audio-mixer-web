@@ -194,6 +194,22 @@ Then(
   },
 )
 
+Then(
+  'I do not see a {string} filter on the Soundscapes tab',
+  async ({ page }, label: string) => {
+    await expect(page.getByText(label, { exact: true })).toHaveCount(0)
+    await expect(page.getByLabel(label)).toHaveCount(0)
+  },
+)
+
+Then(
+  'I do not see a {string} control on the Soundscapes tab',
+  async ({ page }, label: string) => {
+    await expect(page.getByText(label, { exact: true })).toHaveCount(0)
+    await expect(page.getByLabel(label)).toHaveCount(0)
+  },
+)
+
 When('I delete {string} from inline edit', async ({ page }, name: string) => {
   await page.locator(`[data-fx-inline-delete="${name}"]`).click()
 })

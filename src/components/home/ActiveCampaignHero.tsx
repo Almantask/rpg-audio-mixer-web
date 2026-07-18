@@ -1,7 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom'
 import type { Campaign, Session } from '@/types/campaign'
 import { Button } from '@/components/ui/button'
-import { cn } from '@/lib/utils'
+import { HeroCardSurface } from '@/components/shared/HeroCardSurface'
 import { formatSessionContextLabel } from '@/lib/sessionTitle'
 
 interface ActiveCampaignHeroProps {
@@ -48,30 +48,15 @@ export function ActiveCampaignHero({ campaign, session, empty = false }: ActiveC
   return (
     <section aria-label="Active Campaigns" className="w-full space-y-3">
       <h2 className="font-serif text-lg tracking-wide text-gold">Active Campaigns</h2>
-      <div
+      <HeroCardSurface
         data-testid="active-campaign-hero"
         data-hero-campaign={campaign.name}
-        className={cn(
-          'relative min-h-[13.5rem] w-full overflow-hidden rounded-xl border border-gold/25',
-          'bg-gradient-to-br from-ink-overlay via-charcoal-elevated to-charcoal',
-          'transition-all duration-300',
-          'lg:min-h-[18rem] xl:min-h-[22rem]',
-          'data-[hero-expanding=true]:fixed data-[hero-expanding=true]:inset-0 data-[hero-expanding=true]:z-40 data-[hero-expanding=true]:rounded-none',
-        )}
+        size="hero"
+        coverArtUrl={campaign.coverArtUrl}
+        className={
+          'data-[hero-expanding=true]:fixed data-[hero-expanding=true]:inset-0 data-[hero-expanding=true]:z-40 data-[hero-expanding=true]:rounded-none'
+        }
       >
-        {campaign.coverArtUrl ? (
-          <div
-            aria-hidden="true"
-            className="absolute inset-0 bg-cover bg-center opacity-40"
-            style={{ backgroundImage: `url(${campaign.coverArtUrl})` }}
-          />
-        ) : (
-          <div
-            aria-hidden="true"
-            className="absolute inset-0 bg-gradient-to-br from-gold/15 via-transparent to-violet/10"
-          />
-        )}
-        <div className="absolute inset-0 bg-gradient-to-r from-charcoal/90 via-charcoal/55 to-charcoal/30" />
         <div className="relative flex h-full min-h-[13.5rem] w-full min-w-0 flex-col justify-end gap-4 p-5 sm:flex-row sm:items-end sm:justify-between sm:p-7 lg:min-h-[18rem] xl:min-h-[22rem]">
           <div className="min-w-0 max-w-4xl">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gold/90">
@@ -99,7 +84,7 @@ export function ActiveCampaignHero({ campaign, session, empty = false }: ActiveC
             Resume
           </Button>
         </div>
-      </div>
+      </HeroCardSurface>
     </section>
   )
 }

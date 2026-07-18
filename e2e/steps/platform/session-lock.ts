@@ -134,6 +134,7 @@ Then('I can tap the play\\/pause and d20 buttons', async ({ page }) => {
 })
 
 Then('I can tap "Stop All"', async ({ page }) => {
+  await page.locator('[data-active-scene-tab="Soundboard"]').click()
   await expect(page.locator('[data-stop-all]')).toBeEnabled()
 })
 

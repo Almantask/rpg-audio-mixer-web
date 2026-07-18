@@ -10,3 +10,7 @@ Then('I see the title {string}', async ({ page }, title: string) => {
 Then('I see the subtitle {string}', async ({ page }, subtitle: string) => {
   await expect(page.getByText(subtitle, { exact: true })).toBeVisible()
 })
+
+Then('I do not see the subtitle {string}', async ({ page }, subtitle: string) => {
+  await expect(page.getByText(subtitle, { exact: true })).toHaveCount(0)
+})

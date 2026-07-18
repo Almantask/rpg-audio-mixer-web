@@ -28,6 +28,16 @@ describe('ScenesPage', () => {
     expect(screen.getByRole('button', { name: 'New Scene' })).toBeInTheDocument()
   })
 
+  it('shows the Scenes heading without a page subtitle', () => {
+    window.localStorage.clear()
+    renderScenesPage()
+
+    expect(screen.getByRole('heading', { name: 'Scenes' })).toBeInTheDocument()
+    expect(
+      screen.queryByText('Curate and manage your immersive environments.'),
+    ).not.toBeInTheDocument()
+  })
+
   it('creates a scene and keeps the user on the scenes list', async () => {
     window.localStorage.clear()
     const user = userEvent.setup()

@@ -111,20 +111,6 @@ When('I search for {string} in the main search bar', async ({ page }, query: str
   await scSearch.fill(query)
 })
 
-When('I set the sort order to {string} in the sidebar', async ({ page }, sortOrder: string) => {
-  const labelToValue: Record<string, string> = {
-    'Recently Added': 'recent',
-    Name: 'name',
-    Duration: 'duration',
-  }
-  const value = labelToValue[sortOrder] ?? sortOrder.toLowerCase()
-  await page.locator('#library-sc-sort').selectOption(value)
-})
-
-When('I filter soundscapes by category type {string} in the sidebar', async ({ page }, categoryType: string) => {
-  await page.locator('#library-sc-type').selectOption(categoryType)
-})
-
 When('I use the clear-filters action', async ({ page }) => {
   const libraryClear = page.getByRole('button', { name: 'Clear Filters', exact: true })
   if (await libraryClear.count() > 0) {

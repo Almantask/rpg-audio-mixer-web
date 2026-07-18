@@ -1,5 +1,5 @@
 import { useCallback, useRef, useState, type DragEvent } from 'react'
-import { GripVertical, Play, Plus, Trash2 } from 'lucide-react'
+import { GripVertical, Play, Plus, Square, Trash2 } from 'lucide-react'
 import type { FxTrack } from '@/types/library'
 import type { SceneSoundboardEntry } from '@/types/scene'
 import { useCampaignData } from '@/context/CampaignDataContext'
@@ -113,7 +113,13 @@ function SoundboardTile({
 
 export function SoundboardTab({ sceneId, entries, onRemove, onAddSound, locked = false }: SoundboardTabProps) {
   const { reorderSoundboardEntries } = useCampaignData()
-  const { playback, triggerSoundboard, setSoundboardMasterVolume, isSoundboardPlaying } = useSceneAudio()
+  const {
+    playback,
+    triggerSoundboard,
+    setSoundboardMasterVolume,
+    isSoundboardPlaying,
+    stopAll,
+  } = useSceneAudio()
   const [draggingId, setDraggingId] = useState<string | null>(null)
   const [dragOverId, setDragOverId] = useState<string | null>(null)
   const gridRef = useRef<HTMLDivElement | null>(null)
@@ -147,7 +153,17 @@ export function SoundboardTab({ sceneId, entries, onRemove, onAddSound, locked =
         <CardContent className="p-4">
           <p className="mb-2 text-sm text-muted">Soundboard Master</p>
           <div className="flex items-center gap-3">
-            <span aria-hidden="true">🔊</span>
+            <Button
+              type="button"
+              variant="outline"
+              data-stop-all
+              aria-label="Stop All"
+              className="h-9 shrink-0 px-3"
+              onClick={stopAll}
+            >
+              <Square className="mr-2 h-3.5 w-3.5" />
+              Stop All
+            </Button>
             <input
               type="range"
               min={0}

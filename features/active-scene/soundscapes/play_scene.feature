@@ -31,13 +31,13 @@ Feature: Play scene
     Then "Thunderstorm" continues playing in the "Weather" category
     And a random track from the "Interior" category's current intensity pool begins playing
 
-  Scenario: Play Scene does nothing when all categories are already playing
+  Scenario: Stop Scene stops all playing categories
     Given I have opened the "Tavern" scene on the Active Scene — Soundscapes tab
     And the "Weather" category is playing "Thunderstorm"
     And the "Interior" category is playing "Crackling Fire"
-    When I tap "Play Scene"
-    Then "Thunderstorm" continues playing in the "Weather" category
-    And "Crackling Fire" continues playing in the "Interior" category
+    When I tap "Stop Scene"
+    Then the "Weather" category is idle
+    And the "Interior" category is idle
 
   Scenario: Play Scene does not start categories with empty intensity pools
     Given I have opened the "Tavern" scene on the Active Scene — Soundscapes tab

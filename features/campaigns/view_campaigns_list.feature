@@ -11,7 +11,6 @@ Feature: View campaigns list
     Given I have no campaigns
     When I open the Active Campaigns screen
     Then I see the page title "Active Campaigns"
-    And I see the subtitle "Manage your campaigns."
     And I see the empty state headline "No campaigns yet"
     And I see a "Create Campaign" card
 

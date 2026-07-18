@@ -18,10 +18,12 @@ beforeEach(() => {
 const track: FxTrack = {
   id: 'fx-dog',
   name: 'Dog Bark',
-  type: 'ONESHOT',
+  type: 'CREATURE',
+  baseIntensity: 'II',
   durationSeconds: 3,
   audioUrl: '/assets/audio/soundboard/dog_bark.ogg',
   tags: ['Creature'],
+  defaultVolume: 100,
   createdAt: '2026-01-01T00:00:00.000Z',
 }
 

@@ -26,7 +26,7 @@ export function CreditsPage() {
 
   return (
     <ScreenLandmark screenName="Credits screen">
-      <PageHeader title="Credits" subtitle="App info, support links, and legal." />
+      <PageHeader title="Credits" />
 
       <section className="mb-10" aria-labelledby="credits-support-heading">
         <SectionHeading title="Support" id="credits-support-heading" />

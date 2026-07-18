@@ -185,11 +185,23 @@ When('I tap {string}', async ({ page }, label: string) => {
     return
   }
   if (label === 'Stop All') {
+    const onSoundscapes =
+      (await page.locator('[data-active-scene-tab="Soundscapes"][data-active="true"]').count()) > 0
+    if ((await page.locator('[data-stop-all]').count()) === 0) {
+      await page.locator('[data-active-scene-tab="Soundboard"]').click()
+    }
     await page.locator('[data-stop-all]').click()
+    if (onSoundscapes) {
+      await page.locator('[data-active-scene-tab="Soundscapes"]').click()
+    }
     return
   }
   if (label === 'Play Scene') {
     await page.locator('[data-play-scene]').click()
+    return
+  }
+  if (label === 'Stop Scene') {
+    await page.locator('[data-stop-scene]').click()
     return
   }
   await page.getByRole('button', { name: label, exact: true }).click()

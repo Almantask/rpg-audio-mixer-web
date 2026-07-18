@@ -7,6 +7,7 @@ import { audioPreview } from '@/lib/audioPreview'
 import { EMPTY_INTENSITY_LEVEL_HINT } from '@/lib/soundscapeStorage'
 import { cn } from '@/lib/utils'
 import { Card, CardContent } from '@/components/ui/card'
+import { Tooltip } from '@/components/ui/tooltip'
 import { SwipeToDelete } from '@/components/shared/SwipeToDelete'
 
 const INTENSITY_LEVELS = ['I', 'II', 'III'] as const
@@ -152,21 +153,14 @@ export function SoundscapeCategoryCard({ category, onDelete }: SoundscapeCategor
                   }
 
                   return (
-                    <div key={level} className="group/empty relative z-30 flex-1">
+                    <Tooltip
+                      key={level}
+                      content={emptyLevelHint}
+                      align={level === 'I' ? 'start' : level === 'III' ? 'end' : 'center'}
+                      className="relative z-30 flex-1"
+                    >
                       {previewButton}
-                      <span
-                        role="tooltip"
-                        className={cn(
-                          'pointer-events-none absolute bottom-full z-50 mb-2 w-max max-w-[13.5rem] rounded-md border border-parchment/15 bg-ink-overlay px-2.5 py-2 text-center text-[11px] leading-snug text-parchment opacity-0 shadow-lg transition-opacity',
-                          'group-hover/empty:opacity-100 group-focus-within/empty:opacity-100',
-                          level === 'I' && 'left-0',
-                          level === 'II' && 'left-1/2 -translate-x-1/2',
-                          level === 'III' && 'right-0',
-                        )}
-                      >
-                        {emptyLevelHint}
-                      </span>
-                    </div>
+                    </Tooltip>
                   )
                 })}
               </div>

@@ -73,22 +73,19 @@ Two tabs only — same underline pattern as Active Scene:
 
 - Active tab: gold text + gold underline
 - Inactive tab: muted text, no underline
-- Switching tabs preserves sidebar filter **category** (search text may clear or persist — persist is preferred)
-- Each tab has its own action bar, search placeholder, grid card type, and sidebar filter set
+- Switching tabs may clear or persist search text — persist is preferred
+- Each tab has its own action bar, search placeholder, and grid card type
 - Tab state is **not** reflected in the URL
 
 ---
 
 ## Sidebar Filter Panel
 
-Anchored in the **sidebar footer** while Library is active. Controls change with the active tab. **No search field in the sidebar** — search lives in main content only.
+Neither Library tab exposes a sidebar filter panel. Search lives in main content only. Both grids default to recently added order.
 
 ### Soundscapes tab
 
-| Control | Component | Description |
-|---|---|---|
-| Category Type | `Select` | e.g. "All Types" |
-| Sort Order | `Select` | e.g. "Recently Added" |
+No sidebar filter panel. The main-content search bar is the **only** filter control. The grid defaults to recently added order.
 
 ### Sound Effects tab
 

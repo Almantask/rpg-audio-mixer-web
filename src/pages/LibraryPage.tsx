@@ -16,7 +16,6 @@ import { StoreModal } from '@/components/library/StoreModal'
 import { SoundscapeCategoryCard } from '@/components/library/SoundscapeCategoryCard'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { useCampaignData } from '@/context/CampaignDataContext'
 import { filterFxTracks } from '@/lib/libraryStorage'
 import { filterSoundscapeCategoriesForBrowse } from '@/lib/soundscapeStorage'
@@ -43,8 +42,6 @@ function libraryTabFromQuery(value: string | null): LibraryTab {
 }
 
 
-
-const SC_TYPES = ['ALL', 'Environmental', 'Creature']
 
 export function LibraryPage() {
 
@@ -84,10 +81,6 @@ export function LibraryPage() {
 
   const [scSearch, setScSearch] = useState('')
 
-  const [scType, setScType] = useState<string>('ALL')
-
-  const [scSort, setScSort] = useState<'recent' | 'name'>('recent')
-
   const [scDownloading, setScDownloading] = useState(false)
 
 
@@ -122,10 +115,9 @@ export function LibraryPage() {
     () =>
       filterSoundscapeCategoriesForBrowse(data.soundscapeCategories ?? [], {
         search: scSearch,
-        type: scType,
-        sort: scSort,
+        sort: 'recent',
       }),
-    [data.soundscapeCategories, scSearch, scType, scSort],
+    [data.soundscapeCategories, scSearch],
   )
 
   const handleFreeCompositions = async () => {
@@ -158,7 +150,7 @@ export function LibraryPage() {
 
     <ScreenLandmark screenName="Library screen">
 
-      <PageHeader title="Library" subtitle="Browse soundscapes and sound effects." />
+      <PageHeader title="Library" />
 
 
 
@@ -216,47 +208,8 @@ export function LibraryPage() {
 
 
 
-      <div
-        className={
-          tab === 'soundscapes' ? 'grid gap-6 lg:grid-cols-[220px_1fr]' : undefined
-        }
-      >
-        {tab === 'soundscapes' ? (
-          <>
-            <aside className="space-y-3" data-sc-sidebar-filters>
-              <div>
-                <Label htmlFor="library-sc-type">Category Type</Label>
-                <select
-                  id="library-sc-type"
-                  className="h-10 w-full rounded-md border border-white/10 bg-charcoal px-3 text-sm"
-                  value={scType}
-                  onChange={(event) => setScType(event.target.value)}
-                >
-                  {SC_TYPES.map((option) => (
-                    <option key={option} value={option}>
-                      {option === 'ALL' ? 'All Types' : option}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <Label htmlFor="library-sc-sort">Sort Order</Label>
-                <select
-                  id="library-sc-sort"
-                  className="h-10 w-full rounded-md border border-white/10 bg-charcoal px-3 text-sm"
-                  value={scSort}
-                  onChange={(event) => setScSort(event.target.value as 'recent' | 'name')}
-                >
-                  <option value="recent">Recently Added</option>
-                  <option value="name">Name</option>
-                </select>
-              </div>
-            </aside>
-
+      {tab === 'soundscapes' ? (
             <div>
-              <p className="mb-4 text-muted">Browse and manage your soundscape categories.</p>
-
               <div className="mb-4 flex flex-wrap gap-2">
                 <Button
                   type="button"
@@ -328,8 +281,6 @@ export function LibraryPage() {
                     variant="ghost"
                     onClick={() => {
                       setScSearch('')
-                      setScType('ALL')
-                      setScSort('recent')
                     }}
                   >
                     Clear Filters
@@ -356,12 +307,8 @@ export function LibraryPage() {
                 </div>
               )}
             </div>
-          </>
         ) : (
-          <>
             <div>
-              <p className="mb-4 text-muted">Browse, import, and manage your sound effects.</p>
-
               <div className="mb-4 flex flex-wrap gap-2">
                 <Button
                   type="button"
@@ -457,9 +404,7 @@ export function LibraryPage() {
                 </p>
               ) : null}
             </div>
-          </>
-        )}
-      </div>
+      )}
 
       <StoreModal open={storeOpen} onOpenChange={setStoreOpen} />
       <FreeTracksModal open={freeTracksOpen} onOpenChange={setFreeTracksOpen} />

@@ -14,7 +14,6 @@ function renderAppShell() {
             element={
               <header>
                 <h2>Scenes</h2>
-                <p>Curate and manage your immersive environments.</p>
               </header>
             }
           />
