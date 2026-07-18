@@ -80,14 +80,17 @@ class HomePreviewManager {
 
   private notify() {
     const state = this.getState()
-    publishAudioState({
-      isPlaying: state.playing,
-      trackName: state.name ?? undefined,
-      source: 'home',
-      playingTracks: state.playing && state.name && state.id
-        ? [{ id: state.id, name: state.name, source: 'home' }]
-        : [],
-    })
+    // Do not clobber Active Scene playback published on the shared audio state.
+    if (!this.isBlocked()) {
+      publishAudioState({
+        isPlaying: state.playing,
+        trackName: state.name ?? undefined,
+        source: 'home',
+        playingTracks: state.playing && state.name && state.id
+          ? [{ id: state.id, name: state.name, source: 'home' }]
+          : [],
+      })
+    }
     for (const listener of this.listeners) {
       listener(state)
     }

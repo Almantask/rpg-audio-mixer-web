@@ -118,7 +118,7 @@ export function FxPickerModal({
                 <FxCardSkeleton />
               </div>
             ) : isEmptyLibrary ? (
-              <p className="py-8 text-center text-muted" data-fx-picker-empty-library>
+              <p className="py-8 text-center text-muted" data-fx-picker-empty>
                 Import or purchase tracks via Library — Sound Effects.
               </p>
             ) : isAllOnBoard ? (
@@ -126,18 +126,13 @@ export function FxPickerModal({
                 Every library FX is already on this soundboard.
               </p>
             ) : availableTracks.length === 0 ? (
-              <div className="py-8 text-center text-muted">
-                <p className="mb-4" data-fx-picker-no-match>
+              <div className="py-8 text-center text-muted" data-fx-picker-no-match>
+                <p className="mb-4" data-fx-no-match>
                   No effects match your filters
                 </p>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  data-fx-picker-clear-filters
-                  onClick={clearFilters}
-                >
+                <button type="button" className="mt-2 text-gold hover:underline" onClick={clearFilters}>
                   Clear filters
-                </Button>
+                </button>
               </div>
             ) : (
               <div className="grid grid-cols-2 gap-3 md:grid-cols-3" data-fx-picker-grid>
@@ -155,19 +150,21 @@ export function FxPickerModal({
           </div>
         </div>
 
-        <DialogFooter>
-          <Button type="button" variant="ghost" onClick={handleClose}>
-            Cancel
-          </Button>
-          <Button
-            type="button"
-            disabled={selected.length === 0 || isEmptyLibrary || isAllOnBoard}
-            data-fx-picker-add-selected
-            onClick={handleAdd}
-          >
-            Add Selected
-          </Button>
-        </DialogFooter>
+        {!isEmptyLibrary && !isAllOnBoard ? (
+          <DialogFooter>
+            <Button type="button" variant="ghost" onClick={handleClose}>
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              disabled={selected.length === 0}
+              data-fx-picker-add-selected
+              onClick={handleAdd}
+            >
+              Add Selected ({selected.length})
+            </Button>
+          </DialogFooter>
+        ) : null}
       </DialogContent>
     </Dialog>
   )

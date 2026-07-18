@@ -39,7 +39,28 @@ async function seedFxTracks(page: import('@playwright/test').Page, tracks: Retur
   }
 }
 
+function dataTableHashes(dataTable: unknown): Array<Record<string, string>> {
+  if (
+    dataTable &&
+    typeof dataTable === 'object' &&
+    'hashes' in dataTable &&
+    typeof (dataTable as { hashes: () => Array<Record<string, string>> }).hashes === 'function'
+  ) {
+    return (dataTable as { hashes: () => Array<Record<string, string>> }).hashes()
+  }
+  return []
+}
+
 Given('there are FX tracks available:', async ({ page }, dataTable) => {
+  // Prefer hashes() so header rows (name/tags) are not treated as data.
+  // tableRows() uses rows(), which strips headers and breaks tagged seed tables.
+  const hashes = dataTableHashes(dataTable)
+  if (hashes.length > 0 && 'name' in hashes[0]!) {
+    const tracks = hashes.map((record) => buildTrackFromRecord(record))
+    await seedFxTracks(page, tracks)
+    return
+  }
+
   const rows = tableRows(dataTable)
   const parsed = parseHeaderTable(rows)
 
@@ -59,17 +80,15 @@ Given('I have categories {string}, {string}, {string}', async ({ page }, first, 
 })
 
 Given('I have categories:', async ({ page }, dataTable) => {
-  const rows = tableRows(dataTable)
-  const [headers, ...dataRows] = rows
-  if (!headers.includes('category')) throw new Error('Expected category table with headers')
+  const hashes = dataTableHashes(dataTable)
+  if (hashes.length === 0 || !('category' in hashes[0]!)) {
+    throw new Error('Expected category table with headers')
+  }
 
-  const categories = dataRows.map((row) => {
-    const record = rowToRecord(headers, row)
-    return {
-      ...buildSoundscapeCategory(record.category),
-      type: record.category_type,
-    }
-  })
+  const categories = hashes.map((record) => ({
+    ...buildSoundscapeCategory(record.category),
+    type: record.category_type,
+  }))
   await mergeE2EData(page, { soundscapeCategories: categories }, { navigateHome: false })
   if (page.url().includes('/library')) {
     await page.reload()
@@ -80,13 +99,13 @@ Given('I have categories:', async ({ page }, dataTable) => {
 })
 
 Given('I have categories added in this order:', async ({ page }, dataTable) => {
-  const rows = tableRows(dataTable)
-  const [headers, ...dataRows] = rows
-  if (!headers.includes('category')) throw new Error('Expected table with category column')
+  const hashes = dataTableHashes(dataTable)
+  if (hashes.length === 0 || !('category' in hashes[0]!)) {
+    throw new Error('Expected table with category column')
+  }
 
-  const categories = dataRows.map((row, index) => {
-    const record = rowToRecord(headers, row)
-    const createdAt = new Date(Date.now() - (dataRows.length - index) * 60_000).toISOString()
+  const categories = hashes.map((record, index) => {
+    const createdAt = new Date(Date.now() - (hashes.length - index) * 60_000).toISOString()
     return {
       ...buildSoundscapeCategory(record.category),
       createdAt,

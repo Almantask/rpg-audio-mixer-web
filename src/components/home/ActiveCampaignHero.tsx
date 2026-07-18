@@ -26,6 +26,7 @@ export function ActiveCampaignHero({ campaign, session, empty = false }: ActiveC
         <h2 className="font-serif text-lg tracking-wide text-gold">Active Campaigns</h2>
         <div
           data-testid="active-campaign-hero"
+          aria-label="Active campaign hero"
           className="flex w-full min-w-0 flex-col items-center rounded-xl border border-gold/30 bg-charcoal-elevated p-6 text-center sm:p-8"
         >
           <p className="font-serif text-xl text-gold">Create your first campaign</p>
@@ -51,6 +52,7 @@ export function ActiveCampaignHero({ campaign, session, empty = false }: ActiveC
       <HeroCardSurface
         data-testid="active-campaign-hero"
         data-hero-campaign={campaign.name}
+        aria-label="Active campaign hero"
         size="hero"
         coverArtUrl={campaign.coverArtUrl}
         className={

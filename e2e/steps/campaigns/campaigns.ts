@@ -6,8 +6,9 @@ import {
   campaignIdForName,
   ensureCampaignsScreen,
   mergeCampaign,
+  mergeE2EData,
   openSessionScenes,
-  parseRelativeDate,
+  parseRelativeDateTime,
   resetE2EData,
   seedE2EData,
   setE2EControls,
@@ -47,12 +48,17 @@ Given(
 Given(
   'I have a campaign {string} with {int} sessions',
   async ({ page }, name: string, count: number) => {
-    await resetE2EData(page)
+    const url = page.url()
+    const isFresh = url === 'about:blank' || !url.startsWith('http')
+    if (isFresh) {
+      await resetE2EData(page)
+    }
     const campaign = buildCampaign(name)
     const sessions = Array.from({ length: count }, (_, index) =>
       buildSession(campaign.id, index + 1, `Session Night ${index + 1}`),
     )
-    await seedE2EData(page, { campaigns: [campaign], sessions })
+    // Merge so chained "And I have a campaign … with N sessions" steps accumulate.
+    await mergeE2EData(page, { campaigns: [campaign], sessions }, { navigateHome: false })
   },
 )
 
@@ -135,7 +141,7 @@ Given(
   'I have a campaign {string} with last played date {string}',
   async ({ page }, name: string, relativeDate: string) => {
     const campaign = buildCampaign(name, {
-      lastPlayedAt: new Date(parseRelativeDate(relativeDate)).toISOString(),
+      lastPlayedAt: parseRelativeDateTime(relativeDate),
     })
     await mergeCampaign(page, campaign)
   },
@@ -298,13 +304,30 @@ When('I select an image from the browser upload dialog', async ({ page }) => {
   })
 })
 
-When('I tap "Resume" on the {string} campaign card', async ({ page }, campaignName: string) => {
+async function tapCampaignResume(page: import('@playwright/test').Page, campaignName: string) {
+  const campaignId = campaignIdForName(campaignName)
   await ensureCampaignsScreen(page)
   await page.locator(`[data-campaign-cta="${campaignName}"]`).click()
+  await page.waitForURL(new RegExp(`/campaigns/${campaignId}/sessions`))
+  // Full-page navigations in later steps can abort in-flight React updates — wait until persist lands.
+  await expect
+    .poll(async () => {
+      return page.evaluate((id) => {
+        const raw = localStorage.getItem('arcanum-audio-data')
+        if (!raw) return 0
+        const campaign = JSON.parse(raw).campaigns?.find((item: { id: string }) => item.id === id)
+        return campaign?.lastPlayedAt ? Date.parse(campaign.lastPlayedAt) : 0
+      }, campaignId)
+    })
+    .toBeGreaterThan(Date.now() - 60_000)
+}
+
+When('I tap "Resume" on the {string} campaign card', async ({ page }, campaignName: string) => {
+  await tapCampaignResume(page, campaignName)
 })
 
 When('I tap "Resume" on {string}', async ({ page }, campaignName: string) => {
-  await page.locator(`[data-campaign-cta="${campaignName}"]`).click()
+  await tapCampaignResume(page, campaignName)
 })
 
 When('I tap the campaign title {string}', async ({ page }, title: string) => {

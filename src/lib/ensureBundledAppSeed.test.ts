@@ -128,7 +128,7 @@ describe('ensureBundledAppSeed', () => {
     expect(next?.campaigns.some((campaign) => campaign.id === DEMO_CAMPAIGN_ID)).toBe(true)
   })
 
-  it('updates stale bundled FX durations and tags from the seed catalog', () => {
+  it('updates stale bundled FX durations from the seed catalog without overwriting tags', () => {
     const demo = createDemoCampaignData(undefined, '2026-01-01T00:00:00.000Z')
     const current: AppData = {
       ...EMPTY_APP_DATA,
@@ -144,45 +144,30 @@ describe('ensureBundledAppSeed', () => {
 
     expect(next?.fxTracks.find((track) => track.name === 'Arrow')?.durationSeconds).toBe(1)
     expect(next?.fxTracks.find((track) => track.name === 'Dragon Roar2')?.durationSeconds).toBe(8)
-    expect(next?.fxTracks.find((track) => track.name === 'Arrow')?.tags).toEqual([
-      'Combat',
-      'Weapon',
-      'Impact',
-    ])
-    expect(next?.fxTracks.find((track) => track.name === 'Dragon Roar2')?.tags).toEqual([
-      'Creature',
-      'Boss',
-      'Impact',
-    ])
+    // User/library tags are preserved — seed refresh only repairs asset metadata.
+    expect(next?.fxTracks.find((track) => track.name === 'Arrow')?.tags).toEqual(['Combat'])
+    expect(next?.fxTracks.find((track) => track.name === 'Dragon Roar2')?.tags).toEqual(['Combat'])
   })
 
   it('updates stale bundled FX even when Free Tracks remapped their ids', () => {
-    const bundled = createBundledFxTracks('2026-01-01T00:00:00.000Z')
-    const demo = createDemoCampaignData(
-      {
-        fxTracks: bundled.map((track, index) => ({
-          ...track,
-          id: `fx-free-${index}`,
-          durationSeconds: 3,
-          tags: ['Combat'],
-        })),
-      },
-      '2026-01-01T00:00:00.000Z',
-    )
+    const remappedFx = createBundledFxTracks('2026-01-01T00:00:00.000Z').map((track, index) => ({
+      ...track,
+      id: `fx-free-${index}`,
+      durationSeconds: 3,
+      tags: ['Combat'],
+    }))
+    const demo = createDemoCampaignData({ fxTracks: remappedFx }, '2026-01-01T00:00:00.000Z')
     const current: AppData = {
       ...EMPTY_APP_DATA,
       ...demo,
+      fxTracks: remappedFx,
     }
 
     const next = ensureBundledAppSeed(current, '2026-01-01T00:00:00.000Z')
 
     expect(next?.fxTracks.find((track) => track.name === 'Arrow')?.durationSeconds).toBe(1)
     expect(next?.fxTracks.find((track) => track.name === 'Owl Hooting')?.durationSeconds).toBe(4)
-    expect(next?.fxTracks.find((track) => track.name === 'Arrow')?.tags).toEqual([
-      'Combat',
-      'Weapon',
-      'Impact',
-    ])
+    expect(next?.fxTracks.find((track) => track.name === 'Arrow')?.tags).toEqual(['Combat'])
   })
 
   it('repairs legacy demo session names that baked Session 1 into the name', () => {

@@ -71,7 +71,10 @@ export function SessionCard({
               {formatSessionDate(session.date)} · {session.sceneCount} Scenes
             </p>
             {session.description ? (
-              <p className="mt-2 line-clamp-2 text-sm italic text-muted">
+              <p
+                className="mt-2 line-clamp-2 text-sm italic text-muted"
+                data-session-description={sessionLabel}
+              >
                 {session.description}
               </p>
             ) : null}

@@ -24,6 +24,14 @@ import {
 const { Given, When, Then, Step } = createBdd()
 
 Step('I open the Home screen', async ({ page }) => {
+  const homeLink = page
+    .getByRole('navigation', { name: 'Main navigation' })
+    .getByRole('link', { name: 'Home', exact: true })
+  if ((await homeLink.count()) > 0 && page.url().startsWith('http')) {
+    await homeLink.click()
+    await expect(page.locator('[data-screen="Home screen"]')).toBeVisible()
+    return
+  }
   await openHomeScreen(page)
 })
 
@@ -305,7 +313,7 @@ Given('an Active Scene session is playing {string}', async ({ page }, sceneName:
   )
   await openActiveScene(page, sceneName, 'Soundscapes')
   await tapCategoryPlay(page, 'Weather')
-  await openHomeScreen(page)
+  // Stay on Active Scene — Home is opened via SPA navigation so playback state survives.
 })
 
 When('I tap {string} on the Active Campaigns hero', async ({ page }, label: string) => {

@@ -144,16 +144,24 @@ Given(
     await resetE2EData(page)
     const campaign = buildCampaign(campaignName)
     const number = Number.parseInt(sessionLabel.replace('Session ', ''), 10)
-    const row = dataTable.rowsHash()
+    const values =
+      typeof dataTable.hashes === 'function'
+        ? (dataTable.hashes()[0] as Record<string, string>)
+        : {
+            name: tableRows(dataTable)[0]?.[0] ?? '',
+            date: tableRows(dataTable)[0]?.[1] ?? '',
+            description: tableRows(dataTable)[0]?.[2] ?? '',
+          }
     await seedE2EData(page, {
       campaigns: [campaign],
       sessions: [
-        buildSession(campaign.id, number, row.name, {
-          date: row.date === 'today' ? new Date().toISOString().slice(0, 10) : row.date,
-          description: row.description,
+        buildSession(campaign.id, number, values.name, {
+          date: values.date === 'today' ? new Date().toISOString().slice(0, 10) : values.date,
+          description: values.description,
         }),
       ],
     })
+    await openCampaignSessions(page, campaignName)
   },
 )
 
@@ -259,7 +267,14 @@ When(
   'I edit session {string} with:',
   async ({ page }, sessionLabel: string, dataTable) => {
     await page.locator(`[data-edit-session="${sessionLabel}"]`).click()
-    const row = dataTable.rowsHash()
+    const row =
+      typeof dataTable.hashes === 'function'
+        ? (dataTable.hashes()[0] as Record<string, string>)
+        : {
+            name: tableRows(dataTable)[0]?.[0] ?? '',
+            date: tableRows(dataTable)[0]?.[1] ?? '',
+            description: tableRows(dataTable)[0]?.[2] ?? '',
+          }
     await page.getByLabel('Session name').fill(row.name)
     if (row.date === 'yesterday') {
       const yesterday = new Date()
@@ -269,11 +284,15 @@ When(
     if (row.description) {
       await page.getByLabel('Session description').fill(row.description)
     }
-    await page.getByRole('button', { name: 'Save' }).click()
+    // Leave the dialog open so a following cover-art upload can share the same edit.
   },
 )
 
 When('I upload new cover art for the session', async ({ page }) => {
+  const input = page.getByLabel(/cover art upload/i)
+  if ((await input.count()) === 0) {
+    await page.locator('[data-edit-session]').first().click()
+  }
   await page.getByLabel(/cover art upload/i).setInputFiles({
     name: 'updated-cover.png',
     mimeType: 'image/png',
@@ -282,6 +301,10 @@ When('I upload new cover art for the session', async ({ page }) => {
       'base64',
     ),
   })
+  const save = page.getByRole('button', { name: 'Save' })
+  if ((await save.count()) > 0) {
+    await save.click()
+  }
 })
 
 When('I change the session name to {string}', async ({ page }, name: string) => {
@@ -458,8 +481,16 @@ Then('the selected image is shown as the session\'s cover art', async ({ page })
 })
 
 Then('the {string} session card shows the description snippet', async ({ page }, sessionLabel: string) => {
-  const card = page.locator(`[data-session-card="${sessionLabel}"]`)
-  await expect(card.locator('.italic')).toBeVisible()
+  const byNumber = page.locator(`[data-session-card="${sessionLabel}"]`)
+  if ((await byNumber.count()) > 0) {
+    await expect(byNumber.locator(`[data-session-description="${sessionLabel}"]`)).toBeVisible()
+    return
+  }
+  // Feature may pass the session name instead of "Session N".
+  const byName = page
+    .locator('[data-session-card]')
+    .filter({ has: page.getByRole('heading', { name: sessionLabel, exact: true }) })
+  await expect(byName.locator('[data-session-description]')).toBeVisible()
 })
 
 Then('I see the empty sessions list for {string}', async ({ page }, campaignName: string) => {
@@ -489,7 +520,11 @@ Then('I do not see {string} in the sessions list', async ({ page }, name: string
 
 Then('the {string} session card shows the updated cover art', async ({ page }, sessionLabel: string) => {
   const card = page.locator(`[data-session-card="${sessionLabel}"]`)
-  await expect(card.locator('img').first()).toBeVisible()
+  await expect(card.locator(`[data-session-cover="${sessionLabel}"]`)).toBeVisible()
+  await expect(card.locator(`[data-session-cover="${sessionLabel}"] img`)).toHaveAttribute(
+    'src',
+    /.+/,
+  )
 })
 
 Then(

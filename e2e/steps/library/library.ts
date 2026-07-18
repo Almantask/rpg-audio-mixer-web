@@ -482,7 +482,7 @@ Then('I see an error explaining the file could not be read as audio', async ({ p
 })
 
 Then('I can dismiss the error and continue using the Library', async ({ page }) => {
-  await page.getByRole('button', { name: /dismiss|close/i }).click()
+  await page.getByRole('button', { name: 'Dismiss', exact: true }).click()
   await expect(page.locator('[data-screen="Library screen"]')).toBeVisible()
 })
 

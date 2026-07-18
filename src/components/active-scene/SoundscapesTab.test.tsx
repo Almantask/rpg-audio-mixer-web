@@ -9,6 +9,7 @@ const stopAll = vi.fn()
 const setSoundscapeMasterVolume = vi.fn()
 const setSoundscapeMuted = vi.fn()
 const canPlaySoundscape = vi.fn(() => true)
+const hasLoadedSoundscapeTrack = vi.fn(() => true)
 const reorderSoundscapeSlots = vi.fn()
 
 function tile(partial: Partial<SoundscapeTileState> & Pick<SoundscapeTileState, 'slotId' | 'categoryName'>): SoundscapeTileState {
@@ -18,7 +19,7 @@ function tile(partial: Partial<SoundscapeTileState> & Pick<SoundscapeTileState, 
     progress: 0,
     intensity: 'II',
     volume: 100,
-    hasLoadedTrack: false,
+    hasLoadedTrack: true,
     ...partial,
   }
 }
@@ -45,6 +46,7 @@ vi.mock('@/context/SceneAudioContext', () => ({
     updateSlotVolume: vi.fn(),
     updateSlotIntensity: vi.fn(),
     canPlaySoundscape,
+    hasLoadedSoundscapeTrack,
     setFocusedSoundscapeSlot: vi.fn(),
   }),
 }))
@@ -146,6 +148,7 @@ describe('SoundscapesTab Play/Stop Scene', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     canPlaySoundscape.mockReturnValue(true)
+    hasLoadedSoundscapeTrack.mockReturnValue(true)
     playback = {
       soundboard: {},
       soundscapes: {
@@ -156,6 +159,23 @@ describe('SoundscapesTab Play/Stop Scene', () => {
       soundscapeMasterVolume: 82,
       soundscapeMuted: false,
     }
+  })
+
+  it('disables play when no track is loaded but keeps d20 enabled', () => {
+    hasLoadedSoundscapeTrack.mockImplementation((slotId: string) => slotId !== 'slot-weather')
+    canPlaySoundscape.mockReturnValue(true)
+
+    render(
+      <SoundscapesTab
+        sceneId="scene-1"
+        slots={slots}
+        onRemoveSlot={() => undefined}
+        onAddSoundscape={() => undefined}
+      />,
+    )
+
+    expect(screen.getByRole('button', { name: 'Play Weather' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Roll random track for Weather' })).toBeEnabled()
   })
 
   it('shows Play Scene when no soundscapes are playing', () => {
@@ -342,6 +362,7 @@ describe('SoundscapesTab category grid', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     canPlaySoundscape.mockReturnValue(true)
+    hasLoadedSoundscapeTrack.mockReturnValue(true)
     playback = {
       soundboard: {},
       soundscapes: {
@@ -380,6 +401,7 @@ describe('SoundscapesTab live drag reorder', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     canPlaySoundscape.mockReturnValue(true)
+    hasLoadedSoundscapeTrack.mockReturnValue(true)
     playback = {
       soundboard: {},
       soundscapes: {

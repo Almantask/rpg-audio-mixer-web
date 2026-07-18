@@ -60,9 +60,14 @@ export function ImportFxModal({ open, onOpenChange, onImport }: ImportFxModalPro
           className="sr-only"
           data-fx-import-input
           onChange={(event) => {
-            const files = event.target.files
+            // Copy before clearing — FileList is live and empties with value = ''.
+            const files = audioFilesFromList(event.target.files)
             event.target.value = ''
-            handleFiles(files)
+            if (files.length === 0) {
+              return
+            }
+            onImport(files)
+            onOpenChange(false)
           }}
         />
 

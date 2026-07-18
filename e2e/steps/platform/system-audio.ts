@@ -3,7 +3,8 @@ import { createBdd } from 'playwright-bdd'
 import {
   buildScene,
   buildSoundscapeCategory,
-  buildSceneSoundscapeSlot,
+  buildSceneSoundscapeSlotWithOptions,
+  buildSoundscapeTracksForCategory,
   buildFxTrack,
   buildSoundboardEntry,
   mergeE2EData,
@@ -21,26 +22,44 @@ async function tapSoundboardEffect(page: Page, effectName: string) {
     .click()
 }
 
-const { Given, When, Then } = createBdd()
-
-Given('the app is playing a soundscape and a soundboard effect', async ({ page }) => {
+async function seedPlayingAmbienceScene(page: Page, options?: { withFx?: string }) {
   await resetE2EData(page)
   const sceneId = 'scene-dungeon'
   const category = buildSoundscapeCategory('Ambience')
-  const fx = buildFxTrack('Scream')
-  
+  const tracks = buildSoundscapeTracksForCategory('Ambience')
+  const fxName = options?.withFx
+  const fx = fxName ? buildFxTrack(fxName) : null
+
   await mergeE2EData(page, {
     scenes: [buildScene('Dungeon', { id: sceneId })],
     soundscapeCategories: [category],
-    sceneSoundscapeSlots: [buildSceneSoundscapeSlot(sceneId, category.id, 0)],
-    fxTracks: [fx],
-    sceneSoundboardEntries: [buildSoundboardEntry(sceneId, fx.id, 1)],
+    soundscapeTracks: tracks,
+    sceneSoundscapeSlots: [
+      buildSceneSoundscapeSlotWithOptions(sceneId, category.id, 0, {
+        intensity: 'II',
+        currentTrackId: category.levels?.II?.[0],
+      }),
+    ],
+    ...(fx
+      ? {
+          fxTracks: [fx],
+          sceneSoundboardEntries: [buildSoundboardEntry(sceneId, fx.id, 1)],
+        }
+      : {}),
   })
-  
+
   await openActiveScene(page, 'Dungeon', 'Soundscapes')
   await tapCategoryPlay(page, 'Ambience')
-  await page.locator('[data-active-scene-tab="Soundboard"]').click()
-  await tapSoundboardEffect(page, 'Scream')
+  if (fxName) {
+    await page.locator('[data-active-scene-tab="Soundboard"]').click()
+    await tapSoundboardEffect(page, fxName)
+  }
+}
+
+const { Given, When, Then } = createBdd()
+
+Given('the app is playing a soundscape and a soundboard effect', async ({ page }) => {
+  await seedPlayingAmbienceScene(page, { withFx: 'Scream' })
 })
 
 When('the browser receives an audio interruption (e.g., another tab takes exclusive audio focus)', async ({ page }) => {
@@ -63,18 +82,7 @@ Then('the app visually reflects the paused state on the active playing cards', a
 })
 
 Given('the app is playing audio loops on the Active Scene screen', async ({ page }) => {
-  await resetE2EData(page)
-  const sceneId = 'scene-dungeon'
-  const category = buildSoundscapeCategory('Ambience')
-  
-  await mergeE2EData(page, {
-    scenes: [buildScene('Dungeon', { id: sceneId })],
-    soundscapeCategories: [category],
-    sceneSoundscapeSlots: [buildSceneSoundscapeSlot(sceneId, category.id, 0)],
-  })
-  
-  await openActiveScene(page, 'Dungeon', 'Soundscapes')
-  await tapCategoryPlay(page, 'Ambience')
+  await seedPlayingAmbienceScene(page)
 })
 
 When('an audio interruption lasts for {int} minutes', async ({ page }, minutes: number) => {
@@ -124,18 +132,7 @@ Then('the soundscape loops continue playing without interruption', async ({ page
 })
 
 Given('the app is playing a soundscape loop', async ({ page }) => {
-  await resetE2EData(page)
-  const sceneId = 'scene-dungeon'
-  const category = buildSoundscapeCategory('Ambience')
-  
-  await mergeE2EData(page, {
-    scenes: [buildScene('Dungeon', { id: sceneId })],
-    soundscapeCategories: [category],
-    sceneSoundscapeSlots: [buildSceneSoundscapeSlot(sceneId, category.id, 0)],
-  })
-  
-  await openActiveScene(page, 'Dungeon', 'Soundscapes')
-  await tapCategoryPlay(page, 'Ambience')
+  await seedPlayingAmbienceScene(page)
 })
 
 When('I view the browser media controls (OS media overlay or browser media hub)', async () => {

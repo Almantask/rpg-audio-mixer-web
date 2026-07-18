@@ -549,6 +549,7 @@ Given(
   'the {string} category has tracks but none is currently loaded or paused',
   async ({ page }, categoryName: string) => {
     void categoryName
+    await resetE2EData(page)
     const sceneId = sceneIdForName(DEFAULT_SCENE_NAME)
     const { category, tracks } = buildWeatherCategoryWithTracks()
     await mergeE2EData(
@@ -557,7 +558,12 @@ Given(
         scenes: [buildScene(DEFAULT_SCENE_NAME)],
         soundscapeCategories: [category],
         soundscapeTracks: tracks,
-        sceneSoundscapeSlots: [buildSceneSoundscapeSlot(sceneId, category.id, 0)],
+        sceneSoundscapeSlots: [
+          buildSceneSoundscapeSlotWithOptions(sceneId, category.id, 0, {
+            intensity: 'I',
+            currentTrackId: undefined,
+          }),
+        ],
       },
       { navigateHome: false },
     )
@@ -641,6 +647,7 @@ Given('{string} has tracks at Intensity Level {word}', async ({ page }, _categor
 Given(
   '{string} has tracks {string} at Intensity Level {word} and {string} at Intensity Level {word}',
   async ({ page }, categoryName: string, track1: string, level1: string, track2: string, level2: string) => {
+    await resetE2EData(page)
     const sceneId = sceneIdForName(DEFAULT_SCENE_NAME)
     const { category, tracks } = buildSoundscapeCategoryWithNamedTracks(categoryName, {
       [intensityLabelToLevel(level1)]: [track1],
@@ -652,7 +659,12 @@ Given(
         scenes: [buildScene(DEFAULT_SCENE_NAME)],
         soundscapeCategories: [category],
         soundscapeTracks: tracks,
-        sceneSoundscapeSlots: [buildSceneSoundscapeSlot(sceneId, category.id, 0)],
+        sceneSoundscapeSlots: [
+          buildSceneSoundscapeSlotWithOptions(sceneId, category.id, 0, {
+            intensity: intensityLabelToLevel(level1),
+            currentTrackId: undefined,
+          }),
+        ],
       },
       { navigateHome: false },
     )
@@ -954,7 +966,7 @@ Then(
 Then('playback stops in the {string} category', async ({ page }, categoryName: string) => {
   await expect(page.locator(`[data-soundscape-playback-state="${categoryName}"]`)).toHaveAttribute(
     'data-state',
-    'idle',
+    'paused',
   )
 })
 
@@ -996,9 +1008,10 @@ Then('a track from Intensity Level {word} plays \\(not from Intensity Level {wor
     .toBe(true)
   const title = await page.locator('[data-soundscape-track-title="Weather"]').textContent()
   if (intensityLabelToLevel(level) === 'II') {
-    expect(title).toContain('Thunderstorm')
+    // Level II fixtures use "Storm" or "Thunderstorm" (case-sensitive /Storm/ misses the latter)
+    expect(title).toMatch(/storm/i)
   } else {
-    expect(title).not.toContain('Thunderstorm')
+    expect(title).not.toMatch(/storm/i)
   }
 })
 
@@ -1096,7 +1109,7 @@ Then(
   async ({ page }, categoryName: string) => {
     await expect(page.locator(`[data-soundscape-playback-state="${categoryName}"]`)).toHaveAttribute(
       'data-state',
-      'idle',
+      'paused',
     )
   },
 )
@@ -1106,7 +1119,7 @@ Then(
   async ({ page }, categoryName: string) => {
     await expect(page.locator(`[data-soundscape-playback-state="${categoryName}"]`)).toHaveAttribute(
       'data-state',
-      'idle',
+      'paused',
     )
     const progress = page.locator(`[data-soundscape-progress="${categoryName}"] > div`).first()
     const firstWidth = await progress.evaluate((element) => element.getBoundingClientRect().width)
@@ -1134,7 +1147,7 @@ Then('only {string} shows the playing state', async ({ page }, categoryName: str
 Then('{string} does not show the playing state', async ({ page }, categoryName: string) => {
   await expect(page.locator(`[data-soundscape-playback-state="${categoryName}"]`)).toHaveAttribute(
     'data-state',
-    'idle',
+    'paused',
   )
 })
 

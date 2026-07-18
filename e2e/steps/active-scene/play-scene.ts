@@ -18,7 +18,7 @@ import {
   tapCategoryPlay,
 } from '../shared/test-data'
 
-const { Given, When, Then } = createBdd()
+const { Given, When, Then, Step } = createBdd()
 
 async function seedTavernSoundscapes(page: import('@playwright/test').Page) {
   const tavernSceneId = sceneIdForName('Tavern')
@@ -26,6 +26,14 @@ async function seedTavernSoundscapes(page: import('@playwright/test').Page) {
   const { category: weather, tracks: weatherTracks } = buildWeatherCategoryWithTracks()
   const interior = buildSoundscapeCategory('Interior')
   const interiorTracks = buildSoundscapeTracksForCategory('Interior')
+  const crackling = buildSoundscapeTrack('Crackling Fire', {
+    id: soundscapeTrackIdForName('Crackling Fire'),
+  })
+  interior.levels = {
+    I: interior.levels?.I ?? [],
+    II: [crackling.id, ...(interior.levels?.II ?? [])],
+    III: interior.levels?.III ?? [],
+  }
   const { category: dungeon, tracks: dungeonTracks } = buildDungeonCategoryPartialLevels()
   const { category: forest, tracks: forestTracks } = buildForestCategoryWithLoop()
   await mergeE2EData(
@@ -33,10 +41,16 @@ async function seedTavernSoundscapes(page: import('@playwright/test').Page) {
     {
       scenes: [buildScene('Tavern'), buildScene('Forest')],
       soundscapeCategories: [weather, interior, dungeon, forest],
-      soundscapeTracks: [...weatherTracks, ...interiorTracks, ...dungeonTracks, ...forestTracks],
+      soundscapeTracks: [...weatherTracks, ...interiorTracks, crackling, ...dungeonTracks, ...forestTracks],
       sceneSoundscapeSlots: [
-        buildSceneSoundscapeSlotWithOptions(tavernSceneId, weather.id, 0, { intensity: 'I' }),
-        buildSceneSoundscapeSlotWithOptions(tavernSceneId, interior.id, 1, { intensity: 'II' }),
+        buildSceneSoundscapeSlotWithOptions(tavernSceneId, weather.id, 0, {
+          intensity: 'I',
+          currentTrackId: soundscapeTrackIdForName('Light Rain'),
+        }),
+        buildSceneSoundscapeSlotWithOptions(tavernSceneId, interior.id, 1, {
+          intensity: 'II',
+          currentTrackId: crackling.id,
+        }),
         buildSceneSoundscapeSlotWithOptions(tavernSceneId, dungeon.id, 2, { intensity: 'II' }),
         buildSceneSoundscapeSlotWithOptions(forestSceneId, forest.id, 0, { intensity: 'II' }),
       ],
@@ -152,10 +166,11 @@ Then('no track begins playing in the {string} category', async ({ page }, catego
   )
 })
 
-Then('the {string} category is idle', async ({ page }, categoryName: string) => {
+Step('the {string} category is idle', async ({ page }, categoryName: string) => {
   await expect(page.locator(`[data-soundscape-playback-state="${categoryName}"]`)).toHaveAttribute(
     'data-state',
     'idle',
+    { timeout: 5_000 },
   )
 })
 
@@ -172,16 +187,30 @@ Given(
   'the {string} category is playing {string}',
   async ({ page }, categoryName: string, trackName: string) => {
     const sceneId = sceneIdForName('Tavern')
+
+    // Capture categories already playing before any reload so Stop Scene / multi-play scenarios
+    // can restore them after slot track updates.
+    const previouslyPlaying: string[] = []
+    if (page.url().includes('/active')) {
+      const playing = page.locator('[data-soundscape-playback-state][data-state="playing"]')
+      const count = await playing.count()
+      for (let index = 0; index < count; index += 1) {
+        const name = await playing.nth(index).getAttribute('data-soundscape-playback-state')
+        if (name && name !== categoryName) {
+          previouslyPlaying.push(name)
+        }
+      }
+    }
+
     if (categoryName === 'Interior') {
       const interior = buildSoundscapeCategory('Interior')
-      const crackling = buildSoundscapeTrack('Crackling Fire', {
-        id: soundscapeTrackIdForName('Crackling Fire'),
+      const crackling = buildSoundscapeTrack(trackName, {
+        id: soundscapeTrackIdForName(trackName),
       })
       interior.levels = { I: [], II: [crackling.id], III: [] }
       await mergeE2EData(
         page,
         {
-          scenes: [buildScene('Tavern')],
           soundscapeCategories: [interior],
           soundscapeTracks: [crackling],
           sceneSoundscapeSlots: [
@@ -193,34 +222,33 @@ Given(
         },
         { navigateHome: false },
       )
-      await openActiveScene(page, 'Tavern', 'Soundscapes')
-      await tapCategoryPlay(page, categoryName)
-      return
+    } else {
+      const { category, tracks } = buildWeatherCategoryWithTracks()
+      const trackId = soundscapeTrackIdForName(trackName)
+      await mergeE2EData(
+        page,
+        {
+          soundscapeCategories: [category],
+          soundscapeTracks: tracks,
+          sceneSoundscapeSlots: [
+            buildSceneSoundscapeSlotWithOptions(sceneId, category.id, 0, {
+              intensity: trackName === 'Thunderstorm' ? 'II' : 'I',
+              currentTrackId: trackId,
+            }),
+          ],
+        },
+        { navigateHome: false },
+      )
     }
 
-    const { category, tracks } = buildWeatherCategoryWithTracks()
-    const trackId = soundscapeTrackIdForName(trackName)
-    await mergeE2EData(
-      page,
-      {
-        scenes: [buildScene('Tavern')],
-        soundscapeCategories: [category],
-        soundscapeTracks: tracks,
-        sceneSoundscapeSlots: [
-          buildSceneSoundscapeSlotWithOptions(sceneId, category.id, 0, {
-            intensity: trackName === 'Thunderstorm' ? 'II' : 'I',
-            currentTrackId: trackId,
-          }),
-        ],
-      },
-      { navigateHome: false },
-    )
     await openActiveScene(page, 'Tavern', 'Soundscapes')
+
+    for (const name of previouslyPlaying) {
+      await tapCategoryPlay(page, name)
+    }
     await tapCategoryPlay(page, categoryName)
+    await expect(page.locator(`[data-soundscape-track-title="${categoryName}"]`)).toContainText(
+      trackName,
+    )
   },
 )
-
-Given('the {string} category is idle', async ({ page }, categoryName: string) => {
-  void categoryName
-  void page
-})

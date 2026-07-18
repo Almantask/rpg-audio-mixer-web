@@ -25,6 +25,15 @@ export function fxTagInputFragment(value: string): string {
   return (parts[parts.length - 1] ?? '').trim()
 }
 
+/** Tags already committed before the in-progress fragment (excludes current typing). */
+export function fxCompletedTags(value: string): string[] {
+  const parts = value.split(',')
+  if (parts.length <= 1) {
+    return []
+  }
+  return parseFxTags(parts.slice(0, -1).join(','))
+}
+
 /** Replace the in-progress fragment with a chosen suggestion. */
 export function applyFxTagSuggestion(currentInput: string, suggestion: string): string {
   const complete = parseFxTags(currentInput.split(',').slice(0, -1).join(','))

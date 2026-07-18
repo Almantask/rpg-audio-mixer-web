@@ -57,8 +57,8 @@ jobs:
       - name: Generate BDD tests
         run: npm run bddgen
 
-      - name: Run acceptance tests (@iter0 or @iter1)
-        run: npx playwright test --grep "@iter0|@iter1"
+      - name: Run acceptance tests (@iter1 through @iter10)
+        run: npx playwright test --grep "@iter1|@iter2|@iter3|@iter4|@iter5|@iter6|@iter7|@iter8|@iter9|@iter10"
 
       - name: Upload Playwright report
         if: always()

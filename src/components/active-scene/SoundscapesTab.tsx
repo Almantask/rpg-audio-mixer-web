@@ -136,6 +136,7 @@ function SoundscapeCategoryCard({
     updateSlotVolume,
     updateSlotIntensity,
     canPlaySoundscape,
+    hasLoadedSoundscapeTrack,
     setFocusedSoundscapeSlot,
   } = useSceneAudio()
 
@@ -147,7 +148,8 @@ function SoundscapeCategoryCard({
   const intensity = slot.intensity ?? 'II'
   const volume = slot.volume ?? 100
 
-  const playDisabled = !canPlaySoundscape(slot.id)
+  // Play requires a loaded (or paused) track; d20 rolls from the intensity pool.
+  const playDisabled = !hasLoadedSoundscapeTrack(slot.id)
   const d20Disabled = !canPlaySoundscape(slot.id)
 
   return (
@@ -270,7 +272,7 @@ function SoundscapeCategoryCard({
           aria-hidden="true"
         >
           <div
-            className={cn('h-full bg-gold transition-all', playing ? 'opacity-100' : 'opacity-30')}
+            className={cn('h-full bg-gold', playing ? 'opacity-100' : 'opacity-30')}
             style={{ width: `${Math.round(progress * 100)}%` }}
           />
         </div>

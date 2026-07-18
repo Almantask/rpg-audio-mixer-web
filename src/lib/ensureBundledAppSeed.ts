@@ -60,13 +60,6 @@ function mergeFxByName(existing: FxTrack[], incoming: FxTrack[]): FxTrack[] {
   return [...existing, ...incoming.filter((track) => !names.has(track.name.toLowerCase()))]
 }
 
-function sameTags(a: string[], b: string[]): boolean {
-  if (a.length !== b.length) {
-    return false
-  }
-  return a.every((tag, index) => tag === b[index])
-}
-
 function findBundledFxSeed(
   track: FxTrack,
   bundledById: Map<string, FxTrack>,
@@ -84,23 +77,15 @@ function syncBundledFxTracks(existing: FxTrack[], bundled: FxTrack[]): { fxTrack
     if (!seed) {
       return track
     }
-    if (
-      track.audioUrl === seed.audioUrl &&
-      track.name === seed.name &&
-      track.durationSeconds === seed.durationSeconds &&
-      track.type === seed.type &&
-      sameTags(track.tags, seed.tags)
-    ) {
+    // Refresh asset URL/duration only — name, type, and tags are user-editable.
+    if (track.audioUrl === seed.audioUrl && track.durationSeconds === seed.durationSeconds) {
       return track
     }
     changed = true
     return {
       ...track,
       audioUrl: seed.audioUrl,
-      name: seed.name,
       durationSeconds: seed.durationSeconds,
-      type: seed.type,
-      tags: [...seed.tags],
     }
   })
   const merged = mergeFxByName(synced, bundled)

@@ -73,4 +73,18 @@ describe('ImportFxModal', () => {
     ])
     expect(onOpenChange).toHaveBeenCalledWith(false)
   })
+
+  it('copies input files before clearing the live FileList', () => {
+    const onImport = vi.fn()
+    const onOpenChange = vi.fn()
+    render(<ImportFxModal open onOpenChange={onOpenChange} onImport={onImport} />)
+
+    const input = document.querySelector('[data-fx-import-input]') as HTMLInputElement
+    const file = new File(['a'], 'wolf_howl.mp3', { type: 'audio/mpeg' })
+    fireEvent.change(input, { target: { files: [file] } })
+
+    expect(onImport).toHaveBeenCalledTimes(1)
+    expect(onImport.mock.calls[0]?.[0].map((item: File) => item.name)).toEqual(['wolf_howl.mp3'])
+    expect(onOpenChange).toHaveBeenCalledWith(false)
+  })
 })

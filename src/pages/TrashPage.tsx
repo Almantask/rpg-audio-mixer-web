@@ -389,7 +389,10 @@ export function TrashPage() {
       <header className="mb-8 flex flex-wrap items-start justify-between gap-4">
         <div>
           <h2 className="font-serif text-3xl text-gold">Trash</h2>
-          <p className="mt-2 text-muted">
+          <p
+            className="mt-2 text-muted"
+            {...(activeTab === 'fx' ? { 'data-fx-retention-notice': true } : {})}
+          >
             Recently deleted items are kept for 7 days before permanent removal.
           </p>
         </div>

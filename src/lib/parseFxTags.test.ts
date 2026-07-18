@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { applyFxTagSuggestion, fxTagInputFragment, parseFxTags } from '@/lib/parseFxTags'
+import {
+  applyFxTagSuggestion,
+  fxCompletedTags,
+  fxTagInputFragment,
+  parseFxTags,
+} from '@/lib/parseFxTags'
 
 describe('parseFxTags', () => {
   it('splits comma-separated tags and trims whitespace', () => {
@@ -14,6 +19,16 @@ describe('parseFxTags', () => {
 describe('fxTagInputFragment', () => {
   it('returns the last incomplete fragment', () => {
     expect(fxTagInputFragment('Combat, Cre')).toBe('Cre')
+  })
+})
+
+describe('fxCompletedTags', () => {
+  it('returns no completed tags while typing a single fragment', () => {
+    expect(fxCompletedTags('Combat')).toEqual([])
+  })
+
+  it('returns tags before the in-progress fragment', () => {
+    expect(fxCompletedTags('Creature, Com')).toEqual(['Creature'])
   })
 })
 

@@ -32,9 +32,15 @@ Then('{string} appears above {string}', async ({ page }, first: string, second: 
   const isCampaignOrder = (await page.locator(`[data-campaign-title="${first}"]`).count()) > 0
 
   if (isCampaignOrder) {
-    const firstBox = await firstLocator.boundingBox()
-    const secondBox = await secondLocator.boundingBox()
-    expect(firstBox && secondBox && firstBox.y < secondBox.y).toBeTruthy()
+    const firstIndex = await page.locator('[data-campaign-title]').evaluateAll((elements, target) => {
+      return elements.findIndex((element) => element.getAttribute('data-campaign-title') === target)
+    }, first)
+    const secondIndex = await page.locator('[data-campaign-title]').evaluateAll((elements, target) => {
+      return elements.findIndex((element) => element.getAttribute('data-campaign-title') === target)
+    }, second)
+    expect(firstIndex).toBeGreaterThanOrEqual(0)
+    expect(secondIndex).toBeGreaterThanOrEqual(0)
+    expect(firstIndex).toBeLessThan(secondIndex)
     return
   }
 

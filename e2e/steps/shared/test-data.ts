@@ -522,17 +522,26 @@ export async function ensureSoundboardEffectOnBoard(page: Page, effectName: stri
 }
 
 export async function tapCategoryPlay(page: Page, categoryName: string) {
-  const playButton = page.locator(`[data-soundscape-play="${categoryName}"]`)
-  if (await playButton.isDisabled()) {
-    await page.locator(`[data-soundscape-d20="${categoryName}"]`).click()
-    await expect(playButton).toBeEnabled({ timeout: 5_000 })
+  const playbackState = page.locator(`[data-soundscape-playback-state="${categoryName}"]`)
+  if ((await playbackState.getAttribute('data-state')) === 'playing') {
+    return
   }
+
+  const playButton = page.locator(`[data-soundscape-play="${categoryName}"]`)
+  if ((await playButton.count()) === 0) {
+    await expect(playbackState).toHaveAttribute('data-state', 'playing', { timeout: 5_000 })
+    return
+  }
+
+  if (await playButton.isDisabled()) {
+    // d20 loads and starts a track from the current intensity pool
+    await page.locator(`[data-soundscape-d20="${categoryName}"]`).click()
+    await expect(playbackState).toHaveAttribute('data-state', 'playing', { timeout: 15_000 })
+    return
+  }
+
   await playButton.click()
-  await expect(page.locator(`[data-soundscape-playback-state="${categoryName}"]`)).toHaveAttribute(
-    'data-state',
-    'playing',
-    { timeout: 5_000 },
-  )
+  await expect(playbackState).toHaveAttribute('data-state', 'playing', { timeout: 10_000 })
 }
 
 export function buildSceneSoundscapeSettings(
@@ -996,13 +1005,53 @@ export function tableCellValues(dataTable: { rows: () => string[][] }): string[]
 
 type BddTableRow = string[] | { cells?: Array<{ value?: string } | string> }
 
+function normalizeTableMatrix(rows: string[][]): string[][] {
+  return rows.map((row) => row.map((cell) => String(cell ?? '').trim()))
+}
+
 export function tableRows(dataTable: unknown): string[][] {
   if (!dataTable) {
     return []
   }
 
-  if (typeof dataTable === 'object' && 'raw' in dataTable && typeof (dataTable as { raw: () => string[][] }).raw === 'function') {
-    return (dataTable as { raw: () => string[][] }).raw()
+  // Prefer rows() (excludes header) over raw() for Cucumber/playwright-bdd tables.
+  if (
+    typeof dataTable === 'object' &&
+    'rows' in dataTable &&
+    typeof (dataTable as { rows: () => string[][] }).rows === 'function'
+  ) {
+    const viaRows = (dataTable as { rows: () => string[][] }).rows()
+    if (Array.isArray(viaRows) && viaRows.length > 0 && Array.isArray(viaRows[0])) {
+      return normalizeTableMatrix(viaRows)
+    }
+  }
+
+  if (
+    typeof dataTable === 'object' &&
+    'hashes' in dataTable &&
+    typeof (dataTable as { hashes: () => Array<Record<string, string>> }).hashes === 'function'
+  ) {
+    const hashes = (dataTable as { hashes: () => Array<Record<string, string>> }).hashes()
+    if (hashes.length > 0) {
+      const headers = Object.keys(hashes[0]!)
+      return hashes.map((row) => headers.map((header) => String(row[header] ?? '').trim()))
+    }
+  }
+
+  if (
+    typeof dataTable === 'object' &&
+    'raw' in dataTable &&
+    typeof (dataTable as { raw: () => string[][] }).raw === 'function'
+  ) {
+    const raw = (dataTable as { raw: () => string[][] }).raw()
+    // Drop a header row when the first cell looks like a column label.
+    if (
+      raw.length > 1 &&
+      /^(number|name|date|scenes|description)$/i.test(String(raw[0]?.[0] ?? '').trim())
+    ) {
+      return normalizeTableMatrix(raw.slice(1))
+    }
+    return normalizeTableMatrix(raw)
   }
 
   if (typeof dataTable !== 'object') {
@@ -1078,4 +1127,4 @@ export async function seedHomeTopStats(page: Page) {
   })
 }
 
-export { parseRelativeDate } from '../../../src/lib/dateFormat'
+export { parseRelativeDate, parseRelativeDateTime } from '../../../src/lib/dateFormat'

@@ -1,6 +1,12 @@
 import { expect, type Page } from '@playwright/test'
 import { createBdd } from 'playwright-bdd'
 import { E2E_TAVERN_SCENE_ID } from '../../../src/lib/constants'
+import {
+  buildScene,
+  buildSessionSceneLink,
+  mergeE2EData,
+  sceneIdForName,
+} from '../shared/test-data'
 
 const { Given, When, Then } = createBdd()
 
@@ -51,6 +57,26 @@ When('I open the Active Scene for {string}', async ({ page }, sceneName: string)
   const sessionSceneBody = page.locator(`[data-session-scene-body="${sceneName}"]`)
   if (await sessionSceneBody.count()) {
     await sessionSceneBody.click()
+    return
+  }
+
+  // Session Scenes context: seed the scene into this session so Campaigns stays highlighted.
+  const sessionMatch = page.url().match(/\/campaigns\/([^/]+)\/sessions\/([^/]+)\/scenes/)
+  if (sessionMatch) {
+    const campaignId = sessionMatch[1]!
+    const sessionId = sessionMatch[2]!
+    const sceneId = sceneIdForName(sceneName)
+    await mergeE2EData(
+      page,
+      {
+        scenes: [buildScene(sceneName, { id: sceneId })],
+        sessionSceneLinks: [buildSessionSceneLink(sessionId, sceneId)],
+      },
+      { navigateHome: false },
+    )
+    await page.goto(`/campaigns/${campaignId}/sessions/${sessionId}/scenes`)
+    await page.waitForLoadState('networkidle')
+    await page.locator(`[data-session-scene-body="${sceneName}"]`).click()
     return
   }
 

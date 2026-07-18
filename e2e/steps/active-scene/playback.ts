@@ -169,7 +169,7 @@ When('I tap pause on {string}', async ({ page }, categoryName: string) => {
   await tapCategoryPause(page, categoryName)
   await expect(page.locator(`[data-soundscape-playback-state="${categoryName}"]`)).toHaveAttribute(
     'data-state',
-    'idle',
+    'paused',
     { timeout: 5_000 },
   )
 })
@@ -400,7 +400,7 @@ Then(
 Then('only {string} has stopped', async ({ page }, categoryName: string) => {
   await expect(page.locator(`[data-soundscape-playback-state="${categoryName}"]`)).toHaveAttribute(
     'data-state',
-    'idle',
+    'paused',
   )
 })
 

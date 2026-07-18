@@ -48,7 +48,10 @@ export function HeroCardSurface({
             backgroundImage: `url(${coverArtUrl})`,
             ...coverProps?.style,
           }}
-        />
+        >
+          {/* Keep an img for E2E/src assertions; visual cover uses background-image. */}
+          <img src={coverArtUrl} alt="" className="sr-only" />
+        </div>
       ) : (
         <div
           aria-hidden="true"

@@ -5,6 +5,7 @@ import { formatFxDuration } from '@/lib/sceneStorage'
 import { audioPreview } from '@/lib/audioPreview'
 import {
   applyFxTagSuggestion,
+  fxCompletedTags,
   fxTagInputFragment,
   parseFxTags,
 } from '@/lib/parseFxTags'
@@ -87,11 +88,12 @@ export function FxCard({
 
   const draftTags = parseFxTags(tagInput)
   const fragment = fxTagInputFragment(tagInput)
+  const completedTags = fxCompletedTags(tagInput)
   const tagSuggestions = FX_TAG_SUGGESTIONS.filter(
     (tag) =>
       fragment.length > 0 &&
       tag.toLowerCase().includes(fragment.toLowerCase()) &&
-      !draftTags.some((current) => current.toLowerCase() === tag.toLowerCase()),
+      !completedTags.some((current) => current.toLowerCase() === tag.toLowerCase()),
   )
 
   const displayedTags = editing ? draftTags : track.tags

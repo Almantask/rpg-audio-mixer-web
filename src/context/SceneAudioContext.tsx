@@ -305,7 +305,12 @@ export function SceneAudioProvider({ sceneId, children }: SceneAudioProviderProp
       const category = data.soundscapeCategories.find((item) => item.id === slot?.categoryId)
       const trackIds = buildSoundscapeTrackPool(category?.levels, intensity)
       managerRef.current?.updateSoundscapeSlotIntensity(slotId, intensity, trackIds)
-      updateSoundscapeSlot(slotId, { intensity })
+      const currentTrackId = managerRef.current?.getState().soundscapes[slotId]?.currentTrackId
+      updateSoundscapeSlot(slotId, {
+        intensity,
+        // Keep persisted slot in sync when the manager clears an out-of-pool track
+        currentTrackId,
+      })
     },
     [data.soundscapeCategories, slots, updateSoundscapeSlot],
   )

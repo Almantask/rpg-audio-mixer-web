@@ -20,6 +20,12 @@ export function FxTagList({ tags }: FxTagListProps) {
     }
 
     const computeVisible = () => {
+      // Keep small tag sets fully visible (browse cards are often narrow).
+      if (tags.length <= 2) {
+        setVisibleCount(tags.length)
+        return
+      }
+
       const gap = 4
       const moreWidth = 72
       const available = container.clientWidth

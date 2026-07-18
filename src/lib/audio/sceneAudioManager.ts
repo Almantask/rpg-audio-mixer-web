@@ -141,6 +141,8 @@ export class SceneAudioManager {
   private readonly soundscapeSlots = new Map<string, SoundscapeSlotRuntime>()
   private readonly listeners = new Set<StateListener>()
   private interruptionStartedAt: number | null = null
+  /** Exact simulated elapsed ms for tests; avoids Date.now() skew at the 3-minute boundary. */
+  private interruptionElapsedOverrideMs: number | null = null
   private readonly wasPlayingSlotsBeforeInterruption = new Set<string>()
 
   private soundboardMasterVolume = 85
@@ -188,6 +190,8 @@ export class SceneAudioManager {
       return
     }
     this.interruptionStartedAt = Date.now() - simulatedDurationMs
+    this.interruptionElapsedOverrideMs =
+      simulatedDurationMs > 0 ? simulatedDurationMs : null
 
     this.wasPlayingSlotsBeforeInterruption.clear()
     for (const [slotId, slot] of this.soundscapeSlots) {
@@ -212,10 +216,12 @@ export class SceneAudioManager {
     if (this.interruptionStartedAt === null) {
       return
     }
-    const elapsed = Date.now() - this.interruptionStartedAt
+    const elapsed =
+      this.interruptionElapsedOverrideMs ?? Date.now() - this.interruptionStartedAt
     this.interruptionStartedAt = null
+    this.interruptionElapsedOverrideMs = null
 
-    if (elapsed <= 180000) {
+    if (elapsed <= 180_000) {
       for (const slotId of this.wasPlayingSlotsBeforeInterruption) {
         await this.playSoundscape(slotId)
       }
@@ -264,17 +270,13 @@ export class SceneAudioManager {
 
   configureSoundscapeSlot(config: SoundscapeSlotConfig): void {
     const normalizedConfig = { ...config }
+    // Do not auto-load a track — play stays disabled until d20/play loads one.
     if (
-      !normalizedConfig.currentTrackId &&
-      normalizedConfig.trackIds.length > 0
-    ) {
-      normalizedConfig.currentTrackId = normalizedConfig.trackIds[0]
-    } else if (
       normalizedConfig.currentTrackId &&
       normalizedConfig.trackIds.length > 0 &&
       !normalizedConfig.trackIds.includes(normalizedConfig.currentTrackId)
     ) {
-      normalizedConfig.currentTrackId = normalizedConfig.trackIds[0]
+      normalizedConfig.currentTrackId = undefined
     }
 
     const existing = this.soundscapeSlots.get(normalizedConfig.slotId)
@@ -485,13 +487,18 @@ export class SceneAudioManager {
       return
     }
     slot.config.currentTrackId = nextTrackId
-    if (slot.playing && !slot.paused) {
-      await this.crossfadeSoundscapeToTrack(slot, nextTrackId)
-    } else {
-      this.enforceSoundscapeConcurrency(slotId)
-      await this.startSoundscapeTrack(slot, nextTrackId, false)
-    }
+    // Surface the loaded track in UI before async buffer decode/start.
     this.notify()
+    try {
+      if (slot.playing && !slot.paused) {
+        await this.crossfadeSoundscapeToTrack(slot, nextTrackId)
+      } else {
+        this.enforceSoundscapeConcurrency(slotId)
+        await this.startSoundscapeTrack(slot, nextTrackId, false)
+      }
+    } finally {
+      this.notify()
+    }
   }
 
   async playScene(): Promise<void> {
@@ -691,7 +698,13 @@ export class SceneAudioManager {
       return
     }
 
-    const buffer = await this.loadBuffer(track.audioUrl)
+    let buffer: AudioBuffer
+    try {
+      buffer = await this.loadBuffer(track.audioUrl)
+    } catch (error) {
+      console.error(`Soundscape playback failed for "${track.name}"`, error)
+      return
+    }
     const source = this.ctx.createBufferSource()
     source.buffer = buffer
     source.loop = false
