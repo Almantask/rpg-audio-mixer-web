@@ -139,6 +139,32 @@ describe('SoundboardTab master controls', () => {
     await user.click(screen.getByRole('button', { name: 'Stop All' }))
     expect(stopAll).toHaveBeenCalledTimes(1)
   })
+
+  it('shows portaled tooltips for drag handle and remove', async () => {
+    const user = userEvent.setup()
+    render(
+      <SoundboardTab
+        sceneId="scene-1"
+        entries={entries}
+        onRemove={() => undefined}
+        onAddSound={() => undefined}
+      />,
+    )
+
+    const tile = document.querySelector('[data-soundboard-tile="Thunder Crack"]') as HTMLElement
+    const dragHandle = within(tile).getByLabelText('Drag to reorder')
+    await user.hover(dragHandle)
+    let tooltip = await screen.findByRole('tooltip', { name: 'Drag to reorder' })
+    expect(tooltip.parentElement).toBe(document.body)
+    expect(tile.contains(tooltip)).toBe(false)
+    await user.unhover(dragHandle)
+
+    const removeButton = screen.getByRole('button', { name: 'Remove Thunder Crack' })
+    await user.hover(removeButton)
+    tooltip = await screen.findByRole('tooltip', { name: 'Remove Thunder Crack' })
+    expect(tooltip.parentElement).toBe(document.body)
+    expect(tile.contains(tooltip)).toBe(false)
+  })
 })
 
 describe('SoundboardTab live drag reorder', () => {

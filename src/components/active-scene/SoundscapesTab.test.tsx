@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { SoundscapesTab } from '@/components/active-scene/SoundscapesTab'
@@ -300,6 +300,79 @@ describe('SoundscapesTab Play/Stop Scene', () => {
     })
     expect(tooltip.parentElement).toBe(document.body)
     expect(card?.contains(tooltip)).toBe(false)
+  })
+
+  it('shows portaled tooltips for drag handle and card actions', async () => {
+    const user = userEvent.setup()
+    render(
+      <SoundscapesTab
+        sceneId="scene-1"
+        slots={slots}
+        onRemoveSlot={() => undefined}
+        onAddSoundscape={() => undefined}
+      />,
+    )
+
+    const card = cardFor('Weather')
+    const dragHandle = within(card).getByLabelText('Drag to reorder')
+    await user.hover(dragHandle)
+    let tooltip = await screen.findByRole('tooltip', { name: 'Drag to reorder' })
+    expect(tooltip.parentElement).toBe(document.body)
+    expect(card.contains(tooltip)).toBe(false)
+    await user.unhover(dragHandle)
+
+    const actions = [
+      'Roll random track for Weather',
+      'Play Weather',
+      'Remove Weather',
+    ] as const
+
+    for (const label of actions) {
+      const button = screen.getByRole('button', { name: label })
+      await user.hover(button)
+      tooltip = await screen.findByRole('tooltip', { name: label })
+      expect(tooltip.parentElement).toBe(document.body)
+      expect(card.contains(tooltip)).toBe(false)
+      await user.unhover(button)
+    }
+  })
+})
+
+describe('SoundscapesTab category grid', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    canPlaySoundscape.mockReturnValue(true)
+    playback = {
+      soundboard: {},
+      soundscapes: {
+        'slot-weather': tile({ slotId: 'slot-weather', categoryName: 'Weather' }),
+        'slot-interior': tile({ slotId: 'slot-interior', categoryName: 'Interior' }),
+      },
+      soundboardMasterVolume: 100,
+      soundscapeMasterVolume: 100,
+      soundscapeMuted: false,
+    }
+  })
+
+  it('lays out category cards in a responsive two-column grid', () => {
+    render(
+      <SoundscapesTab
+        sceneId="scene-1"
+        slots={slots}
+        onRemoveSlot={() => undefined}
+        onAddSoundscape={() => undefined}
+      />,
+    )
+
+    const list = document.querySelector('[data-soundscape-category-list]')
+    expect(list).toHaveClass(
+      'grid',
+      'min-w-0',
+      'grid-cols-1',
+      'gap-4',
+      'sm:grid-cols-2',
+      'md:grid-cols-3',
+    )
   })
 })
 

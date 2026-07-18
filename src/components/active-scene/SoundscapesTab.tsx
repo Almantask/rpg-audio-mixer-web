@@ -155,7 +155,7 @@ function SoundscapeCategoryCard({
       data-soundscape-category={categoryName}
       data-flip-id={slot.id}
       className={cn(
-        'border-white/10 transition-shadow',
+        'min-w-0 overflow-hidden border-white/10 transition-shadow',
         playing && !dragging && 'border-gold/60 shadow-[0_0_16px_rgba(212,175,55,0.35)]',
         dragging && 'opacity-0',
       )}
@@ -165,20 +165,22 @@ function SoundscapeCategoryCard({
       <CardContent className="p-4">
         <div className="mb-4 flex items-start justify-between gap-3">
           <div className="flex items-start gap-2">
-            <div
-              draggable={!locked}
-              onDragStart={onDragStart}
-              onDrag={onDrag}
-              onDragEnd={onDragEnd}
-              aria-label="Drag handle"
-              data-drag-handle
-              className={cn(
-                'mt-1 cursor-grab active:cursor-grabbing',
-                locked && 'cursor-not-allowed opacity-40',
-              )}
-            >
-              <GripVertical className="h-4 w-4 text-muted" />
-            </div>
+            <Tooltip content="Drag to reorder">
+              <div
+                draggable={!locked}
+                onDragStart={onDragStart}
+                onDrag={onDrag}
+                onDragEnd={onDragEnd}
+                aria-label="Drag to reorder"
+                data-drag-handle
+                className={cn(
+                  'mt-1 cursor-grab active:cursor-grabbing',
+                  locked && 'cursor-not-allowed opacity-40',
+                )}
+              >
+                <GripVertical className="h-4 w-4 text-muted" />
+              </div>
+            </Tooltip>
             <div>
               <p className="font-serif uppercase tracking-wide text-gold">
                 {categoryName} ({slot.category?.trackCount ?? 0} tracks)
@@ -199,58 +201,66 @@ function SoundscapeCategoryCard({
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              size="icon"
-              aria-label={`Roll random track for ${categoryName}`}
-              data-soundscape-d20={categoryName}
-              disabled={d20Disabled}
-              onClick={() => {
-                setFocusedSoundscapeSlot(slot.id)
-                void rollSoundscapeRandom(slot.id)
-              }}
-            >
-              <Dices className="h-4 w-4" />
-            </Button>
-            {playing ? (
+            <Tooltip content={`Roll random track for ${categoryName}`}>
               <Button
                 type="button"
                 variant="outline"
                 size="icon"
-                aria-label={`Pause ${categoryName}`}
-                data-soundscape-pause={categoryName}
-                onClick={() => pauseSoundscape(slot.id)}
-              >
-                <Pause className="h-4 w-4" />
-              </Button>
-            ) : (
-              <Button
-                type="button"
-                variant="outline"
-                size="icon"
-                aria-label={`Play ${categoryName}`}
-                data-soundscape-play={categoryName}
-                disabled={playDisabled}
+                aria-label={`Roll random track for ${categoryName}`}
+                data-soundscape-d20={categoryName}
+                disabled={d20Disabled}
                 onClick={() => {
                   setFocusedSoundscapeSlot(slot.id)
-                  void playSoundscape(slot.id)
+                  void rollSoundscapeRandom(slot.id)
                 }}
               >
-                <Play className="h-4 w-4" />
+                <Dices className="h-4 w-4" />
               </Button>
+            </Tooltip>
+            {playing ? (
+              <Tooltip content={`Pause ${categoryName}`}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  aria-label={`Pause ${categoryName}`}
+                  data-soundscape-pause={categoryName}
+                  onClick={() => pauseSoundscape(slot.id)}
+                >
+                  <Pause className="h-4 w-4" />
+                </Button>
+              </Tooltip>
+            ) : (
+              <Tooltip content={`Play ${categoryName}`}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  aria-label={`Play ${categoryName}`}
+                  data-soundscape-play={categoryName}
+                  disabled={playDisabled}
+                  onClick={() => {
+                    setFocusedSoundscapeSlot(slot.id)
+                    void playSoundscape(slot.id)
+                  }}
+                >
+                  <Play className="h-4 w-4" />
+                </Button>
+              </Tooltip>
             )}
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              aria-label={`Remove ${categoryName}`}
-              data-soundscape-delete={categoryName}
-              disabled={locked}
-              onClick={onRemove}
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
+            <Tooltip content={`Remove ${categoryName}`}>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                aria-label={`Remove ${categoryName}`}
+                data-soundscape-delete={categoryName}
+                disabled={locked}
+                onClick={onRemove}
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </Tooltip>
           </div>
         </div>
 
@@ -358,7 +368,7 @@ export function SoundscapesTab({
         overId,
         { x: event.clientX, y: event.clientY },
         card.getBoundingClientRect(),
-        'y',
+        'xy',
       )
       if (!next) {
         return
@@ -383,7 +393,11 @@ export function SoundscapesTab({
           No soundscape categories yet. Add one to begin layering ambience.
         </p>
       ) : (
-        <div ref={listRef} className="mb-6 space-y-4" data-soundscape-category-list>
+        <div
+          ref={listRef}
+          className="mb-6 grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3"
+          data-soundscape-category-list
+        >
           {sortedSlots.map((slot) => (
             <SoundscapeCategoryCard
               key={slot.id}

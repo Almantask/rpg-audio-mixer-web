@@ -11,6 +11,7 @@ import { useFlipReorderAnimation } from '@/hooks/useFlipReorderAnimation'
 import { useHtml5CardDragPreview } from '@/hooks/useHtml5CardDragPreview'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
+import { Tooltip } from '@/components/ui/tooltip'
 
 const MAX_TILES = 24
 
@@ -67,31 +68,35 @@ function SoundboardTile({
     >
       <CardContent className="p-3">
         <div className="mb-2 flex items-center justify-between">
-          <div
-            draggable={!locked}
-            onDragStart={onDragStart}
-            onDrag={onDrag}
-            onDragEnd={onDragEnd}
-            aria-label="Drag handle"
-            data-drag-handle
-            className={cn(
-              'cursor-grab active:cursor-grabbing',
-              locked && 'cursor-not-allowed opacity-40',
-            )}
-          >
-            <GripVertical className="h-4 w-4 text-muted" />
-          </div>
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            aria-label={`Remove ${entry.track.name}`}
-            data-soundboard-delete={entry.track.name}
-            disabled={locked}
-            onClick={onRemove}
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
+          <Tooltip content="Drag to reorder">
+            <div
+              draggable={!locked}
+              onDragStart={onDragStart}
+              onDrag={onDrag}
+              onDragEnd={onDragEnd}
+              aria-label="Drag to reorder"
+              data-drag-handle
+              className={cn(
+                'cursor-grab active:cursor-grabbing',
+                locked && 'cursor-not-allowed opacity-40',
+              )}
+            >
+              <GripVertical className="h-4 w-4 text-muted" />
+            </div>
+          </Tooltip>
+          <Tooltip content={`Remove ${entry.track.name}`}>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              aria-label={`Remove ${entry.track.name}`}
+              data-soundboard-delete={entry.track.name}
+              disabled={locked}
+              onClick={onRemove}
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </Tooltip>
         </div>
         <div className="mb-2 flex w-full min-w-0 flex-col items-center overflow-hidden" role="presentation">
           <button
