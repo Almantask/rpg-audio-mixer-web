@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react'
+import { fireEvent, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { SoundboardTab } from '@/components/active-scene/SoundboardTab'
@@ -8,6 +8,7 @@ const stopAll = vi.fn()
 const setSoundboardMasterVolume = vi.fn()
 const triggerSoundboard = vi.fn(async () => undefined)
 const isSoundboardPlaying = vi.fn(() => false)
+const reorderSoundboardEntries = vi.fn()
 
 let playback: ScenePlaybackState = {
   soundboard: {},
@@ -29,7 +30,7 @@ vi.mock('@/context/SceneAudioContext', () => ({
 
 vi.mock('@/context/CampaignDataContext', () => ({
   useCampaignData: () => ({
-    reorderSoundboardEntries: vi.fn(),
+    reorderSoundboardEntries,
   }),
 }))
 
@@ -47,6 +48,44 @@ const entries = [
       durationSeconds: 2,
       baseIntensity: 'II' as const,
       type: 'COMBAT' as const,
+      defaultVolume: 100,
+      createdAt: '2026-01-01T00:00:00.000Z',
+    },
+  },
+]
+
+const reorderEntries = [
+  entries[0],
+  {
+    id: 'entry-2',
+    sceneId: 'scene-1',
+    fxTrackId: 'fx-2',
+    order: 1,
+    track: {
+      id: 'fx-2',
+      name: 'Wolf Howl',
+      tags: [],
+      audioUrl: '/audio/wolf.ogg',
+      durationSeconds: 2,
+      baseIntensity: 'II' as const,
+      type: 'COMBAT' as const,
+      defaultVolume: 100,
+      createdAt: '2026-01-01T00:00:00.000Z',
+    },
+  },
+  {
+    id: 'entry-3',
+    sceneId: 'scene-1',
+    fxTrackId: 'fx-3',
+    order: 2,
+    track: {
+      id: 'fx-3',
+      name: 'Door Creak',
+      tags: [],
+      audioUrl: '/audio/door.ogg',
+      durationSeconds: 2,
+      baseIntensity: 'I' as const,
+      type: 'AMBIENT' as const,
       defaultVolume: 100,
       createdAt: '2026-01-01T00:00:00.000Z',
     },
@@ -99,5 +138,85 @@ describe('SoundboardTab master controls', () => {
 
     await user.click(screen.getByRole('button', { name: 'Stop All' }))
     expect(stopAll).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe('SoundboardTab live drag reorder', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    playback = {
+      soundboard: {},
+      soundscapes: {},
+      soundboardMasterVolume: 85,
+      soundscapeMasterVolume: 100,
+      soundscapeMuted: false,
+    }
+  })
+
+  it('reorders tiles on dragover before drop (live)', () => {
+    render(
+      <SoundboardTab
+        sceneId="scene-1"
+        entries={reorderEntries}
+        onRemove={() => undefined}
+        onAddSound={() => undefined}
+      />,
+    )
+
+    const handle = document.querySelector(
+      '[data-soundboard-tile="Door Creak"] [data-drag-handle]',
+    ) as HTMLElement
+    const target = document.querySelector('[data-soundboard-tile="Thunder Crack"]') as HTMLElement
+    const dataTransfer = {
+      effectAllowed: 'none',
+      dropEffect: 'none',
+      setData: vi.fn(),
+      getData: vi.fn(() => ''),
+      setDragImage: vi.fn(),
+    }
+
+    fireEvent.dragStart(handle, { dataTransfer })
+    fireEvent.dragOver(target, { dataTransfer, clientX: 0, clientY: 0 })
+
+    expect(reorderSoundboardEntries).toHaveBeenCalledWith('scene-1', [
+      'entry-3',
+      'entry-1',
+      'entry-2',
+    ])
+  })
+
+  it('shows a floating tile preview while dragging', () => {
+    render(
+      <SoundboardTab
+        sceneId="scene-1"
+        entries={reorderEntries}
+        onRemove={() => undefined}
+        onAddSound={() => undefined}
+      />,
+    )
+
+    const handle = document.querySelector(
+      '[data-soundboard-tile="Thunder Crack"] [data-drag-handle]',
+    ) as HTMLElement
+    const dataTransfer = {
+      effectAllowed: 'none',
+      dropEffect: 'none',
+      setData: vi.fn(),
+      getData: vi.fn(() => ''),
+      setDragImage: vi.fn(),
+    }
+    const dragStart = new Event('dragstart', { bubbles: true, cancelable: true })
+    Object.defineProperty(dragStart, 'clientX', { value: 24 })
+    Object.defineProperty(dragStart, 'clientY', { value: 32 })
+    Object.defineProperty(dragStart, 'dataTransfer', { value: dataTransfer })
+    fireEvent(handle, dragStart)
+
+    expect(dataTransfer.setDragImage).toHaveBeenCalled()
+    const preview = screen.getByTestId('drag-card-preview')
+    expect(preview).toBeVisible()
+    expect(preview.textContent).toMatch(/Thunder Crack/i)
+
+    fireEvent.dragEnd(handle, { dataTransfer })
+    expect(preview).not.toBeVisible()
   })
 })

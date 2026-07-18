@@ -4,9 +4,11 @@ import type { FxTrack } from '@/types/library'
 import type { SceneSoundboardEntry } from '@/types/scene'
 import { useCampaignData } from '@/context/CampaignDataContext'
 import { useSceneAudio } from '@/context/SceneAudioContext'
+import { reorderIdsForDragOver } from '@/lib/liveDragReorder'
 import { getHotkeyLabel } from '@/lib/sceneStorage'
 import { cn } from '@/lib/utils'
 import { useFlipReorderAnimation } from '@/hooks/useFlipReorderAnimation'
+import { useHtml5CardDragPreview } from '@/hooks/useHtml5CardDragPreview'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 
@@ -25,9 +27,12 @@ interface SoundboardTileProps {
   hotkey?: string
   playing: boolean
   locked: boolean
+  dragging: boolean
   onPlay: () => void
   onRemove: () => void
   onDragStart: (event: DragEvent<HTMLDivElement>) => void
+  onDrag: (event: DragEvent<HTMLDivElement>) => void
+  onDragEnd: () => void
   onDragOver: (event: DragEvent<HTMLDivElement>) => void
   onDrop: (event: DragEvent<HTMLDivElement>) => void
 }
@@ -37,9 +42,12 @@ function SoundboardTile({
   hotkey,
   playing,
   locked,
+  dragging,
   onPlay,
   onRemove,
   onDragStart,
+  onDrag,
+  onDragEnd,
   onDragOver,
   onDrop,
 }: SoundboardTileProps) {
@@ -51,7 +59,8 @@ function SoundboardTile({
       data-state={playing ? 'playing' : 'idle'}
       className={cn(
         'min-w-0 overflow-hidden border-white/10 transition-shadow',
-        playing && 'border-gold/60 shadow-[0_0_16px_rgba(212,175,55,0.35)]',
+        playing && !dragging && 'border-gold/60 shadow-[0_0_16px_rgba(212,175,55,0.35)]',
+        dragging && 'opacity-0',
       )}
       onDragOver={onDragOver}
       onDrop={onDrop}
@@ -61,9 +70,14 @@ function SoundboardTile({
           <div
             draggable={!locked}
             onDragStart={onDragStart}
+            onDrag={onDrag}
+            onDragEnd={onDragEnd}
             aria-label="Drag handle"
             data-drag-handle
-            className={cn('cursor-grab', locked && 'cursor-not-allowed opacity-40')}
+            className={cn(
+              'cursor-grab active:cursor-grabbing',
+              locked && 'cursor-not-allowed opacity-40',
+            )}
           >
             <GripVertical className="h-4 w-4 text-muted" />
           </div>
@@ -121,30 +135,42 @@ export function SoundboardTab({ sceneId, entries, onRemove, onAddSound, locked =
     stopAll,
   } = useSceneAudio()
   const [draggingId, setDraggingId] = useState<string | null>(null)
-  const [dragOverId, setDragOverId] = useState<string | null>(null)
+  const draggingIdRef = useRef<string | null>(null)
+  const entryIdsRef = useRef(entries.map((entry) => entry.id))
+  entryIdsRef.current = entries.map((entry) => entry.id)
+  const { beginCardDragPreview, moveCardDragPreview, endCardDragPreview } =
+    useHtml5CardDragPreview()
   const gridRef = useRef<HTMLDivElement | null>(null)
-  useFlipReorderAnimation(gridRef, [entries.map((entry) => entry.id).join('|')], { durationMs: 180 })
+  useFlipReorderAnimation(gridRef, [entries.map((entry) => entry.id).join('|')], {
+    durationMs: 180,
+    skipIds: draggingId,
+  })
 
   const atCap = entries.length >= MAX_TILES
   const isEmpty = entries.length === 0
 
-  const reorderEntries = useCallback(
-    (sourceId: string, targetId: string) => {
-      if (sourceId === targetId) {
+  const clearDragging = useCallback(() => {
+    draggingIdRef.current = null
+    setDraggingId(null)
+    endCardDragPreview()
+  }, [endCardDragPreview])
+
+  const tryLiveReorder = useCallback(
+    (sourceId: string, overId: string, event: DragEvent<HTMLDivElement>) => {
+      const next = reorderIdsForDragOver(
+        entryIdsRef.current,
+        sourceId,
+        overId,
+        { x: event.clientX, y: event.clientY },
+        event.currentTarget.getBoundingClientRect(),
+        'xy',
+      )
+      if (!next) {
         return
       }
-      const ids = entries.map((entry) => entry.id)
-      const fromIndex = ids.indexOf(sourceId)
-      const toIndex = ids.indexOf(targetId)
-      if (fromIndex === -1 || toIndex === -1) {
-        return
-      }
-      const next = [...ids]
-      const [moved] = next.splice(fromIndex, 1)
-      next.splice(toIndex, 0, moved)
       reorderSoundboardEntries(sceneId, next)
     },
-    [entries, reorderSoundboardEntries, sceneId],
+    [reorderSoundboardEntries, sceneId],
   )
 
   return (
@@ -208,6 +234,7 @@ export function SoundboardTab({ sceneId, entries, onRemove, onAddSound, locked =
               hotkey={hotkey}
               playing={playing}
               locked={locked}
+              dragging={draggingId === entry.id}
               onPlay={() => {
                 void triggerSoundboard(entry)
               }}
@@ -217,33 +244,35 @@ export function SoundboardTab({ sceneId, entries, onRemove, onAddSound, locked =
                   event.preventDefault()
                   return
                 }
+                draggingIdRef.current = entry.id
                 setDraggingId(entry.id)
-                setDragOverId(null)
                 event.dataTransfer.effectAllowed = 'move'
                 event.dataTransfer.setData('text/plain', entry.id)
+                const card = event.currentTarget.closest('[data-flip-id]')
+                if (card instanceof HTMLElement) {
+                  beginCardDragPreview(event, card)
+                }
               }}
+              onDrag={moveCardDragPreview}
+              onDragEnd={clearDragging}
               onDragOver={(event) => {
                 if (locked) {
                   return
                 }
                 event.preventDefault()
-                const sourceId = event.dataTransfer.getData('text/plain') || draggingId
+                event.dataTransfer.dropEffect = 'move'
+                const sourceId = draggingIdRef.current || event.dataTransfer.getData('text/plain')
                 if (!sourceId || sourceId === entry.id) {
                   return
                 }
-                if (dragOverId === entry.id) {
-                  return
-                }
-                setDragOverId(entry.id)
-                reorderEntries(sourceId, entry.id)
+                tryLiveReorder(sourceId, entry.id, event)
               }}
               onDrop={(event) => {
                 if (locked) {
                   return
                 }
                 event.preventDefault()
-                setDraggingId(null)
-                setDragOverId(null)
+                clearDragging()
               }}
             />
           )

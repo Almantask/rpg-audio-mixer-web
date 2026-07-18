@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { SoundscapesTab } from '@/components/active-scene/SoundscapesTab'
@@ -9,6 +9,7 @@ const stopAll = vi.fn()
 const setSoundscapeMasterVolume = vi.fn()
 const setSoundscapeMuted = vi.fn()
 const canPlaySoundscape = vi.fn(() => true)
+const reorderSoundscapeSlots = vi.fn()
 
 function tile(partial: Partial<SoundscapeTileState> & Pick<SoundscapeTileState, 'slotId' | 'categoryName'>): SoundscapeTileState {
   return {
@@ -50,7 +51,7 @@ vi.mock('@/context/SceneAudioContext', () => ({
 
 vi.mock('@/context/CampaignDataContext', () => ({
   useCampaignData: () => ({
-    reorderSoundscapeSlots: vi.fn(),
+    reorderSoundscapeSlots,
   }),
 }))
 
@@ -86,6 +87,60 @@ const slots = [
     },
   },
 ]
+
+const reorderSlots = [
+  ...slots,
+  {
+    id: 'slot-monsters',
+    sceneId: 'scene-1',
+    categoryId: 'cat-monsters',
+    order: 2,
+    intensity: 'II' as const,
+    volume: 100,
+    category: {
+      id: 'cat-monsters',
+      name: 'Monsters',
+      trackCount: 1,
+      type: 'COMBAT',
+      levels: { I: [], II: ['t5'], III: [] },
+    },
+  },
+]
+
+function dragHandleFor(categoryName: string) {
+  const card = document.querySelector(`[data-soundscape-category="${categoryName}"]`)
+  const handle = card?.querySelector('[data-drag-handle]')
+  if (!handle) {
+    throw new Error(`Drag handle not found for ${categoryName}`)
+  }
+  return handle as HTMLElement
+}
+
+function cardFor(categoryName: string) {
+  const card = document.querySelector(`[data-soundscape-category="${categoryName}"]`)
+  if (!card) {
+    throw new Error(`Card not found for ${categoryName}`)
+  }
+  return card as HTMLElement
+}
+
+function mockDataTransfer() {
+  return {
+    effectAllowed: 'none',
+    dropEffect: 'none',
+    setData: vi.fn(),
+    getData: vi.fn(() => ''),
+    setDragImage: vi.fn(),
+  }
+}
+
+function simulateDragOver(sourceCategory: string, targetCategory: string, clientY = 0) {
+  const handle = dragHandleFor(sourceCategory)
+  const target = cardFor(targetCategory)
+  const dataTransfer = mockDataTransfer()
+  fireEvent.dragStart(handle, { dataTransfer })
+  fireEvent.dragOver(target, { dataTransfer, clientX: clientY === 0 ? 0 : 80, clientY })
+}
 
 describe('SoundscapesTab Play/Stop Scene', () => {
   beforeEach(() => {
@@ -245,5 +300,133 @@ describe('SoundscapesTab Play/Stop Scene', () => {
     })
     expect(tooltip.parentElement).toBe(document.body)
     expect(card?.contains(tooltip)).toBe(false)
+  })
+})
+
+describe('SoundscapesTab live drag reorder', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    canPlaySoundscape.mockReturnValue(true)
+    playback = {
+      soundboard: {},
+      soundscapes: {
+        'slot-weather': tile({ slotId: 'slot-weather', categoryName: 'Weather' }),
+        'slot-interior': tile({ slotId: 'slot-interior', categoryName: 'Interior' }),
+        'slot-monsters': tile({ slotId: 'slot-monsters', categoryName: 'Monsters' }),
+      },
+      soundboardMasterVolume: 100,
+      soundscapeMasterVolume: 82,
+      soundscapeMuted: false,
+    }
+  })
+
+  it('reorders on dragover before drop (live)', () => {
+    render(
+      <SoundscapesTab
+        sceneId="scene-1"
+        slots={reorderSlots}
+        onRemoveSlot={() => undefined}
+        onAddSoundscape={() => undefined}
+      />,
+    )
+
+    simulateDragOver('Monsters', 'Weather')
+
+    expect(reorderSoundscapeSlots).toHaveBeenCalledWith('scene-1', [
+      'slot-monsters',
+      'slot-weather',
+      'slot-interior',
+    ])
+  })
+
+  it('allows dragging back mid-drag (bidirectional live reorder)', () => {
+    const { rerender } = render(
+      <SoundscapesTab
+        sceneId="scene-1"
+        slots={reorderSlots}
+        onRemoveSlot={() => undefined}
+        onAddSoundscape={() => undefined}
+      />,
+    )
+
+    const handle = dragHandleFor('Weather')
+    const dataTransfer = mockDataTransfer()
+    fireEvent.dragStart(handle, { dataTransfer })
+
+    fireEvent.dragOver(cardFor('Monsters'), { dataTransfer, clientX: 0, clientY: 0 })
+    expect(reorderSoundscapeSlots).toHaveBeenLastCalledWith('scene-1', [
+      'slot-interior',
+      'slot-monsters',
+      'slot-weather',
+    ])
+
+    const reorderedSlots = [
+      { ...reorderSlots[1], order: 0 },
+      { ...reorderSlots[2], order: 1 },
+      { ...reorderSlots[0], order: 2 },
+    ]
+    rerender(
+      <SoundscapesTab
+        sceneId="scene-1"
+        slots={reorderedSlots}
+        onRemoveSlot={() => undefined}
+        onAddSoundscape={() => undefined}
+      />,
+    )
+
+    fireEvent.dragOver(cardFor('Interior'), { dataTransfer, clientX: 0, clientY: 0 })
+    expect(reorderSoundscapeSlots).toHaveBeenLastCalledWith('scene-1', [
+      'slot-weather',
+      'slot-interior',
+      'slot-monsters',
+    ])
+  })
+
+  it('does not reorder while Session Lock is on', () => {
+    render(
+      <SoundscapesTab
+        sceneId="scene-1"
+        slots={reorderSlots}
+        onRemoveSlot={() => undefined}
+        onAddSoundscape={() => undefined}
+        locked
+      />,
+    )
+
+    simulateDragOver('Monsters', 'Weather')
+    expect(reorderSoundscapeSlots).not.toHaveBeenCalled()
+  })
+
+  it('shows a floating card preview that follows the pointer while dragging', () => {
+    render(
+      <SoundscapesTab
+        sceneId="scene-1"
+        slots={reorderSlots}
+        onRemoveSlot={() => undefined}
+        onAddSoundscape={() => undefined}
+      />,
+    )
+
+    const handle = dragHandleFor('Weather')
+    const dataTransfer = mockDataTransfer()
+    const dragStart = new Event('dragstart', { bubbles: true, cancelable: true })
+    Object.defineProperty(dragStart, 'clientX', { value: 48 })
+    Object.defineProperty(dragStart, 'clientY', { value: 64 })
+    Object.defineProperty(dragStart, 'dataTransfer', { value: dataTransfer })
+    fireEvent(handle, dragStart)
+
+    expect(dataTransfer.setDragImage).toHaveBeenCalled()
+    const preview = screen.getByTestId('drag-card-preview')
+    expect(preview).toBeVisible()
+    expect(preview.textContent).toMatch(/Weather/i)
+
+    const dragMove = new Event('drag', { bubbles: true, cancelable: true })
+    Object.defineProperty(dragMove, 'clientX', { value: 120 })
+    Object.defineProperty(dragMove, 'clientY', { value: 220 })
+    fireEvent(handle, dragMove)
+    expect(preview.style.transform).toContain('translate3d(')
+
+    fireEvent.dragEnd(handle, { dataTransfer })
+    expect(preview).not.toBeVisible()
   })
 })

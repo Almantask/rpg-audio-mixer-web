@@ -4,9 +4,11 @@ import type { SceneSoundscapeSlot, SoundscapeIntensity } from '@/types/scene'
 import type { SoundscapeCategory } from '@/types/library'
 import { useCampaignData } from '@/context/CampaignDataContext'
 import { useSceneAudio } from '@/context/SceneAudioContext'
+import { reorderIdsForDragOver } from '@/lib/liveDragReorder'
 import { EMPTY_INTENSITY_LEVEL_HINT } from '@/lib/soundscapeStorage'
 import { cn } from '@/lib/utils'
 import { useFlipReorderAnimation } from '@/hooks/useFlipReorderAnimation'
+import { useHtml5CardDragPreview } from '@/hooks/useHtml5CardDragPreview'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Tooltip } from '@/components/ui/tooltip'
@@ -24,8 +26,11 @@ const INTENSITIES: SoundscapeIntensity[] = ['I', 'II', 'III']
 interface SoundscapeCategoryCardProps {
   slot: SceneSoundscapeSlot & { category?: SoundscapeCategory }
   locked: boolean
+  dragging: boolean
   onRemove: () => void
   onDragStart: (event: DragEvent<HTMLDivElement>) => void
+  onDrag: (event: DragEvent<HTMLDivElement>) => void
+  onDragEnd: () => void
   onDragOver: (event: DragEvent<HTMLDivElement>) => void
   onDrop: (event: DragEvent<HTMLDivElement>) => void
 }
@@ -114,8 +119,11 @@ function SoundscapeMasterControls({
 function SoundscapeCategoryCard({
   slot,
   locked,
+  dragging,
   onRemove,
   onDragStart,
+  onDrag,
+  onDragEnd,
   onDragOver,
   onDrop,
 }: SoundscapeCategoryCardProps) {
@@ -148,7 +156,8 @@ function SoundscapeCategoryCard({
       data-flip-id={slot.id}
       className={cn(
         'border-white/10 transition-shadow',
-        playing && 'border-gold/60 shadow-[0_0_16px_rgba(212,175,55,0.35)]',
+        playing && !dragging && 'border-gold/60 shadow-[0_0_16px_rgba(212,175,55,0.35)]',
+        dragging && 'opacity-0',
       )}
       onDragOver={onDragOver}
       onDrop={onDrop}
@@ -159,9 +168,14 @@ function SoundscapeCategoryCard({
             <div
               draggable={!locked}
               onDragStart={onDragStart}
+              onDrag={onDrag}
+              onDragEnd={onDragEnd}
               aria-label="Drag handle"
               data-drag-handle
-              className={cn('mt-1 cursor-grab', locked && 'cursor-not-allowed opacity-40')}
+              className={cn(
+                'mt-1 cursor-grab active:cursor-grabbing',
+                locked && 'cursor-not-allowed opacity-40',
+              )}
             >
               <GripVertical className="h-4 w-4 text-muted" />
             </div>
@@ -320,38 +334,49 @@ export function SoundscapesTab({
 }: SoundscapesTabProps) {
   const { reorderSoundscapeSlots } = useCampaignData()
   const [draggingId, setDraggingId] = useState<string | null>(null)
-  const [dragOverId, setDragOverId] = useState<string | null>(null)
-
-  const reorderSlots = useCallback(
-    (sourceId: string, targetId: string) => {
-      if (sourceId === targetId) {
-        return
-      }
-      const ids = slots.map((slot) => slot.id)
-      const fromIndex = ids.indexOf(sourceId)
-      const toIndex = ids.indexOf(targetId)
-      if (fromIndex === -1 || toIndex === -1) {
-        return
-      }
-      const next = [...ids]
-      const [moved] = next.splice(fromIndex, 1)
-      next.splice(toIndex, 0, moved)
-      reorderSoundscapeSlots(sceneId, next)
-    },
-    [reorderSoundscapeSlots, sceneId, slots],
-  )
+  const draggingIdRef = useRef<string | null>(null)
+  const { beginCardDragPreview, moveCardDragPreview, endCardDragPreview } =
+    useHtml5CardDragPreview()
 
   const sortedSlots = useMemo(() => [...slots].sort((a, b) => a.order - b.order), [slots])
-  const listRef = useRef<HTMLDivElement | null>(null)
-  useFlipReorderAnimation(
-    listRef,
-    [sortedSlots.map((slot) => slot.id).join('|')],
-    { durationMs: 180 },
+  const sortedIds = useMemo(() => sortedSlots.map((slot) => slot.id), [sortedSlots])
+  const sortedIdsRef = useRef(sortedIds)
+  sortedIdsRef.current = sortedIds
+
+  const clearDragging = useCallback(() => {
+    draggingIdRef.current = null
+    setDraggingId(null)
+    endCardDragPreview()
+  }, [endCardDragPreview])
+
+  const tryLiveReorder = useCallback(
+    (sourceId: string, overId: string, event: DragEvent<HTMLDivElement>) => {
+      const card = event.currentTarget
+      const next = reorderIdsForDragOver(
+        sortedIdsRef.current,
+        sourceId,
+        overId,
+        { x: event.clientX, y: event.clientY },
+        card.getBoundingClientRect(),
+        'y',
+      )
+      if (!next) {
+        return
+      }
+      reorderSoundscapeSlots(sceneId, next)
+    },
+    [reorderSoundscapeSlots, sceneId],
   )
+
+  const listRef = useRef<HTMLDivElement | null>(null)
+  useFlipReorderAnimation(listRef, [sortedIds.join('|')], {
+    durationMs: 180,
+    skipIds: draggingId,
+  })
 
   return (
     <div data-soundscapes-tab>
-      <SoundscapeMasterControls slotIds={sortedSlots.map((slot) => slot.id)} />
+      <SoundscapeMasterControls slotIds={sortedIds} />
 
       {sortedSlots.length === 0 ? (
         <p className="mb-6 text-center text-muted" data-soundscape-empty>
@@ -364,39 +389,42 @@ export function SoundscapesTab({
               key={slot.id}
               slot={slot}
               locked={locked}
+              dragging={draggingId === slot.id}
               onRemove={() => onRemoveSlot(slot.id)}
               onDragStart={(event) => {
                 if (locked) {
                   event.preventDefault()
                   return
                 }
+                draggingIdRef.current = slot.id
                 setDraggingId(slot.id)
-                setDragOverId(null)
                 event.dataTransfer.effectAllowed = 'move'
                 event.dataTransfer.setData('text/plain', slot.id)
+                const card = event.currentTarget.closest('[data-flip-id]')
+                if (card instanceof HTMLElement) {
+                  beginCardDragPreview(event, card)
+                }
               }}
+              onDrag={moveCardDragPreview}
+              onDragEnd={clearDragging}
               onDragOver={(event) => {
                 if (locked) {
                   return
                 }
                 event.preventDefault()
-                const sourceId = event.dataTransfer.getData('text/plain') || draggingId
+                event.dataTransfer.dropEffect = 'move'
+                const sourceId = draggingIdRef.current || event.dataTransfer.getData('text/plain')
                 if (!sourceId || sourceId === slot.id) {
                   return
                 }
-                if (dragOverId === slot.id) {
-                  return
-                }
-                setDragOverId(slot.id)
-                reorderSlots(sourceId, slot.id)
+                tryLiveReorder(sourceId, slot.id, event)
               }}
               onDrop={(event) => {
                 if (locked) {
                   return
                 }
                 event.preventDefault()
-                setDraggingId(null)
-                setDragOverId(null)
+                clearDragging()
               }}
             />
           ))}
