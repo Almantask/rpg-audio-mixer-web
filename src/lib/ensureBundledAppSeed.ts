@@ -194,7 +194,7 @@ export function ensureBundledAppSeed(
       if (session.id !== DEMO_SESSION_ID) {
         return session
       }
-      if (/^Session\s*1\s*[–—:\-]+/i.test(session.name.trim())) {
+      if (/^Session\s*1\s*[–—:-]+/i.test(session.name.trim())) {
         return { ...session, name: DEMO_SESSION_NAME }
       }
       return session
