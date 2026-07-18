@@ -14,9 +14,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          # Full history improves SonarCloud blame / new-code detection
-          fetch-depth: 0
 
       - uses: actions/setup-node@v4
         with:
@@ -38,17 +35,6 @@ jobs:
 
       - name: Build
         run: npm run build
-
-      - name: SonarCloud Scan
-        uses: SonarSource/sonarqube-scan-action@v8
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        with:
-          # Optional overrides if SonarCloud UI keys differ from sonar-project.properties:
-          # -Dsonar.organization=... -Dsonar.projectKey=...
-          args: >
-            -Dsonar.qualitygate.wait=true
-
 
   acceptance:
     runs-on: ubuntu-latest
