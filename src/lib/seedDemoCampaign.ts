@@ -336,7 +336,7 @@ export function mergeDemoCampaignInto(current: AppData, demo: DemoCampaignSeed):
       if (session.id !== DEMO_SESSION_ID) {
         return session
       }
-      const repairedName = /^Session\s*1\s*[–—:\-]+/i.test(session.name.trim())
+      const repairedName = /^Session\s*1\s*[–—:-]+/i.test(session.name.trim())
         ? DEMO_SESSION_NAME
         : session.name
       return {
