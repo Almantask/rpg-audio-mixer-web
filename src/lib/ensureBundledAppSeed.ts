@@ -1,11 +1,19 @@
 import type { AppData } from '@/types/campaign'
 import type { FxTrack, SoundscapeCategory, SoundscapeTrack } from '@/types/library'
 import { createBundledFxTracks } from '@/lib/seedBundledFx'
-import { createBundledSoundscapeLibrary } from '@/lib/seedBundledSoundscapes'
+import {
+  BUNDLED_SOUNDSCAPE_CATEGORY_NAMES,
+  createBundledSoundscapeLibrary,
+} from '@/lib/seedBundledSoundscapes'
 import {
   createDemoCampaignData,
   DEMO_CAMPAIGN_ID,
-  DEMO_SCENE_SOUNDSCAPE_CATEGORY_NAMES,
+  DEMO_SCENE_BONFIRE_DESCRIPTION,
+  DEMO_SCENE_BONFIRE_ID,
+  DEMO_SCENE_DESCRIPTION,
+  DEMO_SCENE_ID,
+  DEMO_SESSION_ID,
+  DEMO_SESSION_NAME,
   isDemoSceneConfigured,
   mergeDemoCampaignInto,
 } from '@/lib/seedDemoCampaign'
@@ -21,7 +29,7 @@ function countAssignedTracks(category: SoundscapeCategory): number {
 }
 
 function isBundledSoundscapeCategory(name: string): boolean {
-  return DEMO_SCENE_SOUNDSCAPE_CATEGORY_NAMES.some(
+  return BUNDLED_SOUNDSCAPE_CATEGORY_NAMES.some(
     (categoryName) => categoryName.toLowerCase() === name.toLowerCase(),
   )
 }
@@ -52,19 +60,48 @@ function mergeFxByName(existing: FxTrack[], incoming: FxTrack[]): FxTrack[] {
   return [...existing, ...incoming.filter((track) => !names.has(track.name.toLowerCase()))]
 }
 
+function sameTags(a: string[], b: string[]): boolean {
+  if (a.length !== b.length) {
+    return false
+  }
+  return a.every((tag, index) => tag === b[index])
+}
+
+function findBundledFxSeed(
+  track: FxTrack,
+  bundledById: Map<string, FxTrack>,
+  bundledByUrl: Map<string, FxTrack>,
+): FxTrack | undefined {
+  return bundledById.get(track.id) ?? bundledByUrl.get(track.audioUrl)
+}
+
 function syncBundledFxTracks(existing: FxTrack[], bundled: FxTrack[]): { fxTracks: FxTrack[]; changed: boolean } {
   const bundledById = new Map(bundled.map((track) => [track.id, track]))
+  const bundledByUrl = new Map(bundled.map((track) => [track.audioUrl, track]))
   let changed = false
   const synced = existing.map((track) => {
-    const seed = bundledById.get(track.id)
+    const seed = findBundledFxSeed(track, bundledById, bundledByUrl)
     if (!seed) {
       return track
     }
-    if (track.audioUrl === seed.audioUrl && track.name === seed.name) {
+    if (
+      track.audioUrl === seed.audioUrl &&
+      track.name === seed.name &&
+      track.durationSeconds === seed.durationSeconds &&
+      track.type === seed.type &&
+      sameTags(track.tags, seed.tags)
+    ) {
       return track
     }
     changed = true
-    return { ...track, audioUrl: seed.audioUrl, name: seed.name }
+    return {
+      ...track,
+      audioUrl: seed.audioUrl,
+      name: seed.name,
+      durationSeconds: seed.durationSeconds,
+      type: seed.type,
+      tags: [...seed.tags],
+    }
   })
   const merged = mergeFxByName(synced, bundled)
   if (merged.length !== existing.length) {
@@ -153,10 +190,42 @@ export function ensureBundledAppSeed(
   if (!shouldEnsureDemoCampaign && !shouldRepairDemoScene) {
     const sceneSoundboardEntries = dedupeSoundboardEntries(next.sceneSoundboardEntries)
     const entriesChanged = sceneSoundboardEntries.length !== next.sceneSoundboardEntries.length
-    if (!libraryChanged && !entriesChanged) {
+    const sessions = next.sessions.map((session) => {
+      if (session.id !== DEMO_SESSION_ID) {
+        return session
+      }
+      if (/^Session\s*1\s*[–—:\-]+/i.test(session.name.trim())) {
+        return { ...session, name: DEMO_SESSION_NAME }
+      }
+      return session
+    })
+    const sessionNameChanged = sessions.some(
+      (session, index) => session.name !== next.sessions[index]?.name,
+    )
+    const scenes = next.scenes.map((scene) => {
+      if (scene.id === DEMO_SCENE_ID && scene.description !== DEMO_SCENE_DESCRIPTION) {
+        return { ...scene, description: DEMO_SCENE_DESCRIPTION }
+      }
+      if (
+        scene.id === DEMO_SCENE_BONFIRE_ID &&
+        scene.description !== DEMO_SCENE_BONFIRE_DESCRIPTION
+      ) {
+        return { ...scene, description: DEMO_SCENE_BONFIRE_DESCRIPTION }
+      }
+      return scene
+    })
+    const sceneDescriptionsChanged = scenes.some(
+      (scene, index) => scene.description !== next.scenes[index]?.description,
+    )
+    if (!libraryChanged && !entriesChanged && !sessionNameChanged && !sceneDescriptionsChanged) {
       return null
     }
-    return entriesChanged ? { ...next, sceneSoundboardEntries } : next
+    return {
+      ...next,
+      ...(entriesChanged ? { sceneSoundboardEntries } : {}),
+      ...(sessionNameChanged ? { sessions } : {}),
+      ...(sceneDescriptionsChanged ? { scenes } : {}),
+    }
   }
 
   const demo = createDemoCampaignData(
@@ -172,7 +241,7 @@ export function ensureBundledAppSeed(
 }
 
 export function hasBundledSoundscapeLibrary(categories: SoundscapeCategory[]): boolean {
-  return ['Forest', 'Boss', 'Combat', 'Mystery'].every((name) =>
+  return BUNDLED_SOUNDSCAPE_CATEGORY_NAMES.every((name) =>
     categories.some(
       (category) => !category.deletedAt && category.name.toLowerCase() === name.toLowerCase(),
     ),
@@ -188,7 +257,7 @@ export function hasBundledSoundscapeTracks(
   }
   const trackIds = new Set(tracks.map((track) => track.id))
   return categories
-    .filter((category) => ['Forest', 'Boss', 'Combat', 'Mystery'].includes(category.name))
+    .filter((category) => BUNDLED_SOUNDSCAPE_CATEGORY_NAMES.includes(category.name))
     .every((category) => {
       const ids = [
         ...(category.levels?.I ?? []),

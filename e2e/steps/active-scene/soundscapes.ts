@@ -342,7 +342,10 @@ Then('{string} has volume {string}', async ({ page }, name: string, volume: stri
 })
 
 Then('{string} has intensity {word}', async ({ page }, name: string, intensity: string) => {
-  await expect(page.locator(`[data-soundscape-intensity="${name}"]`)).toHaveText(intensity)
+  await expect(page.locator(`[data-soundscape-intensity="${name}"]`)).toHaveAttribute(
+    'data-state',
+    intensity,
+  )
 })
 
 async function seedWeatherScene(page: import('@playwright/test').Page) {
@@ -378,8 +381,11 @@ async function tapCategoryPause(page: import('@playwright/test').Page, categoryN
 
 async function selectIntensity(page: import('@playwright/test').Page, categoryName: string, level: string) {
   const intensity = intensityLabelToLevel(level)
-  const card = page.locator(`[data-soundscape-category="${categoryName}"]`)
-  await card.getByRole('button', { name: intensity, exact: true }).click()
+  await page
+    .locator(
+      `[data-soundscape-category="${categoryName}"] [data-soundscape-intensity-level="${categoryName}-${intensity}"]`,
+    )
+    .click()
 }
 
 async function dragCategoryHandle(
@@ -883,9 +889,9 @@ When(
   'I attempt to select Intensity Level {word} on the {string} active-scene category card',
   async ({ page }, level: string, categoryName: string) => {
     const intensity = intensityLabelToLevel(level)
-    const button = page
-      .locator(`[data-soundscape-category="${categoryName}"]`)
-      .getByRole('button', { name: intensity, exact: true })
+    const button = page.locator(
+      `[data-soundscape-category="${categoryName}"] [data-soundscape-intensity-level="${categoryName}-${intensity}"]`,
+    )
     if (await button.isEnabled()) {
       await button.click()
     }
@@ -972,7 +978,8 @@ Then('no track from {string} begins playing', async ({ page }, categoryName: str
 })
 
 Then('Intensity Level {word} is selected on the {string} category', async ({ page }, level: string, categoryName: string) => {
-  await expect(page.locator(`[data-soundscape-intensity="${categoryName}"]`)).toHaveText(
+  await expect(page.locator(`[data-soundscape-intensity="${categoryName}"]`)).toHaveAttribute(
+    'data-state',
     intensityLabelToLevel(level),
   )
 })
@@ -1011,17 +1018,21 @@ Then(
 )
 
 Then('the active intensity level should remain Intensity Level {word}', async ({ page }, level: string) => {
-  await expect(page.locator('[data-soundscape-intensity="Dungeon"]')).toHaveText(intensityLabelToLevel(level))
+  await expect(page.locator('[data-soundscape-intensity="Dungeon"]')).toHaveAttribute(
+    'data-state',
+    intensityLabelToLevel(level),
+  )
 })
 
 Then(
   'Intensity Level {word} is unavailable on the {string} active-scene category card',
   async ({ page }, level: string, categoryName: string) => {
     const intensity = intensityLabelToLevel(level)
-    const button = page
-      .locator(`[data-soundscape-category="${categoryName}"]`)
-      .getByRole('button', { name: intensity, exact: true })
+    const button = page.locator(
+      `[data-soundscape-category="${categoryName}"] [data-soundscape-intensity-level="${categoryName}-${intensity}"]`,
+    )
     await expect(button).toBeDisabled()
+    await expect(button).toHaveAttribute('aria-label', /0 tracks/)
   },
 )
 
@@ -1206,9 +1217,10 @@ Given(
 )
 
 Given('Intensity Level {word} is selected on {string}', async ({ page }, level: string, categoryName: string) => {
-  const button = page
-    .locator(`[data-soundscape-category="${categoryName}"]`)
-    .getByRole('button', { name: intensityLabelToLevel(level), exact: true })
+  const intensity = intensityLabelToLevel(level)
+  const button = page.locator(
+    `[data-soundscape-category="${categoryName}"] [data-soundscape-intensity-level="${categoryName}-${intensity}"]`,
+  )
   if ((await button.getAttribute('aria-pressed')) !== 'true') {
     await button.click()
   }

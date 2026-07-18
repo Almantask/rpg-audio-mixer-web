@@ -1,5 +1,9 @@
 import type { SoundscapeCategory, SoundscapeTrack } from '@/types/library'
 
+/** Shown on disabled intensity controls in Library and Active Scene. */
+export const EMPTY_INTENSITY_LEVEL_HINT =
+  '0 tracks. To have this level available add at least 1 track.'
+
 export interface SoundscapeCategoryFilterOptions {
   search?: string
   type?: string

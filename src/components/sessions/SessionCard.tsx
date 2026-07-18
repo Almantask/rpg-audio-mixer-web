@@ -1,4 +1,4 @@
-import { Pencil, Plus, Trash2 } from 'lucide-react'
+import { ImagePlus, Pencil, Plus, Trash2 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import type { Session } from '@/types/campaign'
 import { formatSessionDate } from '@/lib/dateFormat'
@@ -147,26 +147,74 @@ export function SessionCardSkeleton() {
 export function CampaignHeroBanner({
   coverArtUrl,
   campaignName,
+  description,
+  onEdit,
 }: {
   coverArtUrl?: string
   campaignName: string
+  description?: string
+  onEdit: () => void
 }) {
   return (
     <div
       aria-label="Campaign hero banner"
       data-testid="campaign-hero-banner"
-      className="mb-8 overflow-hidden rounded-lg border border-white/10"
+      className="mb-8 space-y-3"
     >
-      {coverArtUrl ? (
-        <img
-          src={coverArtUrl}
-          alt={`${campaignName} cover art`}
-          className="h-40 w-full object-cover"
-        />
-      ) : (
-        <div className="flex h-40 items-center justify-center bg-charcoal-elevated text-muted">
-          No cover art
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          {description?.trim() ? (
+            <p className="text-sm text-muted" data-campaign-sessions-description>
+              {description}
+            </p>
+          ) : (
+            <button
+              type="button"
+              className="text-left text-sm text-muted/80 underline-offset-2 hover:text-parchment hover:underline"
+              onClick={onEdit}
+              data-campaign-sessions-add-description
+            >
+              Add a description
+            </button>
+          )}
         </div>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          aria-label={`Edit ${campaignName}`}
+          data-edit-campaign-sessions={campaignName}
+          onClick={onEdit}
+        >
+          <Pencil className="h-4 w-4" aria-hidden="true" />
+        </Button>
+      </div>
+
+      {coverArtUrl ? (
+        <button
+          type="button"
+          aria-label={`Change cover art for ${campaignName}`}
+          data-campaign-cover-art={campaignName}
+          className="block w-full overflow-hidden rounded-lg border border-white/10"
+          onClick={onEdit}
+        >
+          <img
+            src={coverArtUrl}
+            alt={`${campaignName} cover art`}
+            className="h-40 w-full object-cover"
+          />
+        </button>
+      ) : (
+        <button
+          type="button"
+          aria-label="Add cover art"
+          data-add-campaign-cover-art
+          className="flex h-40 w-full flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-gold/40 bg-charcoal-elevated/60 text-muted transition-colors hover:border-gold/60 hover:bg-gold/5 hover:text-gold"
+          onClick={onEdit}
+        >
+          <ImagePlus className="h-7 w-7" aria-hidden="true" />
+          <span className="text-sm font-medium">Add cover art</span>
+        </button>
       )}
     </div>
   )

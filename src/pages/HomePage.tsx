@@ -106,7 +106,7 @@ export function HomePage() {
           />
 
           {hasCampaigns ? (
-            <div className="grid gap-6 lg:grid-cols-2">
+            <div className="grid w-full gap-4 lg:grid-cols-2">
               {topSoundscape ? (
                 <TopSoundscapeCard
                   category={topSoundscape.category}
@@ -114,7 +114,6 @@ export function HomePage() {
                   playCount={topSoundscape.count}
                   previewBlocked={previewBlocked}
                   previewPlaying={soundscapePreviewActive && preview.playing}
-                  previewProgress={soundscapePreviewActive ? preview.progress : 0}
                   onPreviewToggle={() => {
                     if (topSoundscapeTrack) {
                       toggleTopSoundscapePreview(topSoundscape.category, topSoundscapeTrack)
@@ -131,7 +130,6 @@ export function HomePage() {
                   playCount={topFx.count}
                   previewBlocked={previewBlocked}
                   previewPlaying={fxPreviewActive && preview.playing}
-                  previewProgress={fxPreviewActive ? preview.progress : 0}
                   onPreviewToggle={() => toggleTopFxPreview(topFx.track)}
                 />
               ) : (

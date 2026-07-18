@@ -14,11 +14,11 @@ Feature: Browse FX library
     When I open the Sound Effects tab in the Library
     Then I see all three tracks as FX cards in the grid
 
-  Scenario: FX cards show title, duration, and base intensity
-    Given "Thunder Crack" is in the FX library with duration 0:04 and base intensity II
+  Scenario: FX cards show title and duration
+    Given "Thunder Crack" is in the FX library with duration 0:04
     When I open the Sound Effects tab in the Library
     Then the "Thunder Crack" FX card shows the title "Thunder Crack"
-    And the "Thunder Crack" FX card shows duration "0:04" and base intensity "II"
+    And the "Thunder Crack" FX card shows duration "0:04"
 
   Scenario: FX cards show tag badge chips
     Given "Wolf Howl" is in the FX library with tags "Combat" and "Creature"
@@ -43,3 +43,8 @@ Feature: Browse FX library
     Given "Wolf Howl" is in the FX library
     When I open the Sound Effects tab in the Library
     Then the "Wolf Howl" FX card has no checkbox
+
+  Scenario: Sound Effects tab has no Type or Sort sidebar filters
+    Given I am on the Sound Effects tab in the Library
+    Then I do not see an "FX Types" filter on the Sound Effects tab
+    And I do not see a "Sort Order" control on the Sound Effects tab

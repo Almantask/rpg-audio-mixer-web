@@ -23,6 +23,7 @@ import { useCampaignData } from '@/context/CampaignDataContext'
 import { getTrashedCampaigns, getTrashedSessions } from '@/lib/campaignStorage'
 import { getTrashedFxTracks } from '@/lib/libraryStorage'
 import { getTrashedScenes } from '@/lib/sceneStorage'
+import { formatSessionContextLabel } from '@/lib/sessionTitle'
 import { sortByDaysRemaining } from '@/lib/trashStorage'
 import type { BulkTrashResult, TrashTab } from '@/types/campaign'
 import { cn } from '@/lib/utils'
@@ -129,7 +130,10 @@ export function TrashPage() {
         return sortByDaysRemaining(getTrashedSessions(data.sessions)).map((session) => ({
           id: session.id,
           type: 'session',
-          title: session.name ? `Session ${session.number}: ${session.name}` : `Session ${session.number}`,
+          title: session.name
+            ? formatSessionContextLabel(session)
+            : `Session ${session.number}`,
+
           dataLabel: `Session ${session.number}`,
           deletedAt: session.deletedAt!,
         }))

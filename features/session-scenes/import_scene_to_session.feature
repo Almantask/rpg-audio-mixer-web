@@ -25,6 +25,16 @@ Feature: Import scene to session
     Then I see "Forest" in the scene picker
     And I do not see "Tavern" in the scene picker
 
+  Scenario: Import Scene picker search matches scene tags
+    Given I have scenes "Tavern" and "Dungeon" in Scenes
+    And the "Tavern" scene has the tag "Social"
+    And the "Dungeon" scene has the tag "Combat"
+    And I have a session "Session 1" with no scenes
+    When I open the Import Scene picker for "Session 1"
+    And I search the picker for "Combat"
+    Then I see "Dungeon" in the scene picker
+    And I do not see "Tavern" in the scene picker
+
   Scenario: Import picker excludes scenes already linked to the session
     Given "Tavern" is linked to "Session 1"
     And I have a scene "Forest" in Scenes that is not linked to "Session 1"

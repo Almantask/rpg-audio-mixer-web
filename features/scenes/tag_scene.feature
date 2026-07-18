@@ -37,3 +37,8 @@ Feature: Tag scene
     When I edit "Dungeon" and remove the "Combat" tag
     And I save
     Then the "Combat" tag is no longer shown on the "Dungeon" scene card
+
+  Scenario: Tag remove control is labelled for the tag being removed
+    Given the "Dungeon" scene has the tag "Combat"
+    When I open Edit for the "Dungeon" scene
+    Then I see a control labelled "Remove Combat tag"

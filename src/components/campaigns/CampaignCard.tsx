@@ -1,4 +1,4 @@
-import { Plus, Trash2 } from 'lucide-react'
+import { Pencil, Plus, Trash2 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import type { Campaign } from '@/types/campaign'
 import { formatSessionCount } from '@/lib/campaignStorage'
@@ -11,9 +11,16 @@ interface CampaignCardProps {
   sessionCount: number
   onDelete: () => void
   onOpen: () => void
+  onEdit: () => void
 }
 
-export function CampaignCard({ campaign, sessionCount, onDelete, onOpen }: CampaignCardProps) {
+export function CampaignCard({
+  campaign,
+  sessionCount,
+  onDelete,
+  onOpen,
+  onEdit,
+}: CampaignCardProps) {
   const navigate = useNavigate()
   const ctaLabel = sessionCount === 0 ? 'Start' : 'Resume'
 
@@ -24,11 +31,14 @@ export function CampaignCard({ campaign, sessionCount, onDelete, onOpen }: Campa
 
   return (
     <SwipeToDelete onSwipeDelete={onDelete}>
-      <Card data-campaign-card={campaign.name}>
+      <Card
+        data-campaign-card={campaign.name}
+        className="border-parchment/10 bg-charcoal-elevated transition-all duration-200 hover:-translate-y-px hover:border-gold/30"
+      >
         <CardContent className="flex items-center gap-4 p-4">
           <div
             aria-hidden="true"
-            className="h-20 w-20 shrink-0 overflow-hidden rounded-md bg-charcoal"
+            className="h-24 w-24 shrink-0 overflow-hidden rounded-lg border border-gold/20 bg-gradient-to-br from-gold/20 via-charcoal to-violet/20"
           >
             {campaign.coverArtUrl ? (
               <img
@@ -42,7 +52,7 @@ export function CampaignCard({ campaign, sessionCount, onDelete, onOpen }: Campa
 
           <div className="min-w-0 flex-1">
             <h3
-              className="font-serif text-lg text-gold"
+              className="font-serif text-xl tracking-wide text-gold"
               data-campaign-title={campaign.name}
             >
               {campaign.name}
@@ -56,7 +66,7 @@ export function CampaignCard({ campaign, sessionCount, onDelete, onOpen }: Campa
               </p>
             ) : null}
             <p
-              className="mt-2 text-sm text-muted"
+              className="mt-2 text-xs font-medium uppercase tracking-wider text-muted"
               data-campaign-session-count={campaign.name}
             >
               {formatSessionCount(sessionCount)}
@@ -64,6 +74,16 @@ export function CampaignCard({ campaign, sessionCount, onDelete, onOpen }: Campa
           </div>
 
           <div className="flex shrink-0 items-center gap-2">
+            <Button
+              type="button"
+              aria-label={`Edit ${campaign.name}`}
+              variant="ghost"
+              size="icon"
+              data-edit-campaign={campaign.name}
+              onClick={onEdit}
+            >
+              <Pencil className="h-4 w-4" aria-hidden="true" />
+            </Button>
             <Button
               type="button"
               aria-label={`Delete ${campaign.name}`}
@@ -94,11 +114,11 @@ export function CreateCampaignCard({ onClick }: { onClick: () => void }) {
       type="button"
       aria-label="Create Campaign"
       data-testid="create-campaign-card"
-      className="w-full rounded-lg border border-dashed border-gold/40 bg-transparent p-6 text-center transition-colors hover:border-gold/70"
+      className="w-full rounded-xl border border-dashed border-gold/35 bg-charcoal-elevated/40 p-6 text-center transition-colors hover:border-gold/60 hover:bg-gold/5"
       onClick={onClick}
     >
       <Plus className="mx-auto mb-2 h-6 w-6 text-gold" aria-hidden="true" />
-      <span className="text-gold">Create Campaign</span>
+      <span className="font-medium text-gold">Create Campaign</span>
     </button>
   )
 }

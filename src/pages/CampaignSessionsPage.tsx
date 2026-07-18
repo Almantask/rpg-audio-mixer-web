@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Navigate, useParams } from 'react-router-dom'
 import { PageHeader, ScreenLandmark } from '@/components/layout/AppShell'
+import { EditCampaignDialog } from '@/components/campaigns/EditCampaignDialog'
 import {
   AddNewSessionCard,
   CampaignHeroBanner,
@@ -23,6 +24,7 @@ export function CampaignSessionsPage() {
     getLastActiveSessionId,
     createSession,
     updateSession,
+    updateCampaign,
     softDeleteSession,
     markSessionOpened,
     markCampaignPlayed,
@@ -34,6 +36,7 @@ export function CampaignSessionsPage() {
   const lastActiveSessionId = getLastActiveSessionId(campaignId)
 
   const [createOpen, setCreateOpen] = useState(false)
+  const [editCampaignOpen, setEditCampaignOpen] = useState(false)
   const [editSession, setEditSession] = useState<Session | null>(null)
   const [deleteSession, setDeleteSession] = useState<Session | null>(null)
   const [formError, setFormError] = useState<string | null>(null)
@@ -88,12 +91,16 @@ export function CampaignSessionsPage() {
   return (
     <ScreenLandmark
       screenName="Campaign Sessions screen"
-      className="max-w-6xl"
       data-campaign-name={campaign.name}
     >
       <PageHeader title={campaign.name} subtitle="Campaign Sessions" />
 
-      <CampaignHeroBanner coverArtUrl={campaign.coverArtUrl} campaignName={campaign.name} />
+      <CampaignHeroBanner
+        coverArtUrl={campaign.coverArtUrl}
+        campaignName={campaign.name}
+        description={campaign.description}
+        onEdit={() => setEditCampaignOpen(true)}
+      />
 
       {sessionsState === 'loading' ? (
         <div
@@ -167,6 +174,19 @@ export function CampaignSessionsPage() {
           if (deleteSession) {
             softDeleteSession(deleteSession.id)
           }
+        }}
+      />
+
+      <EditCampaignDialog
+        open={editCampaignOpen}
+        campaignName={campaign.name}
+        initialName={campaign.name}
+        initialDescription={campaign.description}
+        initialCoverArtUrl={campaign.coverArtUrl}
+        onOpenChange={setEditCampaignOpen}
+        onSave={(input) => {
+          updateCampaign(campaign.id, input)
+          setEditCampaignOpen(false)
         }}
       />
     </ScreenLandmark>

@@ -69,19 +69,6 @@ async function ensureActiveSceneSoundboard(page: import('@playwright/test').Page
   await openActiveScene(page, DEFAULT_SCENE_NAME, 'Soundboard')
 }
 
-function pickerSortValue(sortOrder: string): string {
-  if (sortOrder === 'Name A–Z' || sortOrder === 'Name') {
-    return 'name'
-  }
-  if (sortOrder === 'Recently Added') {
-    return 'recent'
-  }
-  if (sortOrder === 'Duration') {
-    return 'duration'
-  }
-  return sortOrder
-}
-
 const DEFAULT_PLAYBACK_EFFECTS = ['Thunder Crack', 'Wolf Howl', 'Whip', 'Sword Clash', 'Owl Hooting', 'Door Creak', 'Dragon Roar']
 
 async function seedDefaultSoundboard(page: import('@playwright/test').Page) {
@@ -211,22 +198,6 @@ Given(
 )
 
 Given(
-  'the FX library has type {word} track {string} and type {word} track {string}',
-  async ({ page }, type1: string, name1: string, type2: string, name2: string) => {
-    await mergeE2EData(
-      page,
-      {
-        fxTracks: [
-          buildFxTrack(name1, { type: type1 as import('../../../src/types/library').FxType, tags: [type1] }),
-          buildFxTrack(name2, { type: type2 as import('../../../src/types/library').FxType, tags: [type2] }),
-        ],
-      },
-      { navigateHome: false },
-    )
-  },
-)
-
-Given(
   'the FX library has {string} at base intensity {word} and {string} at base intensity {word}',
   async ({ page }, soft: string, softIntensity: string, loud: string, loudIntensity: string) => {
     await mergeE2EData(
@@ -235,24 +206,6 @@ Given(
         fxTracks: [
           buildFxTrack(soft, { baseIntensity: softIntensity as 'I' | 'II' | 'III' }),
           buildFxTrack(loud, { baseIntensity: loudIntensity as 'I' | 'II' | 'III' }),
-        ],
-      },
-      { navigateHome: false },
-    )
-  },
-)
-
-Given(
-  'the FX library has {string} added before {string}',
-  async ({ page }, first: string, second: string) => {
-    const earlier = new Date(Date.now() - 86_400_000).toISOString()
-    const later = new Date().toISOString()
-    await mergeE2EData(
-      page,
-      {
-        fxTracks: [
-          buildFxTrack(first, { createdAt: earlier }),
-          buildFxTrack(second, { createdAt: later }),
         ],
       },
       { navigateHome: false },
@@ -395,21 +348,9 @@ When('I type {string} in the picker search bar', async ({ page }, query: string)
 })
 
 
-When('I set the FX Types filter to {word} in the picker', async ({ page }, fxType: string) => {
-  await page.locator('[data-fx-picker-filter-type]').selectOption(fxType)
-})
-
-When('I set the base intensity filter to {string} in the picker', async ({ page }, intensity: string) => {
-  await page.locator('[data-fx-picker-filter-intensity]').selectOption(intensity)
-})
-
 When('I open the Sound Effects picker modal', async ({ page }) => {
   await ensureActiveSceneSoundboard(page)
   await openFxPicker(page)
-})
-
-When('I set the Sort Order to {string} in the picker', async ({ page }, sortOrder: string) => {
-  await page.locator('[data-fx-picker-filter-sort]').selectOption(pickerSortValue(sortOrder))
 })
 
 When('I use the clear-filters action in the picker', async ({ page }) => {
@@ -486,12 +427,6 @@ Then(
   },
 )
 
-Then('I see FX Types, Base Intensity, and Sort Order filters for the picker', async ({ page }) => {
-  await expect(page.locator('[data-fx-picker-filter-type]')).toBeVisible()
-  await expect(page.locator('[data-fx-picker-filter-intensity]')).toBeVisible()
-  await expect(page.locator('[data-fx-picker-filter-sort]')).toBeVisible()
-})
-
 Then('I can select effects for addition to the soundboard from the picker grid', async ({ page }) => {
   await expect(page.locator('[data-fx-picker-check]').first()).toBeVisible()
 })
@@ -503,6 +438,17 @@ Then('I do not see an Import action in the picker', async ({ page }) => {
 
 Then('I do not see a {string} button in the picker', async ({ page }, label: string) => {
   await expect(page.locator('[data-fx-picker-modal]').getByRole('button', { name: label })).toHaveCount(0)
+})
+
+Then('I do not see an {string} filter in the picker', async ({ page }, label: string) => {
+  const modal = page.locator('[data-fx-picker-modal]')
+  await expect(modal.getByText(label, { exact: true })).toHaveCount(0)
+})
+
+Then('I do not see a {string} control in the picker', async ({ page }, label: string) => {
+  const modal = page.locator('[data-fx-picker-modal]')
+  await expect(modal.getByText(label, { exact: true })).toHaveCount(0)
+  await expect(modal.getByLabel(label)).toHaveCount(0)
 })
 
 Then('I see guidance to import or purchase tracks via Library — Sound Effects', async ({ page }) => {
@@ -564,25 +510,6 @@ Then('I see a clear-filters action', async ({ page }) => {
     await expect(page.locator('[data-sc-picker-no-match] button, [data-picker-no-match] button')).toBeVisible()
   }
 })
-
-Then(
-  '{string} appears before {string} in the picker grid',
-  async ({ page }, first: string, second: string) => {
-    const firstIndex = await page
-      .locator('[data-fx-picker-item]')
-      .evaluateAll((elements, target) => {
-        return elements.findIndex((element) => element.getAttribute('data-fx-picker-item') === target)
-      }, first)
-    const secondIndex = await page
-      .locator('[data-fx-picker-item]')
-      .evaluateAll((elements, target) => {
-        return elements.findIndex((element) => element.getAttribute('data-fx-picker-item') === target)
-      }, second)
-    expect(firstIndex).toBeGreaterThanOrEqual(0)
-    expect(secondIndex).toBeGreaterThanOrEqual(0)
-    expect(firstIndex).toBeLessThan(secondIndex)
-  },
-)
 
 Then('But I see {string} in the picker grid', async ({ page }, name: string) => {
   const fxItem = page.locator(`[data-fx-picker-item="${name}"]`)
@@ -937,8 +864,10 @@ Then('the {string} tile shows the playing state \\(glow or pulse\\)', async ({ p
   ).toHaveAttribute('data-state', 'playing')
 })
 
-Then('the tile shows a pause icon instead of the idle play affordance', async ({ page }) => {
-  await expect(page.locator('[data-soundboard-tile][data-state="playing"]').first()).toBeVisible()
+Then('the tile no longer shows the idle play affordance', async ({ page }) => {
+  const playing = page.locator('[data-soundboard-tile][data-state="playing"]').first()
+  await expect(playing).toBeVisible()
+  await expect(playing.getByRole('button', { name: /^Stop / })).toHaveCount(0)
 })
 
 Then('all {string} instances stop', async ({ page }, effectName: string) => {

@@ -1,5 +1,5 @@
 import { useCallback, useRef, useState, type DragEvent } from 'react'
-import { GripVertical, Pause, Play, Plus, Trash2 } from 'lucide-react'
+import { GripVertical, Play, Plus, Trash2 } from 'lucide-react'
 import type { FxTrack } from '@/types/library'
 import type { SceneSoundboardEntry } from '@/types/scene'
 import { useCampaignData } from '@/context/CampaignDataContext'
@@ -26,7 +26,6 @@ interface SoundboardTileProps {
   playing: boolean
   locked: boolean
   onPlay: () => void
-  onStop: () => void
   onRemove: () => void
   onDragStart: (event: DragEvent<HTMLDivElement>) => void
   onDragOver: (event: DragEvent<HTMLDivElement>) => void
@@ -39,7 +38,6 @@ function SoundboardTile({
   playing,
   locked,
   onPlay,
-  onStop,
   onRemove,
   onDragStart,
   onDragOver,
@@ -102,17 +100,6 @@ function SoundboardTile({
               {entry.track.name}
             </p>
           </button>
-          {playing ? (
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              aria-label={`Stop ${entry.track.name}`}
-              onClick={onStop}
-            >
-              <Pause className="h-4 w-4 text-gold" />
-            </Button>
-          ) : null}
         </div>
         {hotkey ? (
           <p className="text-center text-xs text-muted" data-soundboard-hotkey={entry.track.name}>
@@ -126,8 +113,7 @@ function SoundboardTile({
 
 export function SoundboardTab({ sceneId, entries, onRemove, onAddSound, locked = false }: SoundboardTabProps) {
   const { reorderSoundboardEntries } = useCampaignData()
-  const { playback, triggerSoundboard, stopSoundboardFx, setSoundboardMasterVolume, isSoundboardPlaying } =
-    useSceneAudio()
+  const { playback, triggerSoundboard, setSoundboardMasterVolume, isSoundboardPlaying } = useSceneAudio()
   const [draggingId, setDraggingId] = useState<string | null>(null)
   const [dragOverId, setDragOverId] = useState<string | null>(null)
   const gridRef = useRef<HTMLDivElement | null>(null)
@@ -209,7 +195,6 @@ export function SoundboardTab({ sceneId, entries, onRemove, onAddSound, locked =
               onPlay={() => {
                 void triggerSoundboard(entry)
               }}
-              onStop={() => stopSoundboardFx(entry.fxTrackId)}
               onRemove={() => onRemove(entry.id)}
               onDragStart={(event) => {
                 if (locked) {

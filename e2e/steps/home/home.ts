@@ -511,10 +511,6 @@ Then('the Top Soundscape category begins playing as an inline preview', async ({
     .toBe(true)
 })
 
-Then('I see a progress bar on the Top Soundscape card', async ({ page }) => {
-  await expect(page.locator('[data-home-preview-progress="soundscape"]')).toBeVisible()
-})
-
 Then('the Top Soundscape category resumes playing as an inline preview', async ({ page }) => {
   await expect
     .poll(async () => {
@@ -544,10 +540,6 @@ Then('the first loopable track in {string} plays as an inline preview', async ({
 
 Then('I still see {string} on the Top Soundscape card', async ({ page }, text: string) => {
   await expect(page.locator('[data-top-soundscape-card]')).toContainText(text)
-})
-
-Then('I see a progress bar on the Top FX card', async ({ page }) => {
-  await expect(page.locator('[data-home-preview-progress="fx"]')).toBeVisible()
 })
 
 Then('I do not see the Scenes screen', async ({ page }) => {

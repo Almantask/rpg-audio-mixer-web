@@ -15,6 +15,7 @@ import {
 } from '@/components/scenes/DeleteSceneDialog'
 import { useCampaignData } from '@/context/CampaignDataContext'
 import { getUnlinkedScenesForSession } from '@/lib/sceneStorage'
+import { formatSessionPageTitle } from '@/lib/sessionTitle'
 
 export function SessionScenesPage() {
   const { campaignId = '', sessionId = '' } = useParams()
@@ -45,7 +46,7 @@ export function SessionScenesPage() {
 
   const campaignName = campaign?.name ?? campaignId
   const sessionLabel = session ? `Session ${session.number}` : sessionId
-  const pageTitle = session ? `Session ${session.number} – ${session.name}` : sessionLabel
+  const pageTitle = session ? formatSessionPageTitle(session) : sessionLabel
 
   const availableToImport = useMemo(
     () => getUnlinkedScenesForSession(data.scenes, sessionId, data.sessionSceneLinks),
@@ -171,7 +172,11 @@ export function SessionScenesPage() {
       <ImportScenePickerDialog
         open={importOpen}
         onOpenChange={setImportOpen}
-        availableScenes={availableToImport.map((scene) => ({ id: scene.id, name: scene.name }))}
+        availableScenes={availableToImport.map((scene) => ({
+          id: scene.id,
+          name: scene.name,
+          tags: scene.tags,
+        }))}
         onImport={(sceneIds) => linkScenesToSession(sessionId, sceneIds)}
       />
     </ScreenLandmark>

@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Active Scene — Arcanum Audio (prototype)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            ink: { DEFAULT: '#0a0b0f', raised: '#12131a', overlay: '#1a1b24' },
+            parchment: { DEFAULT: '#e8e4d9' },
+            ember: { DEFAULT: '#c9a227', bright: '#e0b83a' },
+            violet: { DEFAULT: '#8b6cc7' },
+            mist: '#9a9588',
+          },
+          fontFamily: { display: ['Cinzel', 'serif'], sans: ['Figtree', 'system-ui', 'sans-serif'] },
+        },
+      },
+    }
+  </script>
+  <style>
+    :root { --aa-ease: cubic-bezier(0.22, 1, 0.36, 1); }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; font-family: Figtree, system-ui, sans-serif; color: #e8e4d9;
+      background:
+        radial-gradient(ellipse 80% 50% at 50% -10%, rgba(201,162,39,0.07), transparent 55%),
+        #0a0b0f;
+      min-height: 100vh;
+    }
+    body::before {
+      content: ""; position: fixed; inset: 0; pointer-events: none; opacity: 0.03; z-index: 40;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+    .aa-display { font-family: Cinzel, serif; letter-spacing: 0.04em; }
+    .shell { display: flex; min-height: 100vh; position: relative; z-index: 1; }
+    .sidebar {
+      width: 15.5rem; flex-shrink: 0; background: rgba(18,19,26,0.92);
+      border-right: 1px solid rgba(232,228,217,0.07);
+      display: flex; flex-direction: column; padding: 1.25rem 0.85rem;
+    }
+    .nav-item {
+      display: flex; align-items: center; gap: 0.75rem; min-height: 44px; padding: 0 0.85rem;
+      border-radius: 8px; color: #9a9588; text-decoration: none; font-size: 0.9375rem; font-weight: 500;
+    }
+    .nav-item:hover { color: #e8e4d9; background: rgba(255,255,255,0.03); }
+    .nav-item[aria-current="page"] {
+      color: #e0b83a; background: rgba(201,162,39,0.12); box-shadow: inset 3px 0 0 #c9a227;
+    }
+    .main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+    .topbar {
+      display: flex; align-items: center; gap: 0.75rem; min-height: 3.5rem; padding: 0 1.5rem;
+      border-bottom: 1px solid rgba(232,228,217,0.06); background: rgba(10,11,15,0.65); backdrop-filter: blur(8px);
+    }
+    .content { flex: 1; padding: 1.25rem 1.5rem 2rem; }
+    .content-inner { max-width: 80rem; margin: 0 auto; }
+    .crumb { font-size: 0.75rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #9a9588; }
+    .crumb a { color: #9a9588; text-decoration: none; }
+    .crumb a:hover { color: #e0b83a; }
+    .tabs { display: flex; gap: 0.25rem; border-bottom: 1px solid rgba(232,228,217,0.08); }
+    .tab {
+      min-height: 44px; padding: 0 1rem; border: none; background: transparent;
+      color: #9a9588; font-weight: 600; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px;
+    }
+    .tab[aria-selected="true"] { color: #e0b83a; border-bottom-color: #c9a227; }
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; min-height: 40px;
+      padding: 0 1rem; border-radius: 8px; font-weight: 600; font-size: 0.8125rem;
+      border: 1px solid rgba(201,162,39,0.35); background: rgba(201,162,39,0.1); color: #e0b83a; cursor: pointer;
+    }
+    .btn:hover { background: rgba(201,162,39,0.18); }
+    .btn:focus-visible, .tab:focus-visible, .nav-item:focus-visible, .icon-btn:focus-visible, .pad:focus-visible, .master:focus-visible {
+      outline: 2px solid #e0b83a; outline-offset: 2px;
+    }
+    .icon-btn {
+      width: 44px; height: 44px; border-radius: 8px; border: 1px solid rgba(232,228,217,0.1);
+      background: transparent; color: #e8e4d9; display: grid; place-items: center; cursor: pointer;
+    }
+    .loop-row {
+      display: grid; grid-template-columns: 1fr auto; gap: 1rem; align-items: center;
+      padding: 1rem 1.15rem; border-radius: 12px; border: 1px solid rgba(201,162,39,0.22);
+      background: #12131a; margin-bottom: 0.75rem;
+    }
+    .progress {
+      height: 4px; border-radius: 999px; background: rgba(232,228,217,0.08); overflow: hidden; margin-top: 0.75rem;
+    }
+    .progress > span {
+      display: block; height: 100%; width: 38%; background: #c9a227;
+      animation: progress 8s linear infinite;
+    }
+    .pad {
+      min-height: 88px; border-radius: 12px; border: 1px solid rgba(139,108,199,0.35);
+      background: linear-gradient(160deg, rgba(139,108,199,0.12), #12131a 70%);
+      color: #e8e4d9; font-weight: 600; cursor: pointer;
+      transition: transform 120ms var(--aa-ease), border-color 120ms var(--aa-ease), background 120ms var(--aa-ease);
+    }
+    .pad:hover { transform: translateY(-2px); border-color: rgba(139,108,199,0.6); }
+    .pad:active { transform: scale(0.98); background: rgba(139,108,199,0.22); }
+    .master {
+      width: 100%; accent-color: #c9a227;
+    }
+    .transport {
+      position: sticky; bottom: 0; margin-top: 1.5rem;
+      border: 1px solid rgba(232,228,217,0.08); border-radius: 14px 14px 0 0;
+      background: rgba(18,19,26,0.95); backdrop-filter: blur(10px);
+      padding: 1rem 1.25rem; display: flex; flex-wrap: wrap; align-items: center; gap: 1rem;
+      animation: enter 450ms var(--aa-ease) both;
+    }
+    .play-master {
+      width: 52px; height: 52px; border-radius: 999px; border: none; background: #c9a227; color: #0a0b0f;
+      display: grid; place-items: center; cursor: pointer;
+    }
+    @keyframes progress {
+      from { width: 0%; }
+      to { width: 100%; }
+    }
+    @keyframes enter {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @media (max-width: 1023px) {
+      .sidebar { display: none; }
+      .sidebar.open { display: flex; position: fixed; inset: 0 auto 0 0; z-index: 30; }
+      .scrim { position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 25; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <div id="scrim" class="scrim hidden" hidden></div>
+    <aside class="sidebar" id="sidebar" aria-label="Primary">
+      <div class="mb-8 px-2">
+        <p class="aa-display text-lg font-semibold text-ember leading-tight">Arcanum<br/>Audio</p>
+        <p class="mt-1 text-xs text-mist">Session desk</p>
+      </div>
+      <nav class="flex flex-1 flex-col gap-1" aria-label="Main">
+        <a class="nav-item" href="home-prototype.html">Home</a>
+        <a class="nav-item" href="campaigns-prototype.html">Campaign</a>
+        <a class="nav-item" href="scenes-list-prototype.html" aria-current="page">Scenes</a>
+        <a class="nav-item" href="library-prototype.html">Library</a>
+        <a class="nav-item" href="#">Credits</a>
+        <a class="nav-item" href="#">Trash</a>
+      </nav>
+      <div class="mt-auto px-2 pt-4">
+        <a class="text-xs text-mist hover:text-ember" href="visual-theme-system.html">Theme system →</a>
+      </div>
+    </aside>
+
+    <div class="main">
+      <header class="topbar">
+        <button type="button" class="icon-btn lg:hidden" id="menuBtn" aria-label="Open menu" aria-expanded="false">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+        </button>
+        <nav class="crumb" aria-label="Breadcrumb">
+          <a href="campaigns-prototype.html">Campaign</a> · <a href="#">Demo Adventure</a> · Session 1
+        </nav>
+      </header>
+
+      <main class="content" aria-label="Active Scene screen">
+        <div class="content-inner">
+          <div class="mb-5 flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <h1 class="aa-display text-3xl text-ember md:text-4xl">The Ancient Gate</h1>
+              <p class="mt-2 text-mist">Live mix — keep soundscapes looping, fire FX mid-scene.</p>
+            </div>
+          </div>
+
+          <div class="tabs mb-6" role="tablist" aria-label="Scene audio">
+            <button type="button" class="tab" role="tab" aria-selected="true" data-panel="soundscapes">Soundscapes</button>
+            <button type="button" class="tab" role="tab" aria-selected="false" data-panel="soundboard">Soundboard</button>
+          </div>
+
+          <div id="panel-soundscapes">
+            <div class="mb-4 flex justify-end">
+              <button type="button" class="btn">+ Add Soundscape</button>
+            </div>
+            <article class="loop-row">
+              <div>
+                <div class="flex flex-wrap items-center gap-3">
+                  <h2 class="aa-display text-lg text-ember">Forest Canopy</h2>
+                  <span class="text-xs font-semibold uppercase tracking-wider text-mist">Looping</span>
+                </div>
+                <div class="progress" aria-hidden="true"><span></span></div>
+                <label class="mt-3 flex items-center gap-3 text-sm text-mist">
+                  Volume
+                  <input class="master" type="range" min="0" max="100" value="72" aria-valuetext="72 percent" />
+                </label>
+              </div>
+              <button type="button" class="play-master" aria-label="Pause Forest Canopy" aria-pressed="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6 5h4v14H6zm8 0h4v14h-4z"/></svg>
+              </button>
+            </article>
+            <article class="loop-row" style="border-color: rgba(232,228,217,0.1);">
+              <div>
+                <div class="flex flex-wrap items-center gap-3">
+                  <h2 class="aa-display text-lg text-ember">Distant Wind</h2>
+                  <span class="text-xs font-semibold uppercase tracking-wider text-mist">Paused</span>
+                </div>
+                <label class="mt-3 flex items-center gap-3 text-sm text-mist">
+                  Volume
+                  <input class="master" type="range" min="0" max="100" value="40" aria-valuetext="40 percent" />
+                </label>
+              </div>
+              <button type="button" class="play-master" style="background:#1a1b24;color:#e0b83a;border:1px solid rgba(201,162,39,0.4)" aria-label="Play Distant Wind" aria-pressed="false">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7L8 5Z"/></svg>
+              </button>
+            </article>
+          </div>
+
+          <div id="panel-soundboard" hidden>
+            <div class="mb-4 flex justify-end">
+              <button type="button" class="btn" style="border-color:rgba(139,108,199,0.45);color:#8b6cc7;background:rgba(139,108,199,0.1)">+ Add Sound</button>
+            </div>
+            <div class="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4">
+              <button type="button" class="pad p-4 text-left"><span class="block text-violet text-xs uppercase tracking-wider mb-1">Combat</span>Arrow</button>
+              <button type="button" class="pad p-4 text-left"><span class="block text-violet text-xs uppercase tracking-wider mb-1">Creature</span>Dragon Roar</button>
+              <button type="button" class="pad p-4 text-left"><span class="block text-violet text-xs uppercase tracking-wider mb-1">Magic</span>Spell Cast</button>
+              <button type="button" class="pad p-4 text-left"><span class="block text-violet text-xs uppercase tracking-wider mb-1">Foley</span>Door Creak</button>
+              <button type="button" class="pad p-4 text-left"><span class="block text-violet text-xs uppercase tracking-wider mb-1">Combat</span>Sword Clash</button>
+              <button type="button" class="pad p-4 text-left"><span class="block text-violet text-xs uppercase tracking-wider mb-1">Weather</span>Thunder</button>
+            </div>
+          </div>
+
+          <div class="transport" aria-label="Master transport">
+            <button type="button" class="play-master" aria-label="Pause all ambience" aria-pressed="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h4v14H6zm8 0h4v14h-4z"/></svg>
+            </button>
+            <div class="min-w-0 flex-1">
+              <p class="text-sm font-semibold text-parchment">Scene master</p>
+              <label class="mt-2 flex items-center gap-3 text-sm text-mist">
+                Master volume
+                <input class="master max-w-xs" type="range" min="0" max="100" value="85" aria-valuetext="85 percent" />
+              </label>
+            </div>
+            <p class="text-xs text-mist">Low-glance transport stays visible while mixing.</p>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+  <script>
+    const sidebar = document.getElementById('sidebar');
+    const scrim = document.getElementById('scrim');
+    const menuBtn = document.getElementById('menuBtn');
+    menuBtn?.addEventListener('click', () => {
+      const open = !sidebar.classList.contains('open');
+      sidebar.classList.toggle('open', open);
+      scrim.classList.toggle('hidden', !open);
+      scrim.hidden = !open;
+      menuBtn.setAttribute('aria-expanded', String(open));
+    });
+    scrim?.addEventListener('click', () => {
+      sidebar.classList.remove('open');
+      scrim.classList.add('hidden');
+      scrim.hidden = true;
+      menuBtn.setAttribute('aria-expanded', 'false');
+    });
+    document.querySelectorAll('.tab').forEach((tab) => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach((t) => t.setAttribute('aria-selected', 'false'));
+        tab.setAttribute('aria-selected', 'true');
+        const panel = tab.getAttribute('data-panel');
+        document.getElementById('panel-soundscapes').hidden = panel !== 'soundscapes';
+        document.getElementById('panel-soundboard').hidden = panel !== 'soundboard';
+      });
+    });
+  </script>
+</body>
+</html>

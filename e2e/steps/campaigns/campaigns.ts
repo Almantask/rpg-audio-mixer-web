@@ -37,6 +37,14 @@ Given('I have a campaign {string} with no description', async ({ page }, name: s
 })
 
 Given(
+  'I have a campaign {string} with description {string}',
+  async ({ page }, name: string, description: string) => {
+    await resetE2EData(page)
+    await seedE2EData(page, { campaigns: [buildCampaign(name, { description })] })
+  },
+)
+
+Given(
   'I have a campaign {string} with {int} sessions',
   async ({ page }, name: string, count: number) => {
     await resetE2EData(page)
@@ -210,6 +218,52 @@ When('I attempt to confirm creation', async ({ page }) => {
 When('I cancel campaign creation', async ({ page }) => {
   await page.getByRole('button', { name: 'Cancel' }).click()
 })
+
+When('I tap Edit on the {string} campaign card', async ({ page }, campaignName: string) => {
+  await ensureCampaignsScreen(page)
+  await page.getByRole('button', { name: `Edit ${campaignName}`, exact: true }).click()
+})
+
+When('I save the campaign edits', async ({ page }) => {
+  await page.getByRole('dialog').getByRole('button', { name: 'Save', exact: true }).click()
+})
+
+When('I attempt to save the campaign edits', async ({ page }) => {
+  await page.getByRole('dialog').getByRole('button', { name: 'Save', exact: true }).click()
+})
+
+When('I cancel campaign edit', async ({ page }) => {
+  await page.getByRole('dialog').getByRole('button', { name: 'Cancel', exact: true }).click()
+})
+
+When(
+  'I tap Edit on the Campaign Sessions hero for {string}',
+  async ({ page }, campaignName: string) => {
+    await page.locator(`[data-edit-campaign-sessions="${campaignName}"]`).click()
+  },
+)
+
+When('I tap {string} on the Campaign Sessions hero', async ({ page }, label: string) => {
+  if (label === 'Add a description') {
+    await page.locator('[data-campaign-sessions-add-description]').click()
+    return
+  }
+  await page.getByRole('button', { name: label, exact: true }).click()
+})
+
+Then('I see the Edit Campaign dialog for {string}', async ({ page }, campaignName: string) => {
+  const dialog = page.getByRole('dialog')
+  await expect(dialog).toBeVisible()
+  await expect(dialog.getByRole('heading', { name: 'Edit Campaign' })).toBeVisible()
+  await expect(page.locator(`[data-edit-campaign-dialog="${campaignName}"]`)).toBeVisible()
+})
+
+Then(
+  'I still see the Edit Campaign dialog for {string}',
+  async ({ page }, campaignName: string) => {
+    await expect(page.locator(`[data-edit-campaign-dialog="${campaignName}"]`)).toBeVisible()
+  },
+)
 
 When('I am creating a new campaign {string}', async ({ page }, name: string) => {
   await page.goto('/campaigns')

@@ -6,12 +6,13 @@ describe('getActiveSidebarItem', () => {
     expect(getActiveSidebarItem('/')).toBe('Home')
   })
 
-  it('highlights Campaign on the campaigns list', () => {
-    expect(getActiveSidebarItem('/campaigns')).toBe('Campaign')
+  it('highlights Campaigns on the campaigns list', () => {
+    expect(getActiveSidebarItem('/campaigns')).toBe('Campaigns')
   })
 
-  it('highlights Home on campaign session drill-down routes', () => {
-    expect(getActiveSidebarItem('/campaigns/abc/sessions/1/scenes')).toBe('Home')
+  it('highlights Campaigns on campaign session drill-down routes', () => {
+    expect(getActiveSidebarItem('/campaigns/abc/sessions')).toBe('Campaigns')
+    expect(getActiveSidebarItem('/campaigns/abc/sessions/1/scenes')).toBe('Campaigns')
   })
 
   it('highlights Scenes on the global scenes list', () => {
@@ -20,6 +21,15 @@ describe('getActiveSidebarItem', () => {
 
   it('highlights Scenes when Active Scene is opened from the global list', () => {
     expect(getActiveSidebarItem('/scenes/tavern/active')).toBe('Scenes')
+  })
+
+  it('highlights Campaigns when Active Scene is opened from a campaign session', () => {
+    expect(
+      getActiveSidebarItem('/scenes/tavern/active', {
+        campaignId: 'campaign-demo',
+        sessionId: 'session-1',
+      }),
+    ).toBe('Campaigns')
   })
 
   it('highlights Library on library routes', () => {

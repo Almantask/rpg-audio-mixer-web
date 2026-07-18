@@ -4,40 +4,24 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 
 import { PageHeader, ScreenLandmark } from '@/components/layout/AppShell'
 
-import {
-
-  FxCard,
-
+import { FxCard,
   FxCardSkeleton,
-
   FxLibraryEmptyState,
-
   FxMiniPlayer,
-
-  ImportFxButton,
-
 } from '@/components/library/FxCard'
-
+import { CreateSoundscapeCategoryDialog } from '@/components/library/CreateSoundscapeCategoryDialog'
+import { FreeTracksModal } from '@/components/library/FreeTracksModal'
+import { ImportFxModal } from '@/components/library/ImportFxModal'
+import { StoreModal } from '@/components/library/StoreModal'
+import { SoundscapeCategoryCard } from '@/components/library/SoundscapeCategoryCard'
 import { Button } from '@/components/ui/button'
-
 import { Input } from '@/components/ui/input'
-
 import { Label } from '@/components/ui/label'
-
 import { useCampaignData } from '@/context/CampaignDataContext'
-
 import { filterFxTracks } from '@/lib/libraryStorage'
 import { filterSoundscapeCategoriesForBrowse } from '@/lib/soundscapeStorage'
-
-import type { FxIntensity, FxType, SoundscapeCategory } from '@/types/library'
-
 import { audioPreview } from '@/lib/audioPreview'
-
-import { SwipeToDelete } from '@/components/shared/SwipeToDelete'
-
-import { Pause, Play, Pencil, Trash2, ExternalLink, ShoppingCart, Plus } from 'lucide-react'
-
-import { Card, CardContent } from '@/components/ui/card'
+import { ExternalLink, ShoppingCart, Plus } from 'lucide-react'
 
 
 
@@ -60,154 +44,7 @@ function libraryTabFromQuery(value: string | null): LibraryTab {
 
 
 
-const FX_TYPES: Array<FxType | 'ALL'> = [
-
-  'ALL',
-
-  'IMPACT',
-
-  'COMBAT',
-
-  'CREATURE',
-
-  'UI',
-
-  'MAGIC',
-
-  'AMBIENT',
-
-  'OTHER',
-
-]
-
-
-
-const INTENSITIES: FxIntensity[] = ['I', 'II', 'III']
-
 const SC_TYPES = ['ALL', 'Environmental', 'Creature']
-
-interface SoundscapeCategoryCardProps {
-  category: SoundscapeCategory
-  onDelete: () => void
-}
-
-function SoundscapeCategoryCard({ category, onDelete }: SoundscapeCategoryCardProps) {
-  const navigate = useNavigate()
-  const { data } = useCampaignData()
-  const [playing, setPlaying] = useState(false)
-
-  const firstTrackId = category.levels?.I?.[0] || category.levels?.II?.[0] || category.levels?.III?.[0]
-
-  useEffect(() => {
-    return audioPreview.subscribe((trackId, _trackName, isPlaying) => {
-      setPlaying(trackId === firstTrackId && isPlaying)
-    })
-  }, [firstTrackId])
-
-  const handlePreview = (event: React.MouseEvent) => {
-    event.stopPropagation()
-    if (!firstTrackId) return
-    const track = data.soundscapeTracks?.find((t) => t.id === firstTrackId)
-    if (!track) return
-
-    if (playing) {
-      audioPreview.pause()
-    } else {
-      audioPreview.play(firstTrackId, track.audioUrl, track.name)
-    }
-  }
-
-  const handleCardClick = () => {
-    navigate(`/library/soundscapes/${category.id}/compose`)
-  }
-
-  const levels = category.levels ?? { I: [], II: [], III: [] }
-  const countsText = `I: ${levels.I?.length ?? 0} · II: ${levels.II?.length ?? 0} · III: ${levels.III?.length ?? 0}`
-
-  return (
-    <SwipeToDelete onSwipeDelete={onDelete}>
-      <Card
-        data-sc-card={category.name}
-        className={`group relative overflow-hidden transition-all duration-300 bg-charcoal border border-white/10 hover:border-gold/50 cursor-pointer ${
-          playing ? 'border-gold shadow-[0_0_15px_rgba(212,175,55,0.15)]' : ''
-        }`}
-        onClick={handleCardClick}
-      >
-        <CardContent className="p-0">
-          {/* Thumbnail area */}
-          <div className="relative aspect-video w-full bg-black/40 flex items-center justify-center overflow-hidden" data-sc-card-thumb={category.name}>
-            <div className="absolute inset-0 bg-gradient-to-t from-charcoal via-transparent to-transparent z-10" />
-            <div className="text-muted/20 text-4xl font-serif select-none group-hover:scale-105 transition-transform duration-500">
-              {category.name.substring(0, 2).toUpperCase()}
-            </div>
-
-            {/* Preview state overlay */}
-            <div
-              data-sc-card-preview-state={category.name}
-              data-state={playing ? 'playing' : 'idle'}
-              className="absolute inset-0 flex items-center justify-center bg-black/50 z-20 transition-opacity duration-300 opacity-0 group-hover:opacity-100 data-[state=playing]:opacity-100"
-            >
-              {playing && (
-                <span className="absolute top-2 left-2 bg-gold/90 text-black text-[10px] font-bold px-2 py-0.5 rounded-full animate-pulse">
-                  ● PLAYING
-                </span>
-              )}
-              {firstTrackId && (
-                <button
-                  type="button"
-                  data-sc-preview={category.name}
-                  onClick={handlePreview}
-                  className="p-3 rounded-full bg-gold text-black hover:scale-110 transition-transform cursor-pointer"
-                  aria-label={playing ? `Pause ${category.name}` : `Play ${category.name}`}
-                >
-                  {playing ? <Pause className="h-5 w-5 fill-current" /> : <Play className="h-5 w-5 fill-current" />}
-                </button>
-              )}
-            </div>
-          </div>
-
-          {/* Info area */}
-          <div className="p-4" data-sc-card-body={category.name}>
-            <h3 data-sc-card-title={category.name} className="text-lg font-serif font-bold text-white group-hover:text-gold transition-colors">
-              {category.name}
-            </h3>
-            <p className="text-xs text-muted mt-1" data-sc-card-meta>
-              {countsText}
-            </p>
-            
-            {/* Actions */}
-            <div className="flex justify-end gap-2 mt-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-              <button
-                type="button"
-                data-sc-edit={category.name}
-                onClick={(e) => {
-                  e.stopPropagation()
-                  navigate(`/library/soundscapes/${category.id}/compose`)
-                }}
-                className="p-1.5 rounded bg-white/5 hover:bg-white/10 text-muted hover:text-white"
-                aria-label="Edit Composition"
-              >
-                <Pencil className="h-3.5 w-3.5" />
-              </button>
-              <button
-                type="button"
-                data-sc-delete={category.name}
-                onClick={(e) => {
-                  e.stopPropagation()
-                  onDelete()
-                }}
-                className="p-1.5 rounded bg-red-500/10 hover:bg-red-500/20 text-red-400"
-                aria-label="Delete Composition"
-              >
-                <Trash2 className="h-3.5 w-3.5" />
-              </button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    </SwipeToDelete>
-  )
-}
 
 export function LibraryPage() {
 
@@ -218,7 +55,6 @@ export function LibraryPage() {
     importFx,
     updateFx,
     softDeleteFx,
-    downloadFreeTracks,
     createSoundscapeCategory,
     softDeleteSoundscapeCategory,
     downloadFreeCompositions,
@@ -232,15 +68,15 @@ export function LibraryPage() {
 
   const [tab, setTab] = useState<LibraryTab>(() => libraryTabFromQuery(searchParams.get('tab')))
 
+  const [storeOpen, setStoreOpen] = useState(false)
+
+  const [freeTracksOpen, setFreeTracksOpen] = useState(false)
+
+  const [importOpen, setImportOpen] = useState(false)
+
+  const [createCategoryOpen, setCreateCategoryOpen] = useState(false)
+
   const [search, setSearch] = useState('')
-
-  const [type, setType] = useState<FxType | 'ALL'>('ALL')
-
-  const [maxIntensity, setMaxIntensity] = useState<FxIntensity>('III')
-
-  const [sort, setSort] = useState<'recent' | 'name' | 'duration'>('recent')
-
-  const [downloading, setDownloading] = useState(false)
 
   const [importError, setImportError] = useState<string | null>(null)
 
@@ -276,9 +112,9 @@ export function LibraryPage() {
 
   const filteredTracks = useMemo(
 
-    () => filterFxTracks(activeFxTracks, { search, type, maxIntensity, sort }),
+    () => filterFxTracks(activeFxTracks, { search, sort: 'recent' }),
 
-    [activeFxTracks, search, type, maxIntensity, sort],
+    [activeFxTracks, search],
 
   )
 
@@ -302,27 +138,25 @@ export function LibraryPage() {
 
 
 
-  const handleFreeTracks = async () => {
-    setDownloading(true)
-    await new Promise((resolve) => setTimeout(resolve, 50))
-    downloadFreeTracks()
-    setDownloading(false)
-  }
-
-  const handleImportFx = (file: File) => {
+  const handleImportFx = (files: File[]) => {
+    if (files.length === 0) {
+      return
+    }
     if (e2e.invalidAudioImport) {
       setImportError('The file could not be read as audio.')
       return
     }
     setImportError(null)
-    importFx(file)
+    for (const file of files) {
+      importFx(file)
+    }
   }
 
 
 
   return (
 
-    <ScreenLandmark screenName="Library screen" className="max-w-6xl">
+    <ScreenLandmark screenName="Library screen">
 
       <PageHeader title="Library" subtitle="Browse soundscapes and sound effects." />
 
@@ -382,7 +216,11 @@ export function LibraryPage() {
 
 
 
-      <div className="grid gap-6 lg:grid-cols-[220px_1fr]">
+      <div
+        className={
+          tab === 'soundscapes' ? 'grid gap-6 lg:grid-cols-[220px_1fr]' : undefined
+        }
+      >
         {tab === 'soundscapes' ? (
           <>
             <aside className="space-y-3" data-sc-sidebar-filters>
@@ -475,13 +313,7 @@ export function LibraryPage() {
                   <button
                     type="button"
                     data-sc-add-tile
-                    onClick={() => {
-                      const name = window.prompt("Enter category name:")
-                      if (name?.trim()) {
-                        const category = createSoundscapeCategory(name.trim())
-                        navigate(`/library/soundscapes/${category.id}/compose`)
-                      }
-                    }}
+                    onClick={() => setCreateCategoryOpen(true)}
                     className="flex w-full h-32 flex-col items-center justify-center rounded-lg border border-dashed border-gold/40 p-6 text-gold hover:border-gold/70 hover:bg-white/5 transition-all cursor-pointer"
                   >
                     <Plus className="mb-2 h-6 w-6" />
@@ -515,13 +347,7 @@ export function LibraryPage() {
                   <button
                     type="button"
                     data-sc-add-tile
-                    onClick={() => {
-                      const name = window.prompt("Enter category name:")
-                      if (name?.trim()) {
-                        const category = createSoundscapeCategory(name.trim())
-                        navigate(`/library/soundscapes/${category.id}/compose`)
-                      }
-                    }}
+                    onClick={() => setCreateCategoryOpen(true)}
                     className="flex h-full min-h-[200px] flex-col items-center justify-center rounded-lg border border-dashed border-gold/40 p-6 text-gold hover:border-gold/70 hover:bg-white/5 transition-all cursor-pointer"
                   >
                     <Plus className="mb-2 h-6 w-6" />
@@ -533,63 +359,20 @@ export function LibraryPage() {
           </>
         ) : (
           <>
-            <aside className="space-y-3" data-fx-sidebar-filters>
-              <div>
-                <Label htmlFor="library-fx-type">FX Types</Label>
-                <select
-                  id="library-fx-type"
-                  className="h-10 w-full rounded-md border border-white/10 bg-charcoal px-3 text-sm"
-                  value={type}
-                  onChange={(event) => setType(event.target.value as FxType | 'ALL')}
-                >
-                  {FX_TYPES.map((option) => (
-                    <option key={option} value={option}>
-                      {option === 'ALL' ? 'All Types' : option}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <Label htmlFor="library-fx-intensity">Base Intensity</Label>
-                <select
-                  id="library-fx-intensity"
-                  className="h-10 w-full rounded-md border border-white/10 bg-charcoal px-3 text-sm"
-                  value={maxIntensity}
-                  onChange={(event) => setMaxIntensity(event.target.value as FxIntensity)}
-                >
-                  {INTENSITIES.map((option) => (
-                    <option key={option} value={option}>
-                      Up to {option}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <Label htmlFor="library-fx-sort">Sort Order</Label>
-                <select
-                  id="library-fx-sort"
-                  className="h-10 w-full rounded-md border border-white/10 bg-charcoal px-3 text-sm"
-                  value={sort}
-                  onChange={(event) =>
-                    setSort(event.target.value as 'recent' | 'name' | 'duration')
-                  }
-                >
-                  <option value="recent">Recently Added</option>
-                  <option value="name">Name</option>
-                  <option value="duration">Duration</option>
-                </select>
-              </div>
-            </aside>
-
             <div>
               <p className="mb-4 text-muted">Browse, import, and manage your sound effects.</p>
 
               <div className="mb-4 flex flex-wrap gap-2">
-                <ImportFxButton onImport={handleImportFx} />
+                <Button
+                  type="button"
+                  variant="outline"
+                  data-fx-import
+                  onClick={() => setImportOpen(true)}
+                >
+                  Import FX
+                </Button>
 
-                <Button type="button" variant="ghost" data-buy-more onClick={() => navigate('/storefront')}>
+                <Button type="button" variant="ghost" data-buy-more onClick={() => setStoreOpen(true)}>
                   Buy More
                 </Button>
 
@@ -597,16 +380,10 @@ export function LibraryPage() {
                   type="button"
                   variant="ghost"
                   data-free-tracks
-                  disabled={downloading}
-                  onClick={handleFreeTracks}
+                  onClick={() => setFreeTracksOpen(true)}
                 >
-                  {downloading ? 'Downloading…' : 'Free Tracks'}
+                  Free Tracks
                 </Button>
-                {downloading ? (
-                  <p className="w-full text-sm text-muted" data-fx-download-progress>
-                    Downloading demo FX pack…
-                  </p>
-                ) : null}
               </div>
 
               {importError ? (
@@ -633,7 +410,7 @@ export function LibraryPage() {
               />
 
               {e2e.fxLibraryState === 'loading' ? (
-                <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4" data-fx-library-loading>
+                <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6" data-fx-library-loading>
                   <FxCardSkeleton />
                   <FxCardSkeleton />
                   <FxCardSkeleton />
@@ -651,16 +428,13 @@ export function LibraryPage() {
                     variant="ghost"
                     onClick={() => {
                       setSearch('')
-                      setType('ALL')
-                      setMaxIntensity('III')
-                      setSort('recent')
                     }}
                   >
                     Clear Filters
                   </Button>
                 </div>
               ) : (
-                <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4" data-fx-grid>
+                <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6" data-fx-grid>
                   {filteredTracks.map((track) => (
                     <FxCard
                       key={track.id}
@@ -687,6 +461,17 @@ export function LibraryPage() {
         )}
       </div>
 
+      <StoreModal open={storeOpen} onOpenChange={setStoreOpen} />
+      <FreeTracksModal open={freeTracksOpen} onOpenChange={setFreeTracksOpen} />
+      <ImportFxModal open={importOpen} onOpenChange={setImportOpen} onImport={handleImportFx} />
+      <CreateSoundscapeCategoryDialog
+        open={createCategoryOpen}
+        onOpenChange={setCreateCategoryOpen}
+        onCreate={(name) => {
+          const category = createSoundscapeCategory(name)
+          navigate(`/library/soundscapes/${category.id}/compose`)
+        }}
+      />
 
     </ScreenLandmark>
 

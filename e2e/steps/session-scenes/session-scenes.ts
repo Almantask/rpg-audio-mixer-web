@@ -423,6 +423,27 @@ Then('{string} is not linked to {string}', async ({ page }, sceneName: string, s
   expect(linked).toBe(false)
 })
 
+Then(
+  'the {string} session scene card shows the description {string}',
+  async ({ page }, sceneName: string, description: string) => {
+    const desktop = page.locator(`[data-session-scene-description="${sceneName}"]`)
+    const mobile = page.locator(`[data-session-scene-description-mobile="${sceneName}"]`)
+    if (await desktop.isVisible().catch(() => false)) {
+      await expect(desktop).toHaveText(description)
+      return
+    }
+    await expect(mobile).toHaveText(description)
+  },
+)
+
+Then(
+  'the {string} session scene card does not show a description',
+  async ({ page }, sceneName: string) => {
+    await expect(page.locator(`[data-session-scene-description="${sceneName}"]`)).toHaveCount(0)
+    await expect(page.locator(`[data-session-scene-description-mobile="${sceneName}"]`)).toHaveCount(0)
+  },
+)
+
 Then('I see {string} in the scene picker', async ({ page }, sceneName: string) => {
   await expect(page.locator(`[data-import-scene-item="${sceneName}"]`)).toBeVisible()
 })

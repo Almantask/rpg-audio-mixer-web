@@ -154,7 +154,7 @@ export function ScenesPage() {
 
           aria-label="Search scenes"
 
-          placeholder="Search scenes…"
+          placeholder="Search scenes by name or tag…"
 
           value={search}
 

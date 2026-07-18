@@ -55,6 +55,7 @@ import {
 import { getActiveFxTracks } from '@/lib/libraryStorage'
 
 import { ensureBundledAppSeed } from '@/lib/ensureBundledAppSeed'
+import { readAudioDurationSeconds } from '@/lib/readAudioDuration'
 import { createBundledFxTracks } from '@/lib/seedBundledFx'
 import { createBundledSoundscapeLibrary } from '@/lib/seedBundledSoundscapes'
 
@@ -79,6 +80,18 @@ import { resolveRestoredName } from '@/lib/trashStorage'
 
 
 interface CreateCampaignInput {
+
+  name: string
+
+  description?: string
+
+  coverArtUrl?: string
+
+}
+
+
+
+interface UpdateCampaignInput {
 
   name: string
 
@@ -181,6 +194,8 @@ interface CampaignDataContextValue {
   getSessionCount: (campaignId: string) => number
 
   createCampaign: (input: CreateCampaignInput) => Campaign
+
+  updateCampaign: (id: string, input: UpdateCampaignInput) => Campaign
 
   softDeleteCampaign: (id: string) => void
 
@@ -377,7 +392,30 @@ function inferFxType(name: string): FxType {
 
 export function CampaignDataProvider({ children }: { children: ReactNode }) {
 
-  const [data, setData] = useState<AppData>(() => loadAppData())
+  const [data, setData] = useState<AppData>(() => {
+    const loaded = loadAppData()
+    if (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('arcanum-e2e-controls') !== null) {
+      return loaded
+    }
+    if (import.meta.env.MODE === 'test') {
+      return loaded
+    }
+    try {
+      const next = ensureBundledAppSeed(loaded)
+      if (!next) {
+        return loaded
+      }
+      const synced = {
+        ...next,
+        sessions: syncSessionSceneCounts(next.sessions, next.sessionSceneLinks),
+      }
+      persist(synced)
+      return synced
+    } catch (error) {
+      console.error('Failed to seed bundled demo data', error)
+      return loaded
+    }
+  })
 
   const [e2e, setE2e] = useState<E2EControls>(() => loadE2EControls())
 
@@ -534,6 +572,52 @@ export function CampaignDataProvider({ children }: { children: ReactNode }) {
 
 
       return campaign
+
+    },
+
+    [updateData],
+
+  )
+
+
+
+  const updateCampaign = useCallback(
+
+    (id: string, input: UpdateCampaignInput): Campaign => {
+
+      let updated!: Campaign
+
+      updateData((current) => ({
+
+        ...current,
+
+        campaigns: current.campaigns.map((campaign) => {
+
+          if (campaign.id !== id) {
+
+            return campaign
+
+          }
+
+          updated = {
+
+            ...campaign,
+
+            name: input.name.trim(),
+
+            description: input.description?.trim() || undefined,
+
+            coverArtUrl: input.coverArtUrl ?? campaign.coverArtUrl,
+
+          }
+
+          return updated
+
+        }),
+
+      }))
+
+      return updated
 
     },
 
@@ -1920,7 +2004,7 @@ export function CampaignDataProvider({ children }: { children: ReactNode }) {
 
         name: displayName,
 
-        durationSeconds: 2,
+        durationSeconds: 1,
 
         baseIntensity: 'II',
 
@@ -1946,7 +2030,14 @@ export function CampaignDataProvider({ children }: { children: ReactNode }) {
 
       }))
 
-
+      void readAudioDurationSeconds(file).then((durationSeconds) => {
+        updateData((current) => ({
+          ...current,
+          fxTracks: current.fxTracks.map((item) =>
+            item.id === track.id ? { ...item, durationSeconds } : item,
+          ),
+        }))
+      })
 
       return track
 
@@ -2130,6 +2221,8 @@ export function CampaignDataProvider({ children }: { children: ReactNode }) {
 
       )
 
+      const existingIds = new Set(current.fxTracks.map((track) => track.id))
+
       const toAdd = bundled.filter((track) => !existingNames.has(track.name.toLowerCase()))
 
       added = toAdd.length
@@ -2144,7 +2237,12 @@ export function CampaignDataProvider({ children }: { children: ReactNode }) {
 
         ...current,
 
-        fxTracks: [...current.fxTracks, ...toAdd.map((track) => ({ ...track, id: createId('fx') }))],
+        fxTracks: [
+          ...current.fxTracks,
+          ...toAdd.map((track) =>
+            existingIds.has(track.id) ? { ...track, id: createId('fx') } : track,
+          ),
+        ],
 
       }
 
@@ -2823,6 +2921,8 @@ export function CampaignDataProvider({ children }: { children: ReactNode }) {
 
       createCampaign,
 
+      updateCampaign,
+
       softDeleteCampaign,
 
       restoreCampaign,
@@ -2966,6 +3066,8 @@ export function CampaignDataProvider({ children }: { children: ReactNode }) {
       getSessionCountForCampaign,
 
       createCampaign,
+
+      updateCampaign,
 
       softDeleteCampaign,
 

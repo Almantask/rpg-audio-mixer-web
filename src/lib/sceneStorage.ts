@@ -86,12 +86,19 @@ export function sortSessionScenes(
   })
 }
 
-export function filterScenesByName(scenes: Scene[], query: string): Scene[] {
+export function filterScenesByName<T extends { name: string; tags: string[] }>(
+  scenes: T[],
+  query: string,
+): T[] {
   const normalized = query.trim().toLowerCase()
   if (!normalized) {
     return scenes
   }
-  return scenes.filter((scene) => scene.name.toLowerCase().includes(normalized))
+  return scenes.filter(
+    (scene) =>
+      scene.name.toLowerCase().includes(normalized) ||
+      scene.tags.some((tag) => tag.toLowerCase().includes(normalized)),
+  )
 }
 
 export function getUnlinkedScenesForSession(
@@ -120,9 +127,23 @@ export function getHotkeyLabel(orderIndex: number): string | undefined {
   return `Num ${orderIndex + 1}`
 }
 
+/** Maps Numpad1–9 / Digit1–9 to soundboard tile index 0–8. */
+export function resolveSoundboardHotkeyIndex(code: string): number | undefined {
+  const numpadMatch = /^Numpad([1-9])$/.exec(code)
+  if (numpadMatch) {
+    return Number(numpadMatch[1]) - 1
+  }
+  const digitMatch = /^Digit([1-9])$/.exec(code)
+  if (digitMatch) {
+    return Number(digitMatch[1]) - 1
+  }
+  return undefined
+}
+
 export function formatFxDuration(seconds: number): string {
-  const minutes = Math.floor(seconds / 60)
-  const remaining = seconds % 60
+  const safe = Number.isFinite(seconds) ? Math.max(0, Math.round(seconds)) : 0
+  const minutes = Math.floor(safe / 60)
+  const remaining = safe % 60
   return `${minutes}:${remaining.toString().padStart(2, '0')}`
 }
 

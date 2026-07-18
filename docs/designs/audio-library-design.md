@@ -92,13 +92,7 @@ Anchored in the **sidebar footer** while Library is active. Controls change with
 
 ### Sound Effects tab
 
-| Control | Component | Description |
-|---|---|---|
-| FX Types | `Select` | e.g. "All Types" |
-| Base Intensity | `Slider` | **Filter** — show tracks with base intensity **≤** selected value (inclusive ceiling). Stops: **I**, **II**, **III** only |
-| Sort Order | `Select` | e.g. "Recently Added" |
-
-Filters apply to the active tab's grid in real time (debounced). The main-content search bar is the **only** text search control.
+No sidebar filter panel. The main-content search bar is the **only** filter control. The grid defaults to recently added order.
 
 ---
 

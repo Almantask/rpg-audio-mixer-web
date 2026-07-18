@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Campaigns — Arcanum Audio (prototype)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            ink: { DEFAULT: '#0a0b0f', raised: '#12131a', overlay: '#1a1b24' },
+            parchment: { DEFAULT: '#e8e4d9' },
+            ember: { DEFAULT: '#c9a227', bright: '#e0b83a' },
+            mist: '#9a9588',
+          },
+          fontFamily: { display: ['Cinzel', 'serif'], sans: ['Figtree', 'system-ui', 'sans-serif'] },
+        },
+      },
+    }
+  </script>
+  <style>
+    :root { --aa-ease: cubic-bezier(0.22, 1, 0.36, 1); }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; font-family: Figtree, system-ui, sans-serif; color: #e8e4d9;
+      background:
+        radial-gradient(ellipse 70% 45% at 15% -5%, rgba(201,162,39,0.09), transparent 55%),
+        #0a0b0f;
+      min-height: 100vh;
+    }
+    body::before {
+      content: ""; position: fixed; inset: 0; pointer-events: none; opacity: 0.03; z-index: 40;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+    .aa-display { font-family: Cinzel, serif; letter-spacing: 0.04em; }
+    .shell { display: flex; min-height: 100vh; position: relative; z-index: 1; }
+    .sidebar {
+      width: 15.5rem; flex-shrink: 0; background: rgba(18,19,26,0.92);
+      border-right: 1px solid rgba(232,228,217,0.07);
+      display: flex; flex-direction: column; padding: 1.25rem 0.85rem;
+    }
+    .nav-item {
+      display: flex; align-items: center; gap: 0.75rem; min-height: 44px; padding: 0 0.85rem;
+      border-radius: 8px; color: #9a9588; text-decoration: none; font-size: 0.9375rem; font-weight: 500;
+    }
+    .nav-item:hover { color: #e8e4d9; background: rgba(255,255,255,0.03); }
+    .nav-item[aria-current="page"] {
+      color: #e0b83a; background: rgba(201,162,39,0.12); box-shadow: inset 3px 0 0 #c9a227;
+    }
+    .main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+    .topbar {
+      display: flex; align-items: center; gap: 0.75rem; min-height: 3.5rem; padding: 0 1.5rem;
+      border-bottom: 1px solid rgba(232,228,217,0.06); background: rgba(10,11,15,0.65); backdrop-filter: blur(8px);
+    }
+    .content { flex: 1; padding: 1.5rem 1.5rem 2.5rem; }
+    .content-inner { max-width: 72rem; margin: 0 auto; }
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; min-height: 44px;
+      padding: 0 1.25rem; border-radius: 8px; font-weight: 600; font-size: 0.875rem;
+      border: none; cursor: pointer; background: #c9a227; color: #0a0b0f;
+      transition: background 160ms var(--aa-ease), transform 160ms var(--aa-ease);
+    }
+    .btn:hover { background: #e0b83a; transform: translateY(-1px); }
+    .btn:focus-visible, .icon-btn:focus-visible, .nav-item:focus-visible { outline: 2px solid #e0b83a; outline-offset: 2px; }
+    .btn-ghost {
+      background: transparent; color: #e8e4d9; border: 1px solid rgba(232,228,217,0.12);
+    }
+    .btn-ghost:hover { border-color: rgba(201,162,39,0.4); background: rgba(201,162,39,0.06); }
+    .icon-btn {
+      width: 44px; height: 44px; border-radius: 8px; border: 1px solid rgba(232,228,217,0.1);
+      background: transparent; color: #9a9588; display: grid; place-items: center; cursor: pointer;
+    }
+    .icon-btn:hover { color: #e8e4d9; border-color: rgba(232,228,217,0.2); }
+    .campaign {
+      display: grid; grid-template-columns: 96px 1fr auto; gap: 1.25rem; align-items: center;
+      padding: 1rem; border-radius: 12px; border: 1px solid rgba(232,228,217,0.08);
+      background: #12131a; animation: enter 400ms var(--aa-ease) both;
+      transition: border-color 180ms var(--aa-ease), transform 180ms var(--aa-ease);
+    }
+    .campaign:hover { border-color: rgba(201,162,39,0.28); transform: translateY(-1px); }
+    .cover {
+      width: 96px; height: 96px; border-radius: 10px; overflow: hidden;
+      background: linear-gradient(145deg, #2a2418, #12141c 60%, #1a1628);
+      border: 1px solid rgba(201,162,39,0.2);
+      display: grid; place-items: center;
+    }
+    .cover-pattern {
+      width: 100%; height: 100%;
+      background:
+        radial-gradient(circle at 30% 30%, rgba(201,162,39,0.35), transparent 45%),
+        radial-gradient(circle at 70% 70%, rgba(139,108,199,0.2), transparent 40%),
+        linear-gradient(160deg, #1e1a14, #0e1016);
+    }
+    @keyframes enter {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @media (max-width: 1023px) {
+      .sidebar { display: none; }
+      .sidebar.open { display: flex; position: fixed; inset: 0 auto 0 0; z-index: 30; }
+      .scrim { position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 25; }
+      .campaign { grid-template-columns: 72px 1fr; }
+      .campaign-actions { grid-column: 1 / -1; display: flex; justify-content: flex-end; gap: 0.5rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <div id="scrim" class="scrim hidden" hidden></div>
+    <aside class="sidebar" id="sidebar" aria-label="Primary">
+      <div class="mb-8 px-2">
+        <p class="aa-display text-lg font-semibold text-ember leading-tight">Arcanum<br/>Audio</p>
+        <p class="mt-1 text-xs text-mist">Session desk</p>
+      </div>
+      <nav class="flex flex-1 flex-col gap-1" aria-label="Main">
+        <a class="nav-item" href="home-prototype.html">Home</a>
+        <a class="nav-item" href="campaigns-prototype.html" aria-current="page">Campaign</a>
+        <a class="nav-item" href="scenes-list-prototype.html">Scenes</a>
+        <a class="nav-item" href="library-prototype.html">Library</a>
+        <a class="nav-item" href="#">Credits</a>
+        <a class="nav-item" href="#">Trash</a>
+      </nav>
+      <div class="mt-auto px-2 pt-4">
+        <a class="text-xs text-mist hover:text-ember" href="visual-theme-system.html">Theme system →</a>
+      </div>
+    </aside>
+
+    <div class="main">
+      <header class="topbar">
+        <button type="button" class="icon-btn lg:hidden" id="menuBtn" aria-label="Open menu" aria-expanded="false">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+        </button>
+        <p class="text-sm text-mist"><span class="text-parchment font-medium">Campaigns</span> · Manage your adventures</p>
+      </header>
+
+      <main class="content" aria-label="Active Campaigns screen">
+        <div class="content-inner">
+          <div class="mb-8 flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <h1 class="aa-display text-3xl text-ember md:text-4xl">Active Campaigns</h1>
+              <p class="mt-2 text-mist">Resume a campaign or start a new adventure.</p>
+            </div>
+            <button type="button" class="btn btn-ghost">+ Create Campaign</button>
+          </div>
+
+          <ul class="space-y-3" role="list">
+            <li>
+              <article class="campaign">
+                <div class="cover" aria-hidden="true"><div class="cover-pattern"></div></div>
+                <div class="min-w-0">
+                  <h2 class="aa-display text-xl text-ember truncate">Demo Adventure</h2>
+                  <p class="mt-1 text-sm text-mist line-clamp-2">A ready-to-play sample campaign with all bundled soundscapes and effects.</p>
+                  <p class="mt-2 text-xs font-medium uppercase tracking-wider text-mist">1 session</p>
+                </div>
+                <div class="campaign-actions flex items-center gap-2">
+                  <button type="button" class="icon-btn" aria-label="Move Demo Adventure to trash">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>
+                  </button>
+                  <button type="button" class="btn">Resume</button>
+                </div>
+              </article>
+            </li>
+            <li>
+              <article class="campaign" style="animation-delay:80ms">
+                <div class="cover" aria-hidden="true">
+                  <div class="cover-pattern" style="background: radial-gradient(circle at 40% 40%, rgba(139,108,199,0.4), transparent 50%), linear-gradient(160deg,#181428,#0e1016);"></div>
+                </div>
+                <div class="min-w-0">
+                  <h2 class="aa-display text-xl text-ember truncate">Echoes of the Void</h2>
+                  <p class="mt-1 text-sm text-mist line-clamp-2">Whispers from a shattered keep beneath the astral sea.</p>
+                  <p class="mt-2 text-xs font-medium uppercase tracking-wider text-mist">5 sessions</p>
+                </div>
+                <div class="campaign-actions flex items-center gap-2">
+                  <button type="button" class="icon-btn" aria-label="Move Echoes of the Void to trash">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>
+                  </button>
+                  <button type="button" class="btn">Resume</button>
+                </div>
+              </article>
+            </li>
+            <li>
+              <article class="campaign" style="animation-delay:140ms">
+                <div class="cover" aria-hidden="true">
+                  <div class="cover-pattern" style="background: linear-gradient(145deg,#1a1f18,#0e1016);"></div>
+                </div>
+                <div class="min-w-0">
+                  <h2 class="aa-display text-xl text-ember truncate">New Adventure</h2>
+                  <p class="mt-2 text-xs font-medium uppercase tracking-wider text-mist">0 sessions</p>
+                </div>
+                <div class="campaign-actions flex items-center gap-2">
+                  <button type="button" class="icon-btn" aria-label="Move New Adventure to trash">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>
+                  </button>
+                  <button type="button" class="btn">Start</button>
+                </div>
+              </article>
+            </li>
+          </ul>
+        </div>
+      </main>
+    </div>
+  </div>
+  <script>
+    const sidebar = document.getElementById('sidebar');
+    const scrim = document.getElementById('scrim');
+    const menuBtn = document.getElementById('menuBtn');
+    menuBtn?.addEventListener('click', () => {
+      const open = !sidebar.classList.contains('open');
+      sidebar.classList.toggle('open', open);
+      scrim.classList.toggle('hidden', !open);
+      scrim.hidden = !open;
+      menuBtn.setAttribute('aria-expanded', String(open));
+    });
+    scrim?.addEventListener('click', () => {
+      sidebar.classList.remove('open');
+      scrim.classList.add('hidden');
+      scrim.hidden = true;
+      menuBtn.setAttribute('aria-expanded', 'false');
+    });
+  </script>
+</body>
+</html>

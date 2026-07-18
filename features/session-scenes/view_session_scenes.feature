@@ -52,6 +52,20 @@ Feature: View session scenes
     When I open "Session 1"
     Then the "Tavern" scene card shows "4 SC · 12 FX"
 
+  Scenario: Session scene cards show the scene description
+    Given a scene named "Tavern" exists
+    And the "Tavern" scene has the description "A lively inn with music and chatter"
+    And "Tavern" is linked to "Session 1"
+    When I open "Session 1"
+    Then the "Tavern" session scene card shows the description "A lively inn with music and chatter"
+
+  Scenario: Session scene cards hide description when empty
+    Given a scene named "Tavern" exists
+    And the "Tavern" scene has no description
+    And "Tavern" is linked to "Session 1"
+    When I open "Session 1"
+    Then the "Tavern" session scene card does not show a description
+
   Scenario: The most recently played scene is pinned first with a Last Active indicator
     Given "Tavern" and "Forest" are linked to "Session 1"
     And I most recently played "Forest" in "Session 1"

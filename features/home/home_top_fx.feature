@@ -17,7 +17,6 @@ Feature: Home Top FX stat
     Given "Dragon Roar" is shown in the Top FX card
     When I tap the preview button on the Top FX card
     Then "Dragon Roar" plays as an inline one-shot preview
-    And I see a progress bar on the Top FX card
 
   Scenario: Tapping preview on Top FX toggles play and pause
     Given "Dragon Roar" is previewing inline on the Top FX card

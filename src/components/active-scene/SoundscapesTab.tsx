@@ -4,6 +4,7 @@ import type { SceneSoundscapeSlot, SoundscapeIntensity } from '@/types/scene'
 import type { SoundscapeCategory } from '@/types/library'
 import { useCampaignData } from '@/context/CampaignDataContext'
 import { useSceneAudio } from '@/context/SceneAudioContext'
+import { EMPTY_INTENSITY_LEVEL_HINT } from '@/lib/soundscapeStorage'
 import { cn } from '@/lib/utils'
 import { useFlipReorderAnimation } from '@/hooks/useFlipReorderAnimation'
 import { Button } from '@/components/ui/button'
@@ -106,11 +107,6 @@ function SoundscapeCategoryCard({
   const trackName = tile?.trackName
   const intensity = slot.intensity ?? 'II'
   const volume = slot.volume ?? 100
-
-  const intensityHasTracks = (level: SoundscapeIntensity) => {
-    const pool = slot.category?.levels?.[level] ?? []
-    return pool.length > 0
-  }
 
   const playDisabled = !canPlaySoundscape(slot.id)
   const d20Disabled = !canPlaySoundscape(slot.id)
@@ -226,30 +222,52 @@ function SoundscapeCategoryCard({
 
         <div className="mb-4">
           <p className="mb-2 text-xs uppercase tracking-widest text-muted">Intensity</p>
-          <div className="flex gap-2">
+          <div className="flex gap-2" data-soundscape-intensity={categoryName} data-state={intensity}>
             {INTENSITIES.map((level) => {
-              const enabled = intensityHasTracks(level)
-              return (
+              const trackCount = slot.category?.levels?.[level]?.length ?? 0
+              const enabled = trackCount > 0
+              const levelHint = enabled
+                ? trackCount === 1
+                  ? '1 track'
+                  : `${trackCount} tracks`
+                : EMPTY_INTENSITY_LEVEL_HINT
+              const intensityButton = (
                 <button
-                  key={level}
                   type="button"
                   aria-pressed={intensity === level}
+                  aria-label={enabled ? `Intensity ${level}, ${levelHint}` : levelHint}
                   disabled={!enabled}
+                  data-soundscape-intensity-level={`${categoryName}-${level}`}
                   className={cn(
                     'min-h-[44px] min-w-[44px] rounded border px-3 py-2 text-sm',
                     intensity === level ? 'border-gold text-gold' : 'border-white/20 text-muted',
-                    !enabled && 'cursor-not-allowed opacity-40',
+                    !enabled && 'pointer-events-none cursor-not-allowed opacity-40',
                   )}
                   onClick={() => updateSlotIntensity(slot.id, level)}
                 >
                   {level}
                 </button>
               )
+
+              return (
+                <div key={level} className="group/intensity relative z-10">
+                  {intensityButton}
+                  <span
+                    role="tooltip"
+                    className={cn(
+                      'pointer-events-none absolute bottom-full z-50 mb-2 w-max max-w-[13.5rem] rounded-md border border-parchment/15 bg-ink-overlay px-2.5 py-2 text-center text-[11px] leading-snug text-parchment opacity-0 shadow-lg transition-opacity',
+                      'group-hover/intensity:opacity-100 group-focus-within/intensity:opacity-100',
+                      level === 'I' && 'left-0',
+                      level === 'II' && 'left-1/2 -translate-x-1/2',
+                      level === 'III' && 'right-0',
+                    )}
+                  >
+                    {levelHint}
+                  </span>
+                </div>
+              )
             })}
           </div>
-          <p className="mt-2 text-sm text-muted" data-soundscape-intensity={categoryName}>
-            {intensity}
-          </p>
         </div>
 
         <div>

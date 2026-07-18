@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Arcanum Audio — Visual Theme System</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Figtree:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            ink: { DEFAULT: '#0a0b0f', raised: '#12131a', overlay: '#1a1b24' },
+            parchment: { DEFAULT: '#e8e4d9', muted: '#9a9588' },
+            ember: { DEFAULT: '#c9a227', bright: '#e0b83a', soft: 'rgba(201,162,39,0.14)' },
+            violet: { DEFAULT: '#8b6cc7', soft: 'rgba(139,108,199,0.16)' },
+            mist: '#b8b4a8',
+          },
+          fontFamily: {
+            display: ['Cinzel', 'serif'],
+            sans: ['Figtree', 'system-ui', 'sans-serif'],
+          },
+          boxShadow: {
+            panel: '0 1px 0 rgba(255,255,255,0.04) inset, 0 12px 40px rgba(0,0,0,0.35)',
+            glow: '0 0 0 1px rgba(201,162,39,0.25)',
+          },
+        },
+      },
+    }
+  </script>
+  <style>
+    :root {
+      --aa-bg: #0a0b0f;
+      --aa-surface: #12131a;
+      --aa-surface-2: #1a1b24;
+      --aa-border: rgba(232, 228, 217, 0.08);
+      --aa-border-strong: rgba(201, 162, 39, 0.35);
+      --aa-text: #e8e4d9;
+      --aa-muted: #9a9588;
+      --aa-ember: #c9a227;
+      --aa-ember-bright: #e0b83a;
+      --aa-violet: #8b6cc7;
+      --aa-ease: cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Figtree, system-ui, sans-serif;
+      color: var(--aa-text);
+      background:
+        radial-gradient(ellipse 80% 50% at 10% -10%, rgba(201, 162, 39, 0.08), transparent 55%),
+        radial-gradient(ellipse 60% 40% at 90% 0%, rgba(139, 108, 199, 0.06), transparent 50%),
+        var(--aa-bg);
+      min-height: 100vh;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.035;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      z-index: 50;
+    }
+
+    .aa-display { font-family: Cinzel, serif; letter-spacing: 0.04em; }
+
+    .swatch {
+      border: 1px solid var(--aa-border);
+      border-radius: 10px;
+      overflow: hidden;
+      background: var(--aa-surface);
+    }
+
+    .swatch-chip { height: 72px; }
+    .swatch-meta { padding: 0.75rem 1rem; font-size: 0.8125rem; }
+
+    .proto-nav a {
+      transition: color 160ms var(--aa-ease), border-color 160ms var(--aa-ease);
+    }
+    .proto-nav a:hover { color: var(--aa-ember-bright); }
+
+    .demo-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      min-height: 44px;
+      padding: 0 1.25rem;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.875rem;
+      transition: transform 160ms var(--aa-ease), background 160ms var(--aa-ease), border-color 160ms var(--aa-ease);
+    }
+    .demo-btn:hover { transform: translateY(-1px); }
+    .demo-btn:focus-visible {
+      outline: 2px solid var(--aa-ember-bright);
+      outline-offset: 3px;
+    }
+
+    .demo-btn-primary {
+      background: var(--aa-ember);
+      color: #0a0b0f;
+    }
+    .demo-btn-primary:hover { background: var(--aa-ember-bright); }
+
+    .demo-btn-ghost {
+      background: transparent;
+      color: var(--aa-text);
+      border: 1px solid var(--aa-border);
+    }
+    .demo-btn-ghost:hover { border-color: var(--aa-border-strong); }
+
+    .demo-btn-violet {
+      background: var(--aa-violet);
+      color: #0a0b0f;
+    }
+
+    .surface {
+      background: var(--aa-surface);
+      border: 1px solid var(--aa-border);
+      border-radius: 12px;
+      box-shadow: 0 1px 0 rgba(255,255,255,0.04) inset;
+    }
+
+    .type-row {
+      display: grid;
+      grid-template-columns: 140px 1fr;
+      gap: 1rem;
+      align-items: baseline;
+      padding: 1rem 0;
+      border-bottom: 1px solid var(--aa-border);
+    }
+
+    @media (max-width: 640px) {
+      .type-row { grid-template-columns: 1fr; gap: 0.35rem; }
+    }
+  </style>
+</head>
+<body class="antialiased">
+  <div class="relative z-10 mx-auto max-w-5xl px-6 py-10 lg:py-14">
+    <header class="mb-12">
+      <p class="text-sm font-medium uppercase tracking-[0.2em] text-ember">Design system · Jul 2026</p>
+      <h1 class="aa-display mt-3 text-4xl font-semibold text-ember md:text-5xl">Arcanum Audio</h1>
+      <p class="mt-4 max-w-2xl text-lg text-mist">
+        Modernized session desk: atmospheric ink surfaces, denser layouts, play-first controls.
+        Brand stays ember gold + restrained violet for FX — without flat black voids or sparse dashboards.
+      </p>
+      <nav class="proto-nav mt-8 flex flex-wrap gap-x-5 gap-y-2 border-t border-white/10 pt-6 text-sm text-mist" aria-label="Prototype screens">
+        <a href="home-prototype.html">Home</a>
+        <a href="campaigns-prototype.html">Campaigns</a>
+        <a href="scenes-list-prototype.html">Scenes</a>
+        <a href="library-prototype.html">Library</a>
+        <a href="active-scene-prototype.html">Active Scene</a>
+        <span class="text-ember" aria-current="page">Theme system</span>
+      </nav>
+    </header>
+
+    <section class="mb-14" aria-labelledby="principles">
+      <h2 id="principles" class="aa-display text-2xl text-ember">Principles</h2>
+      <ul class="mt-6 grid gap-4 md:grid-cols-2">
+        <li class="surface p-5">
+          <h3 class="font-semibold text-parchment">Low-glance session desk</h3>
+          <p class="mt-2 text-sm text-mist">Primary actions (Resume, Play) readable in one glance. No decorative empty gutters.</p>
+        </li>
+        <li class="surface p-5">
+          <h3 class="font-semibold text-parchment">Atmosphere over flat fill</h3>
+          <p class="mt-2 text-sm text-mist">Ink base + warm radial wash + grain. Elevated panels, not pure #000 cards floating in void.</p>
+        </li>
+        <li class="surface p-5">
+          <h3 class="font-semibold text-parchment">Play-first library</h3>
+          <p class="mt-2 text-sm text-mist">Every audio tile exposes a 44×44 play control. Color and waveform cue category — not identical note icons.</p>
+        </li>
+        <li class="surface p-5">
+          <h3 class="font-semibold text-parchment">Brand in the shell</h3>
+          <p class="mt-2 text-sm text-mist">Wordmark lives in the sidebar header. Top bar is utility only (menu + context). No second competing brand hero on every page.</p>
+        </li>
+      </ul>
+    </section>
+
+    <section class="mb-14" aria-labelledby="palette">
+      <h2 id="palette" class="aa-display text-2xl text-ember">Palette</h2>
+      <div class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div class="swatch">
+          <div class="swatch-chip" style="background:#0a0b0f"></div>
+          <div class="swatch-meta"><strong>Ink</strong> · <code>#0A0B0F</code> · page bg</div>
+        </div>
+        <div class="swatch">
+          <div class="swatch-chip" style="background:#12131a"></div>
+          <div class="swatch-meta"><strong>Ink raised</strong> · <code>#12131A</code> · panels</div>
+        </div>
+        <div class="swatch">
+          <div class="swatch-chip" style="background:#1a1b24"></div>
+          <div class="swatch-meta"><strong>Ink overlay</strong> · <code>#1A1B24</code> · hover / inputs</div>
+        </div>
+        <div class="swatch">
+          <div class="swatch-chip" style="background:#c9a227"></div>
+          <div class="swatch-meta"><strong>Ember</strong> · <code>#C9A227</code> · brand / CTA</div>
+        </div>
+        <div class="swatch">
+          <div class="swatch-chip" style="background:#8b6cc7"></div>
+          <div class="swatch-meta"><strong>Violet</strong> · <code>#8B6CC7</code> · FX only</div>
+        </div>
+        <div class="swatch">
+          <div class="swatch-chip" style="background:#e8e4d9"></div>
+          <div class="swatch-meta"><strong>Parchment</strong> · <code>#E8E4D9</code> · body text</div>
+        </div>
+      </div>
+      <p class="mt-4 text-sm text-mist">Muted text <code>#9A9588</code> on ink meets WCAG AA for large UI labels; body uses parchment on ink (≥4.5:1).</p>
+    </section>
+
+    <section class="mb-14" aria-labelledby="type">
+      <h2 id="type" class="aa-display text-2xl text-ember">Typography</h2>
+      <div class="surface mt-6 px-5">
+        <div class="type-row">
+          <span class="text-xs uppercase tracking-widest text-mist">Display</span>
+          <span class="aa-display text-3xl text-ember">Cinzel · Scenes & brand</span>
+        </div>
+        <div class="type-row">
+          <span class="text-xs uppercase tracking-widest text-mist">UI / body</span>
+          <span class="text-xl">Figtree · Session copy, metadata, controls</span>
+        </div>
+        <div class="type-row border-0">
+          <span class="text-xs uppercase tracking-widest text-mist">Caption</span>
+          <span class="text-sm text-mist">14 sessions · 4 SC · 15 FX · Recently added</span>
+        </div>
+      </div>
+      <p class="mt-4 text-sm text-mist">Replaces Inter. Cinzel stays for fantasy signal; Figtree carries denser UI without generic SaaS feel.</p>
+    </section>
+
+    <section class="mb-14" aria-labelledby="components">
+      <h2 id="components" class="aa-display text-2xl text-ember">Components</h2>
+      <div class="mt-6 flex flex-wrap gap-3">
+        <button type="button" class="demo-btn demo-btn-primary">Resume</button>
+        <button type="button" class="demo-btn demo-btn-ghost">Import FX</button>
+        <button type="button" class="demo-btn demo-btn-violet">Play FX</button>
+        <button type="button" class="demo-btn demo-btn-ghost" aria-label="Delete" style="min-width:44px;padding:0">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>
+        </button>
+      </div>
+      <div class="mt-6 grid gap-4 md:grid-cols-2">
+        <div class="surface p-4">
+          <p class="text-xs uppercase tracking-widest text-mist">Badge · soundscape</p>
+          <span class="mt-3 inline-flex rounded-md border border-ember/40 px-2 py-0.5 text-xs font-medium text-ember">LOOPABLE</span>
+        </div>
+        <div class="surface p-4">
+          <p class="text-xs uppercase tracking-widest text-mist">Badge · FX</p>
+          <span class="mt-3 inline-flex rounded-md border border-violet/50 px-2 py-0.5 text-xs font-medium text-violet">COMBAT</span>
+        </div>
+      </div>
+      <div class="surface mt-4 p-4">
+        <label class="block text-xs uppercase tracking-widest text-mist" for="demo-search">Search</label>
+        <input id="demo-search" type="search" placeholder="Search scenes…"
+          class="mt-2 w-full rounded-lg border border-white/10 bg-ink-overlay px-4 py-3 text-parchment placeholder:text-mist/70 focus:border-ember/50 focus:outline-none focus:ring-2 focus:ring-ember/30" />
+      </div>
+    </section>
+
+    <section class="mb-14" aria-labelledby="shell">
+      <h2 id="shell" class="aa-display text-2xl text-ember">Shell changes</h2>
+      <div class="surface mt-6 overflow-hidden">
+        <table class="w-full text-left text-sm">
+          <thead class="bg-ink-overlay text-mist">
+            <tr>
+              <th class="px-4 py-3 font-medium">Was</th>
+              <th class="px-4 py-3 font-medium">Now</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-white/5">
+            <tr>
+              <td class="px-4 py-3 text-mist">Centered brand in top bar on every page</td>
+              <td class="px-4 py-3">Brand wordmark in sidebar; top bar = hamburger + optional page context</td>
+            </tr>
+            <tr>
+              <td class="px-4 py-3 text-mist"><code>max-w-4xl</code> centered void</td>
+              <td class="px-4 py-3"><code>max-w-6xl</code> / fluid content with tighter side padding</td>
+            </tr>
+            <tr>
+              <td class="px-4 py-3 text-mist">Pure charcoal flat fill</td>
+              <td class="px-4 py-3">Ink + ember/violet radials + subtle grain</td>
+            </tr>
+            <tr>
+              <td class="px-4 py-3 text-mist">Dashed create rows as primary create pattern</td>
+              <td class="px-4 py-3">Solid secondary button in header + compact dashed tile as secondary affordance</td>
+            </tr>
+            <tr>
+              <td class="px-4 py-3 text-mist">Library note-icon tiles, edit-only</td>
+              <td class="px-4 py-3">Category-tinted media, hover play, intensity chip</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section aria-labelledby="a11y">
+      <h2 id="a11y" class="aa-display text-2xl text-ember">Accessibility floor</h2>
+      <ul class="mt-4 list-disc space-y-2 pl-5 text-sm text-mist">
+        <li>Interactive targets ≥ 44×44 px</li>
+        <li>Visible focus rings (ember) on all controls</li>
+        <li>FX vs soundscape never color-only — labels + violet/ember border language</li>
+        <li>Play state announced via <code>aria-pressed</code> / live region in prototypes</li>
+      </ul>
+    </section>
+
+    <footer class="mt-16 border-t border-white/10 pt-6 text-sm text-mist">
+      Prototypes are design artefacts only — not production. Open sibling HTML files to review screens.
+    </footer>
+  </div>
+</body>
+</html>

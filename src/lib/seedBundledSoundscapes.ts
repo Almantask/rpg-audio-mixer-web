@@ -55,7 +55,29 @@ const BUNDLED_SOUNDSCAPE_CATEGORIES: BundledSoundscapeCategorySeed[] = [
       III: ['Suspended Lanterns.ogg'],
     },
   },
+  {
+    name: 'Bonfire',
+    type: 'AMBIENCE',
+    levels: {
+      I: ['Bonfire_#1.mp3', 'Bonfire_#2.mp3', 'Bonfire_#3.mp3', 'Bonfire_#4.mp3'],
+      II: [],
+      III: [],
+    },
+  },
+  {
+    name: 'Rain',
+    type: 'AMBIENCE',
+    levels: {
+      I: ['Relaxing_light_rain_#1.mp3', 'Relaxing_light_rain#2.mp3'],
+      II: ['Medium_rain_#1.mp3', 'Medium_rain_#2.mp3'],
+      III: ['Heavy_rain_1.mp3', 'Heavy_rain_#2.mp3'],
+    },
+  },
 ]
+
+export const BUNDLED_SOUNDSCAPE_CATEGORY_NAMES = BUNDLED_SOUNDSCAPE_CATEGORIES.map(
+  (category) => category.name,
+)
 
 function slugify(value: string): string {
   return value
@@ -81,6 +103,10 @@ function trackId(categoryName: string, file: string): string {
   return `track-${slugify(categoryName)}-${slugify(displayNameFromFile(file))}`
 }
 
+function encodeAssetPathSegment(segment: string): string {
+  return encodeURIComponent(segment).replace(/%20/g, ' ')
+}
+
 function buildTrack(
   categoryName: string,
   level: IntensityLevel,
@@ -93,7 +119,8 @@ function buildTrack(
     durationSeconds: 180,
     format: formatFromFile(file),
     channels: 'Stereo',
-    audioUrl: `${AUDIO_BASE}/${categoryName}/${level}/${file}`,
+    // Encode `#` etc. so browsers do not treat them as URL fragments.
+    audioUrl: `${AUDIO_BASE}/${encodeAssetPathSegment(categoryName)}/${level}/${encodeAssetPathSegment(file)}`,
     createdAt: now,
   }
 }

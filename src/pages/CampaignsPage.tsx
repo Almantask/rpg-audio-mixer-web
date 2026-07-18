@@ -8,8 +8,10 @@ import {
   CreateCampaignCard,
 } from '@/components/campaigns/CampaignCard'
 import { CreateCampaignDialog } from '@/components/campaigns/CreateCampaignDialog'
+import { EditCampaignDialog } from '@/components/campaigns/EditCampaignDialog'
 import { useToast } from '@/components/shared/ToastProvider'
 import { useCampaignData } from '@/context/CampaignDataContext'
+import type { Campaign } from '@/types/campaign'
 
 export function CampaignsPage() {
   const {
@@ -17,6 +19,7 @@ export function CampaignsPage() {
     e2e,
     getSessionCount,
     createCampaign,
+    updateCampaign,
     softDeleteCampaign,
     restoreCampaign,
     markCampaignPlayed,
@@ -25,6 +28,7 @@ export function CampaignsPage() {
   } = useCampaignData()
   const { showToast } = useToast()
   const [createOpen, setCreateOpen] = useState(false)
+  const [editCampaign, setEditCampaign] = useState<Campaign | null>(null)
 
   const handleDelete = (campaignId: string, campaignName: string) => {
     softDeleteCampaign(campaignId)
@@ -68,7 +72,7 @@ export function CampaignsPage() {
 
       {isEmpty ? <CampaignsEmptyState /> : null}
 
-      <div className="space-y-4">
+      <div className="space-y-3">
         {activeCampaigns.map((campaign) => (
           <CampaignCard
             key={campaign.id}
@@ -76,6 +80,7 @@ export function CampaignsPage() {
             sessionCount={getSessionCount(campaign.id)}
             onDelete={() => handleDelete(campaign.id, campaign.name)}
             onOpen={() => markCampaignPlayed(campaign.id)}
+            onEdit={() => setEditCampaign(campaign)}
           />
         ))}
         <CreateCampaignCard onClick={() => setCreateOpen(true)} />
@@ -86,6 +91,26 @@ export function CampaignsPage() {
         onOpenChange={setCreateOpen}
         onCreate={(input) => {
           createCampaign(input)
+        }}
+      />
+
+      <EditCampaignDialog
+        open={editCampaign !== null}
+        campaignName={editCampaign?.name ?? ''}
+        initialName={editCampaign?.name ?? ''}
+        initialDescription={editCampaign?.description}
+        initialCoverArtUrl={editCampaign?.coverArtUrl}
+        onOpenChange={(open) => {
+          if (!open) {
+            setEditCampaign(null)
+          }
+        }}
+        onSave={(input) => {
+          if (!editCampaign) {
+            return
+          }
+          updateCampaign(editCampaign.id, input)
+          setEditCampaign(null)
         }}
       />
     </ScreenLandmark>

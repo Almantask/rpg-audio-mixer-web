@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import type { FxIntensity, FxTrack, FxType } from '@/types/library'
+import type { FxTrack } from '@/types/library'
 import { filterFxTracks } from '@/lib/libraryStorage'
 import { FxCard, FxCardSkeleton } from '@/components/library/FxCard'
 import { Button } from '@/components/ui/button'
@@ -22,19 +22,6 @@ interface FxPickerModalProps {
   onAddSelected: (trackIds: string[]) => void
 }
 
-const FX_TYPES: Array<FxType | 'ALL'> = [
-  'ALL',
-  'IMPACT',
-  'COMBAT',
-  'CREATURE',
-  'UI',
-  'MAGIC',
-  'AMBIENT',
-  'OTHER',
-]
-
-const INTENSITIES: FxIntensity[] = ['I', 'II', 'III']
-
 export function FxPickerModal({
   open,
   onOpenChange,
@@ -44,9 +31,6 @@ export function FxPickerModal({
   onAddSelected,
 }: FxPickerModalProps) {
   const [search, setSearch] = useState('')
-  const [type, setType] = useState<FxType | 'ALL'>('ALL')
-  const [maxIntensity, setMaxIntensity] = useState<FxIntensity>('III')
-  const [sort, setSort] = useState<'recent' | 'name' | 'duration'>('recent')
   const [selected, setSelected] = useState<string[]>([])
 
   useEffect(() => {
@@ -59,9 +43,9 @@ export function FxPickerModal({
     const excluded = new Set(excludedTrackIds)
     return filterFxTracks(
       tracks.filter((track) => !excluded.has(track.id)),
-      { search, type, maxIntensity, sort },
+      { search, sort: 'recent' },
     )
-  }, [tracks, excludedTrackIds, search, type, maxIntensity, sort])
+  }, [tracks, excludedTrackIds, search])
 
   const toggleSelected = (trackId: string, checked: boolean) => {
     setSelected((current) => {
@@ -84,13 +68,10 @@ export function FxPickerModal({
 
   const clearFilters = () => {
     setSearch('')
-    setType('ALL')
-    setMaxIntensity('III')
-    setSort('recent')
   }
 
   const isEmptyLibrary = tracks.length === 0
-  const isAllOnBoard = tracks.length > 0 && availableTracks.length === 0 && !search && type === 'ALL'
+  const isAllOnBoard = tracks.length > 0 && availableTracks.length === 0 && !search
 
   return (
     <Dialog open={open} onOpenChange={(next) => (next ? onOpenChange(true) : handleClose())}>
@@ -124,54 +105,6 @@ export function FxPickerModal({
                 data-fx-picker-search
               />
             </div>
-            <div>
-              <Label htmlFor="fx-picker-type">FX Types</Label>
-              <select
-                id="fx-picker-type"
-                className="h-10 w-full rounded-md border border-white/10 bg-charcoal px-3 text-sm"
-                value={type}
-                onChange={(event) => setType(event.target.value as FxType | 'ALL')}
-                data-fx-picker-filter-type
-              >
-                {FX_TYPES.map((option) => (
-                  <option key={option} value={option}>
-                    {option === 'ALL' ? 'All Types' : option}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <Label htmlFor="fx-picker-intensity">Base Intensity</Label>
-              <select
-                id="fx-picker-intensity"
-                className="h-10 w-full rounded-md border border-white/10 bg-charcoal px-3 text-sm"
-                value={maxIntensity}
-                onChange={(event) => setMaxIntensity(event.target.value as FxIntensity)}
-                data-fx-picker-filter-intensity
-              >
-                {INTENSITIES.map((option) => (
-                  <option key={option} value={option}>
-                    Up to {option}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <Label htmlFor="fx-picker-sort">Sort Order</Label>
-              <select
-                id="fx-picker-sort"
-                className="h-10 w-full rounded-md border border-white/10 bg-charcoal px-3 text-sm"
-                value={sort}
-                onChange={(event) =>
-                  setSort(event.target.value as 'recent' | 'name' | 'duration')
-                }
-                data-fx-picker-filter-sort
-              >
-                <option value="recent">Recently Added</option>
-                <option value="name">Name</option>
-                <option value="duration">Duration</option>
-              </select>
-            </div>
             <Button type="button" variant="ghost" data-fx-picker-clear-filters onClick={clearFilters}>
               Clear filters
             </Button>
@@ -179,23 +112,35 @@ export function FxPickerModal({
 
           <div>
             {loading ? (
-              <div className="grid grid-cols-2 gap-4 md:grid-cols-3" data-fx-picker-loading>
+              <div className="grid grid-cols-2 gap-3 md:grid-cols-3" data-fx-picker-loading>
                 <FxCardSkeleton />
                 <FxCardSkeleton />
                 <FxCardSkeleton />
               </div>
             ) : isEmptyLibrary ? (
-              <p className="py-8 text-center text-muted" data-fx-picker-empty>
-                Import or purchase tracks via Library — Sound Effects
+              <p className="py-8 text-center text-muted" data-fx-picker-empty-library>
+                Import or purchase tracks via Library — Sound Effects.
               </p>
             ) : isAllOnBoard ? (
               <p className="py-8 text-center text-muted" data-fx-picker-all-on-board>
-                All library effects are already on this soundboard.
+                Every library FX is already on this soundboard.
               </p>
             ) : availableTracks.length === 0 ? (
-              <p className="py-8 text-center text-muted">No effects match your filters</p>
+              <div className="py-8 text-center text-muted">
+                <p className="mb-4" data-fx-picker-no-match>
+                  No effects match your filters
+                </p>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  data-fx-picker-clear-filters
+                  onClick={clearFilters}
+                >
+                  Clear filters
+                </Button>
+              </div>
             ) : (
-              <div className="grid grid-cols-2 gap-4 md:grid-cols-3" data-fx-picker-grid>
+              <div className="grid grid-cols-2 gap-3 md:grid-cols-3" data-fx-picker-grid>
                 {availableTracks.map((track) => (
                   <FxCard
                     key={track.id}
@@ -210,18 +155,19 @@ export function FxPickerModal({
           </div>
         </div>
 
-        {!isEmptyLibrary && !isAllOnBoard ? (
-          <DialogFooter>
-            <Button
-              type="button"
-              disabled={selected.length === 0}
-              data-fx-picker-add-selected
-              onClick={handleAdd}
-            >
-              Add Selected ({selected.length})
-            </Button>
-          </DialogFooter>
-        ) : null}
+        <DialogFooter>
+          <Button type="button" variant="ghost" onClick={handleClose}>
+            Cancel
+          </Button>
+          <Button
+            type="button"
+            disabled={selected.length === 0 || isEmptyLibrary || isAllOnBoard}
+            data-fx-picker-add-selected
+            onClick={handleAdd}
+          >
+            Add Selected
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   )

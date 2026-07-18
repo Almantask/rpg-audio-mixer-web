@@ -12,10 +12,21 @@ Feature: View campaign sessions
     And I see "Campaign Sessions" as the page subtitle
     And I see the campaign hero banner with cover art
 
-  Scenario: Home sidebar stays active while viewing campaign sessions
+  Scenario: Campaigns sidebar stays active while viewing campaign sessions
     Given I have a campaign "The Shattered Throne"
     When I open "The Shattered Throne"
-    Then the "Home" sidebar item is the active sidebar item
+    Then the "Campaigns" sidebar item is the active sidebar item
+    And the "Home" sidebar item does not appear highlighted
+
+  Scenario: Campaign Sessions shows the campaign description in the hero
+    Given I have a campaign "The Shattered Throne" with description "Whispers from a shattered keep"
+    When I open "The Shattered Throne"
+    Then I see the campaign description "Whispers from a shattered keep" on the Campaign Sessions screen
+
+  Scenario: Campaign Sessions without a description offers Add a description
+    Given I have a campaign "New Adventure" with no description
+    When I open "New Adventure"
+    Then I see an "Add a description" action on the Campaign Sessions hero
 
   Scenario: Campaign Sessions has no explicit back link
     Given I am on the Campaign Sessions screen for "The Shattered Throne"

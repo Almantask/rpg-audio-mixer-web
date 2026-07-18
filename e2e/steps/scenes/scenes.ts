@@ -240,7 +240,16 @@ When('I add the tags {string}, {string}, and {string}', async ({ page }, t1, t2,
 When('I edit {string} and remove the {string} tag', async ({ page }, name, tag) => {
   await openScenes(page)
   await page.locator(`[data-edit-scene="${name}"]`).click()
-  await page.locator(`[data-scene-edit-tag="${tag}"]`).getByRole('button', { name: 'Remove' }).click()
+  await page.locator(`[data-scene-edit-tag="${tag}"]`).getByRole('button', { name: `Remove ${tag} tag` }).click()
+})
+
+When('I open Edit for the {string} scene', async ({ page }, name: string) => {
+  await openScenes(page)
+  await page.locator(`[data-edit-scene="${name}"]`).click()
+})
+
+Then('I see a control labelled {string}', async ({ page }, label: string) => {
+  await expect(page.getByRole('button', { name: label, exact: true })).toBeVisible()
 })
 
 When('I save', async ({ page }) => {

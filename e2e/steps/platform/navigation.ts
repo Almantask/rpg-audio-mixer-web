@@ -48,6 +48,18 @@ When('I tap {string} in the sidebar', async ({ page }, item: string) => {
 })
 
 When('I open the Active Scene for {string}', async ({ page }, sceneName: string) => {
+  const sessionSceneBody = page.locator(`[data-session-scene-body="${sceneName}"]`)
+  if (await sessionSceneBody.count()) {
+    await sessionSceneBody.click()
+    return
+  }
+
+  const sceneBody = page.locator(`[data-scene-body="${sceneName}"]`)
+  if (await sceneBody.count()) {
+    await sceneBody.click()
+    return
+  }
+
   if (sceneName === 'Tavern') {
     await page.goto(`/scenes/${E2E_TAVERN_SCENE_ID}/active`)
     return
@@ -81,16 +93,6 @@ Then(
     await expect(page.locator('[data-sidebar-divider]')).toHaveCount(0)
   },
 )
-
-Then('I see a static avatar placeholder in the sidebar footer', async ({ page }) => {
-  await expect(page.getByLabel('Profile avatar placeholder')).toBeVisible()
-})
-
-Then('tapping the avatar placeholder does not navigate anywhere', async ({ page }) => {
-  const currentUrl = page.url()
-  await page.getByLabel('Profile avatar placeholder').click()
-  expect(page.url()).toBe(currentUrl)
-})
 
 Then('I see the {string} screen title', async ({ page }, title: string) => {
   await expect(page.getByRole('heading', { level: 2, name: title })).toBeVisible()
@@ -139,7 +141,16 @@ Given('the sidebar is visible', async ({ page }) => {
 })
 
 When('I tap the hamburger menu in the top bar', async ({ page }) => {
+  const closeMenu = page.getByRole('button', { name: 'Close menu' })
+  if (await closeMenu.isVisible().catch(() => false)) {
+    await closeMenu.click()
+    return
+  }
   await page.getByRole('button', { name: 'Open menu' }).click()
+})
+
+When('I tap Close menu in the sidebar', async ({ page }) => {
+  await page.getByRole('button', { name: 'Close menu', exact: true }).click()
 })
 
 Then('the sidebar becomes visible', async ({ page }) => {

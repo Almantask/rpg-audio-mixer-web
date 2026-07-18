@@ -27,6 +27,7 @@ import {
 } from '@/components/ui/dialog'
 
 import { Input } from '@/components/ui/input'
+import { filterScenesByName } from '@/lib/sceneStorage'
 
 
 
@@ -216,7 +217,7 @@ interface ImportScenePickerDialogProps {
 
   onOpenChange: (open: boolean) => void
 
-  availableScenes: { id: string; name: string }[]
+  availableScenes: { id: string; name: string; tags: string[] }[]
 
   onImport: (sceneIds: string[]) => void
 
@@ -242,19 +243,10 @@ export function ImportScenePickerDialog({
 
 
 
-  const filteredScenes = useMemo(() => {
-
-    const query = search.trim().toLowerCase()
-
-    if (!query) {
-
-      return availableScenes
-
-    }
-
-    return availableScenes.filter((scene) => scene.name.toLowerCase().includes(query))
-
-  }, [availableScenes, search])
+  const filteredScenes = useMemo(
+    () => filterScenesByName(availableScenes, search),
+    [availableScenes, search],
+  )
 
 
 
@@ -322,7 +314,7 @@ export function ImportScenePickerDialog({
 
               aria-label="Search scenes to import"
 
-              placeholder="Search scenes…"
+              placeholder="Search scenes by name or tag…"
 
               value={search}
 

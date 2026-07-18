@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from 'react'
+import { useCallback, useMemo, useState, useEffect } from 'react'
 
 import { Link, useLocation, useParams, useSearchParams, useBlocker } from 'react-router-dom'
 
@@ -21,11 +21,17 @@ import { useCampaignData } from '@/context/CampaignDataContext'
 
 import { SceneAudioProvider, useSceneAudio } from '@/context/SceneAudioContext'
 
+import { useSoundboardHotkeys } from '@/hooks/useSoundboardHotkeys'
+
 import { audioPreview } from '@/lib/audioPreview'
 
 import { cn } from '@/lib/utils'
 
 import { Button } from '@/components/ui/button'
+
+import type { FxTrack } from '@/types/library'
+
+import type { SceneSoundboardEntry } from '@/types/scene'
 
 
 
@@ -256,6 +262,17 @@ function ActiveScenePageContent() {
       .filter((entry): entry is NonNullable<typeof entry> => entry !== null)
 
   }, [sceneId, getSoundboardEntries, getFxTrack])
+
+  const { triggerSoundboard } = useSceneAudio()
+
+  const playSoundboardEntry = useCallback(
+    (entry: SceneSoundboardEntry & { track: FxTrack }) => {
+      void triggerSoundboard(entry)
+    },
+    [triggerSoundboard],
+  )
+
+  useSoundboardHotkeys(soundboardEntries, playSoundboardEntry, !pickerOpen && !soundscapePickerOpen)
 
 
 

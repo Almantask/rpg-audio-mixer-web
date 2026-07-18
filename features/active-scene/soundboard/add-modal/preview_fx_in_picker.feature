@@ -35,7 +35,7 @@ Feature: Preview FX in picker
     Then the "Add Selected (1)" button is enabled
     And "Thunder Crack" is still previewing in the picker
 
-  Scenario: Base Intensity filter does not change preview volume
+  Scenario: FX preview plays at the track's saved default volume
     Given the Sound Effects picker modal is open
     And "Thunder Crack" is visible in the picker grid
     When I tap the FX picker card body for "Thunder Crack"

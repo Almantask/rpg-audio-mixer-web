@@ -5,7 +5,6 @@ import { homePreview } from '@/lib/homePreview'
 import { resolveCategoryPreviewTrackId } from '@/lib/playStats'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { cn } from '@/lib/utils'
 
 interface TopSoundscapeCardProps {
   category?: SoundscapeCategory
@@ -13,9 +12,9 @@ interface TopSoundscapeCardProps {
   playCount?: number
   previewBlocked?: boolean
   previewPlaying?: boolean
-  previewProgress?: number
   onPreviewToggle?: () => void
   empty?: boolean
+  hideHeading?: boolean
 }
 
 export function TopSoundscapeCard({
@@ -24,17 +23,20 @@ export function TopSoundscapeCard({
   playCount = 0,
   previewBlocked = false,
   previewPlaying = false,
-  previewProgress = 0,
   onPreviewToggle,
   empty = false,
+  hideHeading = false,
 }: TopSoundscapeCardProps) {
   if (empty) {
     return (
-      <section aria-label="Top Soundscape" className="space-y-3">
-        <h2 className="font-serif text-lg text-gold">Top Soundscape</h2>
-        <Card data-top-soundscape-card className="border-gold/30">
+      <section aria-label="Top Soundscape" className="min-w-0 w-full space-y-3">
+        {hideHeading ? null : <h2 className="font-serif text-lg text-gold">Top Soundscape</h2>}
+        <Card data-top-soundscape-card className="h-full min-h-[10rem] border-gold/30 bg-charcoal-elevated">
           <CardContent className="p-6">
-            <p className="text-muted">No soundscapes played yet</p>
+            <p className="text-xs font-semibold uppercase tracking-widest text-muted">
+              Top soundscape
+            </p>
+            <p className="mt-2 text-muted">No soundscapes played yet</p>
             <Link
               to="/library?tab=soundscapes"
               className="mt-3 inline-block text-gold underline"
@@ -55,56 +57,46 @@ export function TopSoundscapeCard({
   const previewName = track?.name ?? category.name
 
   return (
-    <section aria-label="Top Soundscape" className="space-y-3">
-      <h2 className="font-serif text-lg text-gold">Top Soundscape</h2>
-      <Card data-top-soundscape-card data-top-soundscape-name={category.name} className="border-gold/30">
-        <CardContent className="space-y-4 p-6">
-          <div>
-            <h3 className="font-serif text-xl text-gold">{category.name}</h3>
-            <div className="mt-2 flex flex-wrap gap-2">
-              <span className="rounded border border-gold/40 px-2 py-0.5 text-xs uppercase tracking-widest text-gold">
+    <section aria-label="Top Soundscape" className="min-w-0 w-full space-y-3">
+      {hideHeading ? null : <h2 className="font-serif text-lg text-gold">Top Soundscape</h2>}
+      <Card
+        data-top-soundscape-card
+        data-top-soundscape-name={category.name}
+        className="h-full min-h-[10rem] border-gold/30 bg-charcoal-elevated transition-transform duration-200 hover:-translate-y-0.5"
+      >
+        <CardContent className="flex items-center justify-between gap-4 p-5">
+          <div className="min-w-0 flex-1 space-y-3">
+            <p className="text-xs font-semibold uppercase tracking-widest text-muted">
+              Top soundscape
+            </p>
+            <h3 className="font-serif text-2xl tracking-wide text-gold">{category.name}</h3>
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="rounded-md border border-gold/40 px-2 py-0.5 text-xs font-semibold uppercase tracking-wider text-gold">
                 SOUNDSCAPE
               </span>
-              <span className="rounded border border-gold/40 px-2 py-0.5 text-xs uppercase tracking-widest text-gold">
+              <span className="rounded-md border border-gold/40 px-2 py-0.5 text-xs font-semibold uppercase tracking-wider text-gold">
                 LOOPABLE
+              </span>
+              <span
+                className="rounded-md border border-gold/40 px-2.5 py-1 text-xs font-semibold uppercase tracking-widest text-gold"
+                data-home-play-count="soundscape"
+              >
+                {playCount} PLAYS
               </span>
             </div>
           </div>
-          <div className="flex items-center justify-between gap-4">
-            <span
-              className="rounded-full border border-gold/40 px-3 py-1 text-xs uppercase tracking-widest text-gold"
-              data-home-play-count="soundscape"
-            >
-              {playCount} PLAYS
-            </span>
-            <Button
-              type="button"
-              size="icon"
-              variant="outline"
-              className="h-11 w-11 rounded-full border-gold text-gold"
-              data-home-preview-soundscape
-              data-home-preview
-              aria-label={`Preview ${previewName}`}
-              disabled={previewBlocked || !track}
-              onClick={onPreviewToggle}
-            >
-              {previewPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-            </Button>
-          </div>
-          <div
-            className="h-1 overflow-hidden rounded bg-white/10"
-            data-home-preview-progress="soundscape"
-            role="progressbar"
-            aria-valuemin={0}
-            aria-valuemax={100}
-            aria-valuenow={Math.round(previewProgress * 100)}
-            aria-label={`Preview progress for ${category.name}`}
+          <Button
+            type="button"
+            size="icon"
+            className="h-12 w-12 shrink-0 rounded-full bg-gold text-charcoal hover:bg-gold-bright"
+            data-home-preview-soundscape
+            data-home-preview
+            aria-label={`Preview ${previewName}`}
+            disabled={previewBlocked || !track}
+            onClick={onPreviewToggle}
           >
-            <div
-              className={cn('h-full bg-gold transition-all', previewPlaying ? 'opacity-100' : 'opacity-30')}
-              style={{ width: `${Math.round(previewProgress * 100)}%` }}
-            />
-          </div>
+            {previewPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+          </Button>
         </CardContent>
       </Card>
     </section>

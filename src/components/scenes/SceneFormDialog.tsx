@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 
+import { X } from 'lucide-react'
+
 import { Button } from '@/components/ui/button'
 
 import { CoverArtUpload } from '@/components/shared/CoverArtUpload'
@@ -300,7 +302,7 @@ export function SceneFormDialog({ open, onOpenChange, scene, onSave }: SceneForm
 
                   {tags.map((tag) => (
 
-                    <Badge key={tag} data-scene-edit-tag={tag} className="gap-2">
+                    <Badge key={tag} data-scene-edit-tag={tag} className="gap-1 pr-1">
 
                       {tag}
 
@@ -308,13 +310,15 @@ export function SceneFormDialog({ open, onOpenChange, scene, onSave }: SceneForm
 
                         type="button"
 
-                        className="text-xs uppercase tracking-wide"
+                        aria-label={`Remove ${tag} tag`}
+
+                        className="inline-flex h-4 w-4 items-center justify-center rounded-sm text-gold/80 hover:bg-gold/15 hover:text-gold"
 
                         onClick={() => removeTag(tag)}
 
                       >
 
-                        Remove
+                        <X className="h-3 w-3" aria-hidden="true" />
 
                       </button>
 

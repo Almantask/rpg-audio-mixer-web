@@ -347,6 +347,24 @@ Then('the {string} sidebar item is the active sidebar item', async ({ page }, it
   await expect(page.locator(`[data-sidebar-item="${item}"]`)).toHaveAttribute('data-active', 'true')
 })
 
+Then(
+  'I see the campaign description {string} on the Campaign Sessions screen',
+  async ({ page }, description: string) => {
+    await expect(page.locator('[data-campaign-sessions-description]')).toHaveText(description)
+  },
+)
+
+Then(
+  'I see an {string} action on the Campaign Sessions hero',
+  async ({ page }, label: string) => {
+    if (label === 'Add a description') {
+      await expect(page.locator('[data-campaign-sessions-add-description]')).toBeVisible()
+      return
+    }
+    await expect(page.getByRole('button', { name: label, exact: true })).toBeVisible()
+  },
+)
+
 Then('I do not see an explicit back link to Active Campaigns', async ({ page }) => {
   await expect(page.getByRole('link', { name: /back to active campaigns/i })).toHaveCount(0)
 })

@@ -40,13 +40,12 @@ Given('I have imported {string}, {string}, {string}', async ({ page }, a, b, c) 
 })
 
 Given(
-  '{string} is in the FX library with duration {} and base intensity {}',
-  async ({ page }, name: string, duration: string, intensity: string) => {
+  '{string} is in the FX library with duration {}',
+  async ({ page }, name: string, duration: string) => {
     await mergeFxTrack(
       page,
       buildFxTrack(name, {
         durationSeconds: parseDurationSeconds(duration),
-        baseIntensity: intensity as 'I' | 'II' | 'III',
       }),
     )
   },
@@ -167,6 +166,34 @@ When('I add the tag {string} to {string} from the predefined list and save', asy
   await page.getByRole('button', { name: 'Save' }).click()
 })
 
+When('I enter tags {string} for {string} and save', async ({ page }, tags, name) => {
+  const card = page.locator(`[data-fx-card="${name}"]`)
+  await expect(card).toBeVisible()
+  await card.locator('[data-fx-tag-input]').fill(tags)
+  await card.getByRole('button', { name: 'Save' }).click()
+})
+
+When('I type {string} in the FX tags field for {string}', async ({ page }, tags, name) => {
+  const card = page.locator(`[data-fx-card="${name}"]`)
+  await expect(card).toBeVisible()
+  await card.locator('[data-fx-tag-input]').fill(tags)
+})
+
+Then(
+  'I do not see an {string} filter on the Sound Effects tab',
+  async ({ page }, label: string) => {
+    await expect(page.getByText(label, { exact: true })).toHaveCount(0)
+  },
+)
+
+Then(
+  'I do not see a {string} control on the Sound Effects tab',
+  async ({ page }, label: string) => {
+    await expect(page.getByText(label, { exact: true })).toHaveCount(0)
+    await expect(page.getByLabel(label)).toHaveCount(0)
+  },
+)
+
 When('I delete {string} from inline edit', async ({ page }, name: string) => {
   await page.locator(`[data-fx-inline-delete="${name}"]`).click()
 })
@@ -179,6 +206,8 @@ When('I delete {string} from the FX library', async ({ page }, name: string) => 
 
 When('I import {string} via Import FX', async ({ page }, fileName: string) => {
   await openLibraryFxTab(page)
+  await page.locator('[data-fx-import]').click()
+  await expect(page.locator('[data-fx-import-modal]')).toBeVisible()
   await page.locator('[data-fx-import-input]').setInputFiles({
     name: fileName,
     mimeType: 'audio/mpeg',
@@ -186,8 +215,30 @@ When('I import {string} via Import FX', async ({ page }, fileName: string) => {
   })
 })
 
+Given(
+  'audio files {string} and {string} are available on my computer',
+  async () => {
+    // File availability is simulated by Playwright setInputFiles payloads.
+  },
+)
+
+When(
+  'I import {string} and {string} via Import FX',
+  async ({ page }, first: string, second: string) => {
+    await openLibraryFxTab(page)
+    await page.locator('[data-fx-import]').click()
+    await expect(page.locator('[data-fx-import-modal]')).toBeVisible()
+    await page.locator('[data-fx-import-input]').setInputFiles([
+      { name: first, mimeType: 'audio/mpeg', buffer: SAMPLE_PNG },
+      { name: second, mimeType: 'audio/mpeg', buffer: SAMPLE_PNG },
+    ])
+  },
+)
+
 When('I attempt to import {string}', async ({ page }, fileName: string) => {
   await openLibraryFxTab(page)
+  await page.locator('[data-fx-import]').click()
+  await expect(page.locator('[data-fx-import-modal]')).toBeVisible()
   await page.locator('[data-fx-import-input]').setInputFiles({
     name: fileName,
     mimeType: 'audio/mpeg',
@@ -201,7 +252,8 @@ When('the original {string} file is deleted from my computer', async () => {
 
 When('I open the FX import file picker', async ({ page }) => {
   await openLibraryFxTab(page)
-  await page.locator('[data-fx-import-input]').click({ force: true })
+  await page.locator('[data-fx-import]').click()
+  await expect(page.locator('[data-fx-import-modal]')).toBeVisible()
 })
 
 When('I tap the {string} FX card body', async ({ page }, name: string) => {
@@ -271,10 +323,9 @@ Then('the {string} FX card shows the title {string}', async ({ page }, name, tit
   await expect(page.locator(`[data-fx-card-title="${name}"]`)).toHaveText(title)
 })
 
-Then('the {string} FX card shows duration {string} and base intensity {string}', async ({ page }, name, duration, intensity) => {
+Then('the {string} FX card shows duration {string}', async ({ page }, name, duration) => {
   const card = page.locator(`[data-fx-card="${name}"]`)
-  await expect(card.locator('[data-fx-card-meta]')).toContainText(duration)
-  await expect(card.locator('[data-fx-card-meta]')).toContainText(intensity)
+  await expect(card.locator('[data-fx-card-meta]')).toHaveText(duration)
 })
 
 Then(
@@ -356,6 +407,16 @@ Then(
   },
 )
 
+Then(
+  '{string} and {string} appear in the FX library card grid',
+  async ({ page }, first: string, second: string) => {
+    const firstName = first.includes('.') ? importDisplayName(first) : first
+    const secondName = second.includes('.') ? importDisplayName(second) : second
+    await expect(page.locator(`[data-fx-card="${firstName}"]`)).toBeVisible()
+    await expect(page.locator(`[data-fx-card="${secondName}"]`)).toBeVisible()
+  },
+)
+
 Then('{string} appears in the FX library card grid', async ({ page }, name: string) => {
   const displayName = name.includes('.') ? importDisplayName(name) : name
   await expect(page.locator(`[data-fx-card="${displayName}"]`)).toBeVisible()
@@ -371,22 +432,32 @@ Then('a local copy of the file is stored in app storage', async ({ page }) => {
   expect(hasStorage).toBe(true)
 })
 
-Then('I see download progress for the demo FX pack', async ({ page }) => {
-  await expect(page.locator('[data-fx-download-progress]')).toBeVisible()
-})
-
-Then('new FX tracks appear in the FX library card grid when the download completes', async ({ page }) => {
-  await expect(page.locator('[data-fx-card]').first()).toBeVisible({ timeout: 15_000 })
+Then('I see the free tracks coming soon modal', async ({ page }) => {
+  const modal = page.locator('[data-free-tracks-modal]')
+  await expect(modal).toBeVisible()
+  await expect(modal.getByText(/coming soon/i)).toBeVisible()
 })
 
 Then('I see the storefront', async ({ page }) => {
-  await expect(page.locator('[data-storefront]')).toBeVisible()
+  await expect(page.locator('[data-store-modal][data-storefront]')).toBeVisible()
+})
+
+Then('I remain on the Library screen', async ({ page }) => {
+  await expect(page).toHaveURL(/\/library/)
+  await expect(page.locator('[data-screen="Library screen"]')).toBeVisible()
+})
+
+Then('I see the Import FX modal', async ({ page }) => {
+  await expect(page.locator('[data-fx-import-modal]')).toBeVisible()
 })
 
 Then(
   'non-audio files such as images, PDFs, and spreadsheets are not shown',
   async ({ page }) => {
-    await expect(page.locator('[data-fx-import-input]')).toHaveAttribute('accept', /audio/i)
+    await expect(page.locator('[data-fx-import-modal] [data-fx-import-input]')).toHaveAttribute(
+      'accept',
+      /audio/i,
+    )
   },
 )
 
@@ -611,10 +682,11 @@ Then('I see {string} in the grid', async ({ page }, catName) => {
 })
 
 When('I create a soundscape category named {string} via Add Soundscape', async ({ page }, catName) => {
-  page.once('dialog', async dialog => {
-    await dialog.accept(catName)
-  })
   await page.locator('[data-sc-add-tile]').click()
+  const dialog = page.getByRole('dialog')
+  await expect(dialog).toBeVisible()
+  await dialog.getByLabel('Category name').fill(catName)
+  await dialog.getByRole('button', { name: 'Create', exact: true }).click()
 })
 
 Then('the {string} soundscape category card shows a playing preview state on the thumbnail', async ({ page }, name) => {

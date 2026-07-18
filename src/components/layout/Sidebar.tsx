@@ -3,11 +3,10 @@ import {
   BookOpen,
   Castle,
   Frame,
-  Home,
-  Menu,
   Music,
   ScrollText,
   Trash2,
+  X,
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
@@ -16,8 +15,8 @@ import { cn } from '@/lib/utils'
 import { useSidebarHighlight } from '@/hooks/useSidebarHighlight'
 
 const ICONS: Record<SidebarItem, ReactNode> = {
-  Home: <Home className="h-5 w-5" aria-hidden="true" />,
-  Campaign: <BookOpen className="h-5 w-5" aria-hidden="true" />,
+  Home: <Castle className="h-5 w-5" aria-hidden="true" />,
+  Campaigns: <BookOpen className="h-5 w-5" aria-hidden="true" />,
   Scenes: <Frame className="h-5 w-5" aria-hidden="true" />,
   Library: <Music className="h-5 w-5" aria-hidden="true" />,
   Credits: <ScrollText className="h-5 w-5" aria-hidden="true" />,
@@ -27,9 +26,10 @@ const ICONS: Record<SidebarItem, ReactNode> = {
 interface SidebarProps {
   open: boolean
   onNavigate?: () => void
+  onClose?: () => void
 }
 
-export function Sidebar({ open, onNavigate }: SidebarProps) {
+export function Sidebar({ open, onNavigate, onClose }: SidebarProps) {
   const activeItem = useSidebarHighlight()
 
   return (
@@ -38,13 +38,42 @@ export function Sidebar({ open, onNavigate }: SidebarProps) {
       data-testid="sidebar"
       data-sidebar-open={open ? 'true' : 'false'}
       className={cn(
-        'flex h-full w-64 shrink-0 flex-col border-r border-white/10 bg-charcoal-elevated transition-transform duration-200',
-        'fixed inset-y-0 left-0 z-40 max-lg:transition-transform',
+        'flex h-full w-64 shrink-0 flex-col border-r border-parchment/10 bg-charcoal-elevated transition-transform duration-200',
+        'fixed inset-y-0 left-0 z-50 max-lg:transition-transform',
         open ? 'max-lg:translate-x-0' : 'max-lg:-translate-x-full',
         'lg:static lg:translate-x-0',
       )}
     >
-      <nav className="flex flex-1 flex-col pt-4" aria-label="Main navigation">
+      <div className="flex items-start gap-3 px-4 pb-2 pt-5">
+        <img
+          src="/logo3.png"
+          alt=""
+          width={40}
+          height={40}
+          className="mt-0.5 h-10 w-10 shrink-0 rounded-lg object-cover"
+          data-brand-logo
+        />
+        <div className="min-w-0 flex-1">
+          <h1 className="font-serif text-lg font-semibold leading-tight tracking-wide text-gold">
+            Arcanum Audio
+          </h1>
+          <p className="mt-1 text-xs text-muted">Session desk</p>
+        </div>
+        {open ? (
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            aria-label="Close menu"
+            className="shrink-0 lg:hidden"
+            onClick={onClose}
+          >
+            <X className="h-5 w-5" />
+          </Button>
+        ) : null}
+      </div>
+
+      <nav className="flex flex-1 flex-col gap-0.5 px-2 pt-4" aria-label="Main navigation">
         {SIDEBAR_ITEMS.map((item) => {
           const isActive = activeItem === item
 
@@ -57,58 +86,18 @@ export function Sidebar({ open, onNavigate }: SidebarProps) {
               data-sidebar-item={item}
               data-active={isActive ? 'true' : 'false'}
               className={cn(
-                'relative flex items-center gap-3 px-4 py-3 text-sm transition-colors',
+                'relative flex min-h-11 items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
                 isActive
-                  ? 'bg-gold/10 text-gold before:absolute before:inset-y-2 before:left-0 before:w-1 before:rounded-r before:bg-gold'
-                  : 'text-muted hover:bg-white/5 hover:text-white',
+                  ? 'bg-gold/12 text-gold shadow-[inset_3px_0_0_0_var(--color-gold)]'
+                  : 'text-muted hover:bg-white/5 hover:text-parchment',
               )}
             >
               {ICONS[item]}
-              <span>{item === 'Campaign' ? 'Campaign' : item}</span>
+              <span>{item}</span>
             </Link>
           )
         })}
       </nav>
-
-      <div className="border-t border-white/10 p-4">
-        <div
-          aria-label="Profile avatar placeholder"
-          className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-muted"
-          data-testid="avatar-placeholder"
-        >
-          <Castle className="h-5 w-5" aria-hidden="true" />
-        </div>
-      </div>
     </aside>
-  )
-}
-
-interface TopBarProps {
-  onMenuToggle: () => void
-}
-
-export function TopBar({ onMenuToggle }: TopBarProps) {
-  return (
-    <header className="relative z-50 flex h-14 items-center border-b border-white/10 px-4">
-      <Button
-        type="button"
-        variant="ghost"
-        size="icon"
-        aria-label="Open menu"
-        onClick={onMenuToggle}
-        className="lg:hidden"
-      >
-        <Menu className="h-5 w-5" />
-      </Button>
-      <div className="flex flex-1 justify-center">
-        <h1
-          className="font-serif text-lg italic text-gold md:text-xl"
-          aria-label="Arcanum Audio"
-        >
-          Arcanum Audio
-        </h1>
-      </div>
-      <div className="w-10 lg:hidden" aria-hidden="true" />
-    </header>
   )
 }

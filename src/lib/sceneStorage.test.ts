@@ -8,6 +8,7 @@ import {
   getHotkeyLabel,
   getLinkedSessionCount,
   getSceneStats,
+  resolveSoundboardHotkeyIndex,
   sortSessionScenes,
 } from './sceneStorage'
 import type { Scene, SceneSoundboardEntry, SceneSoundscapeSlot, SessionSceneLink } from '@/types/scene'
@@ -65,6 +66,22 @@ describe('sceneStorage', () => {
     expect(filterScenesByName(scenes, 'forest').map((scene) => scene.name)).toEqual(['Forest'])
   })
 
+  it('filters scenes by tag when the name does not match', () => {
+    const withTagOnly: Scene[] = [
+      ...scenes,
+      {
+        id: 's3',
+        name: 'The Ancient Gate',
+        tags: ['Demo', 'Mystery'],
+        createdAt: '2026-04-01T00:00:00.000Z',
+        lastUsedAt: '2026-04-01T00:00:00.000Z',
+      },
+    ]
+    expect(filterScenesByName(withTagOnly, 'mystery').map((scene) => scene.name)).toEqual([
+      'The Ancient Gate',
+    ])
+  })
+
   it('counts linked sessions for a scene', () => {
     expect(getLinkedSessionCount('s1', links)).toBe(1)
   })
@@ -76,8 +93,20 @@ describe('sceneStorage', () => {
 
   it('formats fx duration and hotkey labels', () => {
     expect(formatFxDuration(4)).toBe('0:04')
+    expect(formatFxDuration(0.4)).toBe('0:00')
+    expect(formatFxDuration(8.6)).toBe('0:09')
     expect(getHotkeyLabel(0)).toBe('Num 1')
     expect(getHotkeyLabel(9)).toBeUndefined()
+  })
+
+  it('maps numpad and digit keys to soundboard hotkey indexes', () => {
+    expect(resolveSoundboardHotkeyIndex('Numpad1')).toBe(0)
+    expect(resolveSoundboardHotkeyIndex('Numpad9')).toBe(8)
+    expect(resolveSoundboardHotkeyIndex('Digit1')).toBe(0)
+    expect(resolveSoundboardHotkeyIndex('Digit9')).toBe(8)
+    expect(resolveSoundboardHotkeyIndex('Numpad0')).toBeUndefined()
+    expect(resolveSoundboardHotkeyIndex('Digit0')).toBeUndefined()
+    expect(resolveSoundboardHotkeyIndex('KeyA')).toBeUndefined()
   })
 
   it('dedupes soundboard entries by id and scene track', () => {

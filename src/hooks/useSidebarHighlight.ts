@@ -1,10 +1,13 @@
 import { useMemo } from 'react'
 import { useLocation } from 'react-router-dom'
-import { getActiveSidebarItem } from '@/lib/navigation'
+import { getActiveSidebarItem, type SidebarLocationState } from '@/lib/navigation'
 import type { SidebarItem } from '@/lib/constants'
 
 export function useSidebarHighlight(): SidebarItem {
-  const { pathname } = useLocation()
+  const { pathname, state } = useLocation()
 
-  return useMemo(() => getActiveSidebarItem(pathname), [pathname])
+  return useMemo(
+    () => getActiveSidebarItem(pathname, state as SidebarLocationState | null),
+    [pathname, state],
+  )
 }

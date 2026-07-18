@@ -110,7 +110,7 @@ export function SceneCard({
 
         data-scene-variant={isSession ? undefined : 'default'}
 
-        className="overflow-hidden border-white/10 bg-charcoal-elevated"
+        className="overflow-hidden border-parchment/10 bg-charcoal-elevated transition-all duration-200 hover:-translate-y-px hover:border-gold/35"
 
       >
 
@@ -120,7 +120,7 @@ export function SceneCard({
 
             aria-hidden="true"
 
-            className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/60 to-black/40"
+            className="absolute inset-0 bg-gradient-to-r from-charcoal/92 via-charcoal/72 to-charcoal/40"
 
           />
 
@@ -148,7 +148,7 @@ export function SceneCard({
 
           ) : (
 
-            <div className="absolute inset-0 bg-charcoal" />
+            <div className="absolute inset-0 bg-gradient-to-br from-gold/15 via-charcoal to-violet/10" />
 
           )}
 
@@ -192,7 +192,7 @@ export function SceneCard({
 
               <h3
 
-                className="font-serif text-xl text-gold"
+                className="font-serif text-2xl tracking-wide text-gold"
 
                 data-scene-title={isSession ? undefined : scene.name}
 
@@ -210,7 +210,41 @@ export function SceneCard({
 
               </p>
 
+              {isSession && scene.description?.trim() ? (
+
+                <p
+
+                  className="mt-2 text-sm leading-relaxed text-muted sm:hidden"
+
+                  data-session-scene-description-mobile={scene.name}
+
+                >
+
+                  {scene.description.trim()}
+
+                </p>
+
+              ) : null}
+
             </button>
+
+
+
+            {isSession && scene.description?.trim() ? (
+
+              <p
+
+                className="hidden min-w-0 max-w-md flex-1 text-sm leading-relaxed text-muted sm:line-clamp-3 sm:block"
+
+                data-session-scene-description={scene.name}
+
+              >
+
+                {scene.description.trim()}
+
+              </p>
+
+            ) : null}
 
 
 
@@ -340,7 +374,7 @@ export function CreateSceneCard({
 
       {...{ [rowAttr]: true }}
 
-      className="w-full rounded-lg border border-dashed border-gold/40 bg-transparent p-6 text-center transition-colors hover:border-gold/70"
+      className="w-full rounded-xl border border-dashed border-gold/35 bg-charcoal-elevated/40 p-6 text-center transition-colors hover:border-gold/60 hover:bg-gold/5"
 
       onClick={onClick}
 
