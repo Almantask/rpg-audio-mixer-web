@@ -210,13 +210,15 @@ export function SceneCard({
 
               </p>
 
-              {isSession && scene.description?.trim() ? (
+              {scene.description?.trim() ? (
 
                 <p
 
-                  className="mt-2 text-sm leading-relaxed text-muted sm:hidden"
+                  className="mt-2 line-clamp-3 text-sm leading-relaxed text-muted sm:hidden"
 
-                  data-session-scene-description-mobile={scene.name}
+                  {...(isSession
+                    ? { 'data-session-scene-description-mobile': scene.name }
+                    : { 'data-scene-description-mobile': scene.name })}
 
                 >
 
@@ -230,13 +232,15 @@ export function SceneCard({
 
 
 
-            {isSession && scene.description?.trim() ? (
+            {scene.description?.trim() ? (
 
               <p
 
                 className="hidden min-w-0 max-w-md flex-1 text-sm leading-relaxed text-muted sm:line-clamp-3 sm:block"
 
-                data-session-scene-description={scene.name}
+                {...(isSession
+                  ? { 'data-session-scene-description': scene.name }
+                  : { 'data-scene-description': scene.name })}
 
               >
 

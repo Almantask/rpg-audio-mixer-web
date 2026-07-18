@@ -1,4 +1,5 @@
 import * as React from 'react'
+import { createPortal } from 'react-dom'
 import { cn } from '@/lib/utils'
 
 interface DialogContextValue {
@@ -57,8 +58,8 @@ export function DialogContent({
     return null
   }
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+  return createPortal(
+    <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
       <button
         type="button"
         aria-label="Close dialog overlay"
@@ -73,7 +74,7 @@ export function DialogContent({
         aria-modal="true"
         aria-labelledby={ariaLabelledBy}
         className={cn(
-          'relative z-10 w-full max-w-md rounded-xl border border-white/10 bg-charcoal-elevated/95 p-6 shadow-2xl shadow-black/40',
+          'relative z-10 w-full max-w-md rounded-xl border border-white/10 bg-charcoal-elevated/95 p-5 shadow-2xl shadow-black/40 sm:p-6',
           phase === 'exit' ? 'pointer-events-none' : null,
           phase === 'enter' ? 'aa-dialog-content-in' : 'aa-dialog-content-out',
           className,
@@ -82,7 +83,8 @@ export function DialogContent({
       >
         {children}
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }
 
@@ -95,7 +97,12 @@ export function DialogTitle({ className, ...props }: React.HTMLAttributes<HTMLHe
 }
 
 export function DialogFooter({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn('mt-6 flex justify-end gap-2', className)} {...props} />
+  return (
+    <div
+      className={cn('mt-6 flex flex-col gap-2 sm:flex-row sm:justify-end', className)}
+      {...props}
+    />
+  )
 }
 
 export function AlertDialog({

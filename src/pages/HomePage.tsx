@@ -106,7 +106,7 @@ export function HomePage() {
           />
 
           {hasCampaigns ? (
-            <div className="grid w-full gap-4 lg:grid-cols-2">
+            <div className="grid w-full min-w-0 gap-4 lg:grid-cols-2">
               {topSoundscape ? (
                 <TopSoundscapeCard
                   category={topSoundscape.category}

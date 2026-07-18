@@ -43,22 +43,27 @@ export function AppShell() {
       />
 
       {!sidebarOpen ? (
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          aria-label="Open menu"
-          onClick={() => setSidebarOpen(true)}
-          className="fixed left-3 top-3 z-[60] lg:hidden"
+        <div
+          data-mobile-top-bar
+          className="fixed inset-x-0 top-0 z-[60] flex h-14 items-center bg-charcoal/90 px-3 backdrop-blur-sm lg:hidden"
         >
-          <Menu className="h-5 w-5" />
-        </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            aria-label="Open menu"
+            onClick={() => setSidebarOpen(true)}
+            className="bg-charcoal/80"
+          >
+            <Menu className="h-5 w-5" />
+          </Button>
+        </div>
       ) : null}
 
       <div className="flex min-h-0 min-w-0 flex-1 flex-col">
         <main
           key={location.pathname}
-          className="min-w-0 flex-1 overflow-y-auto p-6 aa-screen-enter max-lg:pt-14"
+          className="min-w-0 flex-1 overflow-x-hidden overflow-y-auto aa-screen-enter px-4 pb-4 pt-14 sm:px-6 sm:pb-6 lg:p-6"
         >
           <Outlet />
         </main>

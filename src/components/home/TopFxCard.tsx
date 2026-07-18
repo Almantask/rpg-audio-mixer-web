@@ -59,10 +59,13 @@ export function TopFxCard({
         data-top-fx-name={track.name}
         className="h-full min-h-[10rem] border-violet/40 bg-charcoal-elevated transition-transform duration-200 hover:-translate-y-0.5"
       >
-        <CardContent className="flex items-center justify-between gap-4 p-5">
+        <CardContent className="flex items-center justify-between gap-3 p-4 sm:gap-4 sm:p-5">
           <div className="min-w-0 flex-1 space-y-3">
             <p className="text-xs font-semibold uppercase tracking-widest text-muted">Top FX</p>
-            <h3 className="truncate font-serif text-2xl tracking-wide text-violet" title={track.name}>
+            <h3
+              className="truncate font-serif text-xl tracking-wide text-violet sm:text-2xl"
+              title={track.name}
+            >
               {track.name}
             </h3>
             <div className="flex flex-wrap items-center gap-2">

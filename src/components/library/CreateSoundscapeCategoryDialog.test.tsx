@@ -17,6 +17,21 @@ describe('CreateSoundscapeCategoryDialog', () => {
     expect(screen.getByRole('button', { name: 'Create' })).toBeInTheDocument()
   })
 
+  it('uses a near full-width dialog with stacked touch-friendly actions on mobile', () => {
+    render(
+      <CreateSoundscapeCategoryDialog open onOpenChange={vi.fn()} onCreate={vi.fn()} />,
+    )
+
+    const dialog = screen.getByRole('dialog')
+    expect(dialog.className).toMatch(/w-\[calc\(100%-2rem\)\]|max-w-md/)
+    expect(dialog.className).toMatch(/w-full|max-w-md/)
+
+    const cancel = screen.getByRole('button', { name: 'Cancel' })
+    const create = screen.getByRole('button', { name: 'Create' })
+    expect(cancel.className).toMatch(/w-full/)
+    expect(create.className).toMatch(/w-full/)
+  })
+
   it('creates with a trimmed name and closes', async () => {
     const user = userEvent.setup()
     const onCreate = vi.fn()

@@ -75,6 +75,7 @@ export function CreateSoundscapeCategoryDialog({
       <DialogContent
         aria-labelledby="create-soundscape-category-title"
         data-sc-create-category-modal
+        className="w-full max-w-md"
       >
         <DialogHeader>
           <DialogTitle id="create-soundscape-category-title">Add Soundscape</DialogTitle>
@@ -88,6 +89,7 @@ export function CreateSoundscapeCategoryDialog({
               aria-label="Category name"
               value={name}
               autoFocus
+              className="min-h-11"
               onChange={(event) => {
                 setName(event.target.value)
                 setNameError(null)
@@ -101,10 +103,12 @@ export function CreateSoundscapeCategoryDialog({
           </div>
 
           <DialogFooter>
-            <Button type="button" variant="ghost" onClick={handleClose}>
+            <Button type="button" variant="ghost" className="w-full sm:w-auto" onClick={handleClose}>
               Cancel
             </Button>
-            <Button type="submit">Create</Button>
+            <Button type="submit" className="w-full sm:w-auto">
+              Create
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>

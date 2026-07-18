@@ -64,12 +64,14 @@ export function TopSoundscapeCard({
         data-top-soundscape-name={category.name}
         className="h-full min-h-[10rem] border-gold/30 bg-charcoal-elevated transition-transform duration-200 hover:-translate-y-0.5"
       >
-        <CardContent className="flex items-center justify-between gap-4 p-5">
+        <CardContent className="flex items-center justify-between gap-3 p-4 sm:gap-4 sm:p-5">
           <div className="min-w-0 flex-1 space-y-3">
             <p className="text-xs font-semibold uppercase tracking-widest text-muted">
               Top soundscape
             </p>
-            <h3 className="font-serif text-2xl tracking-wide text-gold">{category.name}</h3>
+            <h3 className="break-words font-serif text-xl tracking-wide text-gold sm:text-2xl">
+              {category.name}
+            </h3>
             <div className="flex flex-wrap items-center gap-2">
               <span className="rounded-md border border-gold/40 px-2 py-0.5 text-xs font-semibold uppercase tracking-wider text-gold">
                 SOUNDSCAPE

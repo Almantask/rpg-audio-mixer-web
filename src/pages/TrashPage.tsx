@@ -419,7 +419,11 @@ export function TrashPage() {
         ) : null}
       </header>
 
-      <div role="tablist" aria-label="Trash tabs" className="mb-6 flex gap-4 border-b border-white/10">
+      <div
+        role="tablist"
+        aria-label="Trash tabs"
+        className="-mx-1 mb-6 flex gap-1 overflow-x-auto overscroll-x-contain border-b border-white/10 px-1 pb-px [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+      >
         {TABS.map((tab) => (
           <button
             key={tab.id}
@@ -428,7 +432,7 @@ export function TrashPage() {
             aria-selected={activeTab === tab.id}
             data-trash-tab={tab.id}
             className={cn(
-              'px-2 pb-2',
+              'shrink-0 whitespace-nowrap px-3 pb-2 text-sm',
               activeTab === tab.id ? 'border-b-2 border-gold text-gold' : 'text-muted',
             )}
             onClick={() => switchTab(tab.id)}

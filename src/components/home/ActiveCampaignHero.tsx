@@ -26,10 +26,10 @@ export function ActiveCampaignHero({ campaign, session, empty = false }: ActiveC
         <h2 className="font-serif text-lg tracking-wide text-gold">Active Campaigns</h2>
         <div
           data-testid="active-campaign-hero"
-          className="flex w-full flex-col items-center rounded-xl border border-gold/30 bg-charcoal-elevated p-8 text-center"
+          className="flex w-full min-w-0 flex-col items-center rounded-xl border border-gold/30 bg-charcoal-elevated p-6 text-center sm:p-8"
         >
           <p className="font-serif text-xl text-gold">Create your first campaign</p>
-          <Button asChild className="mt-6" data-hero-create-campaign>
+          <Button asChild className="mt-6 w-full min-h-11 sm:w-auto" data-hero-create-campaign>
             <Link to="/campaigns">Create your first campaign</Link>
           </Button>
         </div>
@@ -72,16 +72,19 @@ export function ActiveCampaignHero({ campaign, session, empty = false }: ActiveC
           />
         )}
         <div className="absolute inset-0 bg-gradient-to-r from-charcoal/90 via-charcoal/55 to-charcoal/30" />
-        <div className="relative flex h-full min-h-[13.5rem] w-full flex-col justify-end gap-4 p-6 sm:flex-row sm:items-end sm:justify-between sm:p-7 lg:min-h-[18rem] xl:min-h-[22rem]">
+        <div className="relative flex h-full min-h-[13.5rem] w-full min-w-0 flex-col justify-end gap-4 p-5 sm:flex-row sm:items-end sm:justify-between sm:p-7 lg:min-h-[18rem] xl:min-h-[22rem]">
           <div className="min-w-0 max-w-4xl">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gold/90">
               Continue session
             </p>
-            <h3 className="mt-2 font-serif text-3xl tracking-wide text-gold md:text-4xl xl:text-5xl">
+            <h3 className="mt-2 break-words font-serif text-2xl tracking-wide text-gold sm:text-3xl md:text-4xl xl:text-5xl">
               {campaign.name}
             </h3>
             {session ? (
-              <p className="mt-2 max-w-3xl text-muted xl:text-lg" data-hero-session-subtitle>
+              <p
+                className="mt-2 max-w-3xl text-sm text-muted sm:text-base xl:text-lg"
+                data-hero-session-subtitle
+              >
                 {sessionSubtitle(session)}
               </p>
             ) : null}
@@ -90,7 +93,7 @@ export function ActiveCampaignHero({ campaign, session, empty = false }: ActiveC
             type="button"
             data-hero-resume
             aria-label="Resume"
-            className="min-h-11 min-w-[7rem] shrink-0"
+            className="min-h-11 w-full min-w-[7rem] shrink-0 sm:w-auto"
             onClick={handleResume}
           >
             Resume

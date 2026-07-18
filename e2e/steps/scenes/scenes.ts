@@ -461,9 +461,22 @@ Then(
   },
 )
 
+Then(
+  'the {string} scene card shows the description {string}',
+  async ({ page }, name: string, description: string) => {
+    const desktop = page.locator(`[data-scene-description="${name}"]`)
+    const mobile = page.locator(`[data-scene-description-mobile="${name}"]`)
+    if (await desktop.isVisible()) {
+      await expect(desktop).toHaveText(description)
+      return
+    }
+    await expect(mobile).toHaveText(description)
+  },
+)
+
 Then('the {string} scene card does not show its description', async ({ page }, name: string) => {
-  const card = page.locator(`[data-scene-card="${name}"]`)
-  await expect(card.locator('[data-scene-description]')).toHaveCount(0)
+  await expect(page.locator(`[data-scene-description="${name}"]`)).toHaveCount(0)
+  await expect(page.locator(`[data-scene-description-mobile="${name}"]`)).toHaveCount(0)
 })
 
 Then('the {string} scene card shows its cover image', async ({ page }, name: string) => {

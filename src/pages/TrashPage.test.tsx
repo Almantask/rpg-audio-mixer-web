@@ -31,6 +31,21 @@ describe('TrashPage', () => {
     ).toBeInTheDocument()
   })
 
+  it('makes trash tabs horizontally scrollable with full labels on narrow viewports', () => {
+    window.localStorage.clear()
+    renderTrashPage()
+
+    const tablist = screen.getByRole('tablist', { name: 'Trash tabs' })
+    expect(tablist.className).toMatch(/overflow-x-auto/)
+
+    for (const label of ['Campaigns', 'Sessions', 'Scenes', 'Soundscapes', 'FX']) {
+      const tab = screen.getByRole('tab', { name: label })
+      expect(tab.className).toMatch(/shrink-0/)
+      expect(tab.className).toMatch(/whitespace-nowrap/)
+      expect(tab).toHaveTextContent(label)
+    }
+  })
+
   it('shows per-tab empty state headline', async () => {
     window.localStorage.clear()
     const user = userEvent.setup()
