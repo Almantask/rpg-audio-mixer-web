@@ -354,7 +354,9 @@ When('I remove the {string} effect from the soundboard', async ({ page }, effect
 })
 
 Then('I see the {string} scene in Scenes', async ({ page }, name: string) => {
-  if (!page.url().includes('/scenes')) {
+  const pathname = new URL(page.url()).pathname
+  const onGlobalScenes = pathname === '/scenes' || pathname.startsWith('/scenes/')
+  if (!onGlobalScenes) {
     await openScenes(page)
   }
   await expect(page.locator(`[data-scene-card="${name}"]`)).toBeVisible()

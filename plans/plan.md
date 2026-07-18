@@ -60,6 +60,7 @@ GM can browse and manage scenes, link scenes to sessions, manage the FX library,
 | `features/session-scenes/open_scene_from_session.feature` | Open scene from session |
 | `features/session-scenes/import_scene_to_session.feature` | Import scene to session |
 | `features/session-scenes/unlink_scene_from_session.feature` | Unlink scene from session |
+| `features/session-scenes/create_scene_from_session.feature` | **New Scene from Session Scenes** — control left of Import; same create dialog as global list; **auto-link** into current session (**F-SS-04**, **F-SS-05** / **F-22**, **F-23**) |
 | `features/library/browse_fx_library.feature` | Browse FX library |
 | `features/library/edit_fx_in_library.feature` | Edit FX in library |
 | `features/library/import_fx_library.feature` | Import FX to library |
@@ -177,7 +178,9 @@ GM gets session lock, master/system audio controls, and scene cloning for faster
 | `features/platform/session_lock.feature` | Session Lock |
 | `features/platform/system_audio_handling.feature` | System audio handling |
 | `features/active-scene/soundscapes/master_controls.feature` | Master controls |
-| `features/scenes/scene_cloning.feature` | Scene cloning |
+| `features/scenes/scene_cloning.feature` | Scene cloning (global + Session Scenes entry point — **F-17**, **F-SS-01**, **F-SS-05**: one-tap **"Copy of [Name]"**, full config, independent + **auto-link** into current session) |
+
+**QA placement — Session Scenes Duplicate ⧉:** Covered by extending `features/scenes/scene_cloning.feature` (`@iter10`). Create (**New Scene**) stays in Iteration 3 (`create_scene_from_session.feature`).
 
 ---
 

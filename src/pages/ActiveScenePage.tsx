@@ -1,6 +1,7 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 
-import { Link, useLocation, useParams, useSearchParams } from 'react-router-dom'
+import { Link, useLocation, useParams, useSearchParams, useBlocker } from 'react-router-dom'
+
 
 import { Lock, Square } from 'lucide-react'
 
@@ -174,10 +175,55 @@ function ActiveScenePageContent() {
     removeSoundscapeSlot,
 
     addSoundscapesToScene,
-
+    setE2EControls,
   } = useCampaignData()
 
-  const [sessionLocked, setSessionLocked] = useState(() => Boolean(e2e.sessionLocked))
+  const [sessionLocked, setSessionLockedState] = useState(() => {
+
+    if (e2e.sessionLocked !== undefined) {
+
+      return e2e.sessionLocked
+
+    }
+
+    const stored = localStorage.getItem('arcanum-session-locked')
+
+    return stored === 'true'
+
+  })
+
+
+
+  const setSessionLocked = (locked: boolean | ((curr: boolean) => boolean)) => {
+
+    setSessionLockedState((current) => {
+
+      const next = typeof locked === 'function' ? locked(current) : locked
+
+      localStorage.setItem('arcanum-session-locked', String(next))
+
+      setE2EControls({ sessionLocked: next })
+
+      return next
+
+    })
+
+  }
+
+
+
+  useBlocker(() => {
+
+    return sessionLocked
+
+  })
+
+  useEffect(() => {
+    if (e2e.sessionLocked !== undefined) {
+      setSessionLockedState(e2e.sessionLocked)
+    }
+  }, [e2e.sessionLocked])
+
 
   const { showToast } = useToast()
 

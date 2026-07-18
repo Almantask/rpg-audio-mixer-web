@@ -121,7 +121,7 @@ ANSWER: A
 (See [platform-wide.md](platform-wide.md) for full Option A/B. Session Scenes–specific impact below.)
 
 - **PW-18:** Unlink from session **does not** go to Trash — decided in [active-scene-soundboard.md](active-scene-soundboard.md#pw-18); only global scene delete goes to Trash.
-- **PW-41 / SS-05:** Session Lock is **Active Scene only** — do **not** extend lock to session scene list (Import, unlink, open-from-list stay available). Lock matrix in [active-scene-soundboard.md](active-scene-soundboard.md#pw-41).
+- **PW-41 / SS-05:** Session Lock is **Active Scene only** — do **not** extend lock to session scene list (New Scene, Import, Duplicate, unlink, open-from-list stay available). Lock matrix in [active-scene-soundboard.md](active-scene-soundboard.md#pw-41).
 
 **Affected feature scenarios:** `session_scenes.feature` — unlink scenario; `session_lock.feature` — lock/unlock scenarios; `trash_recovery.feature` — Trash boundary
 
@@ -132,11 +132,11 @@ ANSWER: A
 ### F-SS-01
 **Question:** Should Edit ✏️ and Duplicate ⧉ on session scene rows behave identically to global Scenes list (global mutations)?
 
-**Option A (Recommended):** **Yes** — same icons, same global edit/clone behavior; only 🗑 differs (unlink vs delete).
+**Option A (Recommended):** **Yes** — same icons; Edit is a global mutation. Duplicate ⧉ is **one-tap** **"Copy of [Name]"** with **full configuration** and **independence** from the original — identical to global Scenes list (**SL-03**, **F-SL-03**). Only 🗑 differs (unlink vs delete). Auto-link of the copy into the current session is **F-SS-05**.
 
 ANSWER: A
 
-**Affected feature scenarios:** **Gap** in `session_scenes.feature`
+**Affected feature scenarios:** **Gap** in `session_scenes.feature`; extend `scene_cloning.feature` (Iteration 10) for Session Scenes entry point
 
 ---
 
@@ -162,6 +162,29 @@ ANSWER: A
 
 ---
 
+### F-SS-04
+**Question:** Should Session Scenes offer a **New Scene** control, and where relative to **Import Scene**?
+
+**Option A (Recommended):** **Yes** — **New Scene** to the **left** of **Import Scene** (populated bottom row and empty state). Uses the **same create dialog** as the global Scenes list (name required; description and cover optional).
+
+ANSWER: A
+
+**Affected feature scenarios:** **Gap** — author under Iteration 3 `features/session-scenes/` (alongside import / `build_your_own_scene`)
+
+---
+
+### F-SS-05
+**Question:** After **New Scene** or **Duplicate ⧉** from Session Scenes, should the result appear in that session’s list?
+
+**Option A (Recommended):** **Yes — auto-link.** Create and Duplicate still produce **global** scenes (visible on the global Scenes list); they are **also linked** into the current session so the GM does not need a separate Import step.
+
+ANSWER: A
+
+**Affected feature scenarios:** **Gap** — New Scene auto-link in Iteration 3 session-scenes create scenarios; Duplicate auto-link in Iteration 10 `scene_cloning.feature` (or companion session-scenes scenario tagged `@iter10`)
+
+---
+
+
 ## Principal QA — full scenario notes
 
 **Sign-off status:** ✅ Session Scenes open questions complete — **rewrite** `session_scenes` and **align** `session_lock` per table below. **Conflicts:** **SS-08 B** (combined **Session N — Name** header) vs **CS-02 A** (separate number + name in [campaign-sessions.md](campaign-sessions.md)) — pick display rule before **F-09**. Body cross-ref at PW-41 / SS-05 is **stale** — **SS-05 A** keeps lock **Active Scene only** (do not block session scene list).
@@ -176,11 +199,13 @@ ANSWER: A
 | Unlink confirm | **Always confirm** before unlink (**SS-04 B**) | **Add** confirmation step to unlink scenarios; unlink **does not** go to Trash (**PW-18**) |
 | Session Lock scope | **Active Scene only** — not on session scene list (**SS-05 A**) | **Do not add** list-lock scenarios; **rewrite** `session_lock` scope to active-scene controls only ([PW-41](active-scene-soundboard.md#pw-41)) |
 | Sort order | **Last played first** — Last Active pinned top (**SS-06 A**) | **Add** **F-07** |
-| Import empty state | Message + link to **Scenes → New Scene** when picker empty (**SS-07 A**, **SS-10**) | **Add** **F-08** |
+| Import empty state | Prefer **New Scene** on this screen when picker empty (**SS-07 A**, **F-SS-04**); optional Scenes → New Scene | **Rewrite** **F-08** |
 | Picker exclusion | Already-linked scenes **omitted** from Import picker (**SS-10 A**) | **Add** **F-15**; rewrite import scenarios |
 | Session header | Combined **Session N — Name** primary (**SS-08 B**) | **Add** **F-09** — **conflicts CS-02 A** separate fields |
 | Routes | Hierarchical REST routes (**SS-09 A**) | **Add** **F-10** (deep-link / back nav); optional URL assertion |
-| Row actions | Edit ✏️ + Duplicate ⧉ same as global Scenes list (**F-SS-01 A**) | **Add** **F-16**, **F-17** |
+| Row actions | Edit ✏️ + Duplicate ⧉ same as global Scenes list (**F-SS-01 A**) | **Add** **F-16**; **F-17** → Iteration 10 `scene_cloning` |
+| Bottom CTAs | **New Scene** left of **Import Scene**; same create dialog as global (**F-SS-04 A**) | **Add** **F-22**, **F-23** (Iteration 3) |
+| Auto-link | New Scene / Duplicate from Session Scenes **auto-link** into current session (**F-SS-05 A**) | **Add** **F-23** (create), extend **F-17** / `scene_cloning` (duplicate) |
 | Breadcrumbs | Tappable campaign + session segments (**F-SS-02 A**) | **Add** **F-18**, **F-19** |
 | Card metadata | **SC · FX** counts on session scene rows (**F-SS-03 A**) | **Add** **F-20** — align [scenes-list.md](scenes-list.md) **F-SL-02** |
 
@@ -203,7 +228,7 @@ ANSWER: A
 - **Affected scenarios:** **Rewrite** `session_scenes` — *Removing a scene from a session…* to include confirmation dialog.
 
 #### SS-05 — Session Lock on session list (P1) → **Decided A**
-- **Decision:** **Remove locking from session scene list** — Session Lock is an **Active Scene** feature only; Import, unlink, and opening scenes from the list stay available.
+- **Decision:** **Remove locking from session scene list** — Session Lock is an **Active Scene** feature only; New Scene, Import, Duplicate, unlink, and opening scenes from the list stay available.
 - **Affected scenarios:** **Retire** stale **F-11–F-13** (list lock blockers); **rewrite** `session_lock.feature` naming/scope to active-scene lock — do not extend matrix to session scenes list.
 
 #### SS-06 — Sort order (P1) → **Decided A**
@@ -211,8 +236,8 @@ ANSWER: A
 - **Affected scenarios:** **new:** **F-07**; align with Last Active scenario.
 
 #### SS-07 — Import picker empty state (P1) → **Decided A**
-- **Decision:** Empty picker copy when **SS-10** filter excludes all global scenes + link to **Scenes → New Scene**.
-- **Affected scenarios:** **new:** **F-08**.
+- **Decision:** Empty picker copy when **SS-10** filter excludes all global scenes; prefer **New Scene** on this screen (**F-SS-04**); optional link to **Scenes → New Scene**.
+- **Affected scenarios:** **rewrite:** **F-08**.
 
 #### SS-10 — Exclude already-linked scenes (P0) → **Decided A**
 - **Decision:** Scenes already in session **filtered out** of Import Scene picker.
@@ -227,8 +252,8 @@ ANSWER: A
 - **Affected scenarios:** **new:** **F-10**; indirect `navigation`, `screen_transitions`.
 
 #### F-SS-01 — Edit / Duplicate on session rows (P1) → **Decided A**
-- **Decision:** Same ✏️ edit and ⧉ duplicate as global Scenes list (global mutations); only 🗑 differs (unlink vs delete).
-- **Affected scenarios:** **new:** **F-16** (edit), **F-17** (duplicate).
+- **Decision:** Same ✏️ edit as global list. Duplicate ⧉ is one-tap **"Copy of [Name]"**, full config, independent — identical to global Scenes list (**SL-03**); only 🗑 differs (unlink vs delete). Auto-link of the copy → **F-SS-05**.
+- **Affected scenarios:** **new:** **F-16** (edit, Iteration 3); **F-17** (duplicate + auto-link → Iteration 10 `scene_cloning.feature`).
 
 #### F-SS-02 — Tappable breadcrumbs (P1) → **Decided A**
 - **Decision:** Campaign segment → Campaign Sessions; session segment → session scenes (refresh).
@@ -238,30 +263,42 @@ ANSWER: A
 - **Decision:** Identical row chrome to global Scenes list.
 - **Affected scenarios:** **new:** **F-20**.
 
+#### F-SS-04 — New Scene control (P0) → **Decided A**
+- **Decision:** **New Scene** appears to the **left** of **Import Scene**; same create dialog as global Scenes list (name required).
+- **Affected scenarios:** **new:** **F-22**, **F-23** — Iteration 3 `features/session-scenes/` (with `build_your_own_scene` create parity).
+
+#### F-SS-05 — Auto-link after New Scene / Duplicate (P0) → **Decided A**
+- **Decision:** **Yes — auto-link** into the current session; scene also exists globally. No separate Import step required.
+- **Affected scenarios:** **F-23** (New Scene, Iteration 3); **F-17** (Duplicate, Iteration 10 with `scene_cloning.feature`).
+
 ### Scenarios to author
 
-| ID | Scenario |
-|---|---|
-| **F-07** | Linked scenes sorted last-played first; Last Active scene pinned to top (**SS-06**) |
-| **F-08** | Import Scene picker empty state when all global scenes already linked + link to New Scene (**SS-07**) |
-| **F-09** | Session header shows combined **Session N — Name** primary title (**SS-08 B** — resolve **CS-02** conflict first) |
-| **F-10** | Session scenes deep-link URL survives refresh; browser back returns to sessions list (**SS-09**) |
-| **F-14** | Unlink via 🗑 icon removes scene from session but preserves global scene (**SS-03**) |
-| **F-15** | Import Scene picker lists only scenes not yet linked to this session (**SS-10**) |
-| **F-16** | Edit ✏️ on session scene row opens same global edit flow as Scenes list (**F-SS-01**) |
-| **F-17** | Duplicate ⧉ on session scene row creates global "Copy of [Name]" (**F-SS-01**, aligns **SL-03**) |
-| **F-18** | Breadcrumb campaign segment navigates to Campaign Sessions list (**F-SS-02**) |
-| **F-19** | Breadcrumb session segment navigates/refreshes session scenes (**F-SS-02**) |
-| **F-20** | Session scene card shows **SC · FX** counts (**F-SS-03**) |
-| **F-21** | Unlink from session always shows confirmation dialog before removing link (**SS-04 B**) |
+| ID | Scenario | Iteration home |
+|---|---|---|
+| **F-07** | Linked scenes sorted last-played first; Last Active scene pinned to top (**SS-06**) | Iter 3 session-scenes |
+| **F-08** | Import picker empty → guidance to **New Scene** on this screen (**SS-07**, **F-SS-04**) | Iter 3 session-scenes |
+| **F-09** | Session header shows combined **Session N — Name** primary title (**SS-08 B** — resolve **CS-02** conflict first) | Iter 3 session-scenes |
+| **F-10** | Session scenes deep-link URL survives refresh; browser back returns to sessions list (**SS-09**) | Iter 3 session-scenes |
+| **F-14** | Unlink via 🗑 icon removes scene from session but preserves global scene (**SS-03**) | Iter 3 session-scenes |
+| **F-15** | Import Scene picker lists only scenes not yet linked to this session (**SS-10**) | Iter 3 session-scenes |
+| **F-16** | Edit ✏️ on session scene row opens same global edit flow as Scenes list (**F-SS-01**) | Iter 3 session-scenes |
+| **F-17** | Duplicate ⧉ from Session Scenes = one-tap **"Copy of [Name]"**, full config, independent + **auto-linked** to session (**F-SS-01**, **F-SS-05**, **SL-03**) | **Iter 10** — extend `scene_cloning.feature` |
+| **F-18** | Breadcrumb campaign segment navigates to Campaign Sessions list (**F-SS-02**) | Iter 3 session-scenes |
+| **F-19** | Breadcrumb session segment navigates/refreshes session scenes (**F-SS-02**) | Iter 3 session-scenes |
+| **F-20** | Session scene card shows **SC · FX** counts (**F-SS-03**) | Iter 3 session-scenes |
+| **F-21** | Unlink from session always shows confirmation dialog before removing link (**SS-04 B**) | Iter 3 session-scenes |
+| **F-22** | **New Scene** appears left of **Import Scene** (populated + empty); opens same create dialog as global list (**F-SS-04**) | **Iter 3** session-scenes |
+| **F-23** | After **New Scene** from Session Scenes, scene appears in that session’s list (auto-linked) and on global Scenes list (**F-SS-05**) | **Iter 3** session-scenes |
 
 ### Scenarios to retire or rewrite
 
 | Feature file | Retire / rewrite |
 |---|---|
-| `session_scenes.feature` | **Retire** *Tapping the play button on a scene card starts playback* (**SS-01**); **rewrite** unlink → confirm dialog (**SS-04 B**) + 🗑 path (**SS-03**); **rewrite** import picker excludes linked scenes (**SS-10**); **add** empty picker (**SS-07**), sort (**SS-06**), header (**SS-08**), SC·FX (**F-SS-03**) |
-| `session_lock.feature` | **Scope to Active Scene only** (**SS-05 A**, **PW-41**) — rename feature if needed; **do not** block Import/unlink/scene-open from session scenes list; keep block on navigating away from active scene while locked |
+| `session_scenes.feature` / Iter 3 session-scenes files | **Retire** list play-button (**SS-01**); **rewrite** unlink confirm + 🗑 (**SS-04**, **SS-03**); **rewrite** import exclusion (**SS-10**); **add** empty picker (**SS-07**), sort (**SS-06**), header (**SS-08**), SC·FX (**F-SS-03**), **New Scene** left of Import + create dialog (**F-22**), create auto-link (**F-23**) |
+| `scene_cloning.feature` | **Extend** (Iteration 10): Session Scenes entry point — one-tap clone parity + auto-link into current session (**F-17**, **F-SS-01**, **F-SS-05**) |
+| `session_lock.feature` | **Scope to Active Scene only** (**SS-05 A**, **PW-41**) — do **not** block New Scene / Import / Duplicate / unlink / scene-open from session scenes list |
 | `play_scene.feature` | Cross-ref **SS-01** / **PW-29** — list play-button scenarios retired (shared with global Scenes list) |
 | `trash_recovery.feature` | Unlink from session **never** creates Trash entry (**PW-18**); scene/campaign/session soft-deletes use respective tabs ([TR-10](trash.md#tr-10)) |
+| `build_your_own_scene.feature` | Create-dialog parity reference for Session Scenes **New Scene** (**F-22**); Session Scenes auto-link is session-scenes / **F-23**, not this file |
 
 ---

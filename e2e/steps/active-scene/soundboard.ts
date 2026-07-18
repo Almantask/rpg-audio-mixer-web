@@ -605,7 +605,7 @@ Then('the {string} button is disabled', async ({ page }, label: string) => {
     }
     return
   }
-  await expect(page.getByRole('button', { name: label })).toBeDisabled()
+  await expect(page.getByRole('button', { name: label, exact: true })).toBeDisabled()
 })
 
 Then('the {string} button is enabled', async ({ page }, label: string) => {
@@ -618,7 +618,7 @@ Then('the {string} button is enabled', async ({ page }, label: string) => {
     }
     return
   }
-  await expect(page.getByRole('button', { name: label })).toBeEnabled()
+  await expect(page.getByRole('button', { name: label, exact: true })).toBeEnabled()
 })
 
 Then('{string} is selected in the picker', async ({ page }, name: string) => {

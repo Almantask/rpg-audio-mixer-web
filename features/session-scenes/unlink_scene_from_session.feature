@@ -24,12 +24,6 @@ Feature: Unlink scene from session
     And I cancel the unlink confirmation
     Then "Tavern" is still shown in "Session 1"
 
-  Scenario: Duplicating a scene from Session Scenes does not link the copy to the session
-    Given "Tavern" is linked to "Session 1"
-    And I am viewing Session Scenes for "Session 1"
-    When I duplicate "Tavern" from the session scene list
-    Then "Copy of Tavern" is not linked to "Session 1"
-
   Scenario: Editing a linked scene from the session list updates it globally
     Given "Tavern" is linked to "Session 1"
     And I am viewing Session Scenes for "Session 1"

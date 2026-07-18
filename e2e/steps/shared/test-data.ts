@@ -750,7 +750,9 @@ export async function seedE2EData(page: Page, partial: Partial<E2EAppData>) {
 }
 
 export async function mergeE2EData(page: Page, partial: Partial<E2EAppData>, options?: { navigateHome?: boolean }) {
-  if (options?.navigateHome !== false) {
+  const url = page.url()
+  const isBlank = url === 'about:blank' || !url.startsWith('http')
+  if (isBlank || options?.navigateHome !== false) {
     await page.goto('/')
   }
   await page.evaluate((next) => {
@@ -780,7 +782,8 @@ export async function mergeE2EData(page: Page, partial: Partial<E2EAppData>, opt
       }
       const map = new Map(existing.map((item) => [item.id, item]))
       for (const item of incoming) {
-        map.set(item.id, item)
+        const prev = map.get(item.id)
+        map.set(item.id, prev ? { ...prev, ...item } : item)
       }
       return Array.from(map.values())
     }
@@ -914,9 +917,15 @@ export async function linkSceneToSession(
   const sessionId = sessionIdForLabel(sessionLabel, campaignName)
   const sceneId = sceneIdForName(sceneName)
   const link = buildSessionSceneLink(sessionId, sceneId)
+  const sceneExists = await page.evaluate((id) => {
+    const raw = localStorage.getItem('arcanum-audio-data')
+    if (!raw) return false
+    return (JSON.parse(raw).scenes ?? []).some((scene: { id: string }) => scene.id === id)
+  }, sceneId)
   await mergeE2EData(page, {
     sessionSceneLinks: [link],
-    scenes: [buildScene(sceneName)],
+    // Only seed a blank scene when missing — avoid wiping tags/description/cover.
+    ...(sceneExists ? {} : { scenes: [buildScene(sceneName)] }),
   })
 }
 

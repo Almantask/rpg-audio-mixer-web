@@ -208,6 +208,32 @@ export function SceneAudioProvider({ sceneId, children }: SceneAudioProviderProp
       return
     }
 
+    const scene = data.scenes.find((s) => s.id === sceneId)
+    const sceneName = scene?.name ?? sceneId
+
+    const activeSoundscapes = Object.values(playback.soundscapes).filter((tile) => tile.playing)
+    const playingTrackNames = activeSoundscapes
+      .map((tile) => tile.trackName)
+      .filter(Boolean)
+      .join(', ')
+
+    if (activeSoundscapes.length > 0) {
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: playingTrackNames || 'Ambience Loop',
+        artist: 'Arcanum Audio',
+        album: sceneName,
+      })
+      navigator.mediaSession.playbackState = 'playing'
+    } else {
+      navigator.mediaSession.playbackState = 'paused'
+    }
+  }, [playback, sceneId, data.scenes])
+
+  useEffect(() => {
+    if (!('mediaSession' in navigator)) {
+      return
+    }
+
     const handleNextTrack = () => {
       const manager = managerRef.current
       const state = manager.getState()
@@ -229,9 +255,13 @@ export function SceneAudioProvider({ sceneId, children }: SceneAudioProviderProp
     }
     return () => {
       navigator.mediaSession.setActionHandler('nexttrack', null)
-      delete window.__ARCANUM_MEDIA_NEXT__
+      if (typeof window !== 'undefined') {
+        delete window.__ARCANUM_MEDIA_NEXT__
+      }
     }
   }, [])
+
+
 
   const setFocusedSoundscapeSlot = useCallback((slotId: string) => {
     focusedSlotIdRef.current = slotId
@@ -359,6 +389,28 @@ export function SceneAudioProvider({ sceneId, children }: SceneAudioProviderProp
   const stopAll = useCallback(() => {
     managerRef.current?.stopAll()
   }, [])
+
+  useEffect(() => {
+    if (!('mediaSession' in navigator)) {
+      return
+    }
+
+    const handlePause = () => {
+      stopAll()
+    }
+
+    navigator.mediaSession.setActionHandler('pause', handlePause)
+    if (typeof window !== 'undefined') {
+      window.__ARCANUM_MEDIA_PAUSE__ = handlePause
+    }
+
+    return () => {
+      navigator.mediaSession.setActionHandler('pause', null)
+      if (typeof window !== 'undefined') {
+        delete window.__ARCANUM_MEDIA_PAUSE__
+      }
+    }
+  }, [stopAll])
 
   const canPlaySoundscape = useCallback((slotId: string) => {
     return managerRef.current?.canPlaySoundscape(slotId) ?? false

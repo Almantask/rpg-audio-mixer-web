@@ -101,6 +101,7 @@ function SoundscapeCategoryCard({
 
   const tile = getSoundscapeTileState(slot.id)
   const playing = tile?.playing ?? false
+  const paused = tile?.paused ?? false
   const progress = playing ? (tile?.progress ?? 0) : 0
   const trackName = tile?.trackName
   const intensity = slot.intensity ?? 'II'
@@ -150,9 +151,9 @@ function SoundscapeCategoryCard({
               <p
                 className="text-sm text-muted"
                 data-soundscape-playback-state={categoryName}
-                data-state={playing ? 'playing' : 'idle'}
+                data-state={playing ? 'playing' : paused ? 'paused' : 'idle'}
               >
-                {playing ? 'Playing' : 'Idle'}
+                {playing ? 'Playing' : paused ? 'Paused' : 'Idle'}
               </p>
             </div>
           </div>

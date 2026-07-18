@@ -384,7 +384,9 @@ export function SessionScenesEmptyState() {
 
       <p className="font-serif text-xl text-gold">No scenes in this session yet</p>
 
-      <p className="mt-2 text-sm text-muted">Import a scene or create one in Scenes.</p>
+      <p className="mt-2 text-sm text-muted">
+        Create a scene here, or import an existing global scene.
+      </p>
 
     </div>
 

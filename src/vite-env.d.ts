@@ -27,6 +27,9 @@ declare global {
   interface Window {
     __ARCANUM_AUDIO_STATE__?: ArcanumAudioState
     __ARCANUM_MEDIA_NEXT__?: () => void
+    __ARCANUM_SIMULATE_INTERRUPTION_START__?: (simulatedDurationMs?: number) => void
+    __ARCANUM_SIMULATE_INTERRUPTION_END__?: () => void
+    __ARCANUM_MEDIA_PAUSE__?: () => void
   }
 }
 

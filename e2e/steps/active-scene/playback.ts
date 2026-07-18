@@ -31,7 +31,7 @@ import {
   tapCategoryPlay,
 } from '../shared/test-data'
 
-const { Given, When, Then } = createBdd()
+const { Given, When, Then, Step } = createBdd()
 
 const DEFAULT_SOUNDSCAPE_EFFECTS = [
   'Thunder Crack',
@@ -565,8 +565,13 @@ Then('the order becomes {string}, {string}, {string}', async ({ page }, first: s
 
 // --- Shared playback fixtures ---
 
-Given('the session is locked', async ({ page }) => {
-  await setSessionLocked(page, true)
+Step('the session is locked', async ({ page, $bddContext }) => {
+  const keywordType = $bddContext.bddTestData.steps[$bddContext.stepIndex]?.keywordType
+  if (keywordType === 'Outcome') {
+    await expect(page.locator('[data-session-lock]')).toHaveAttribute('aria-pressed', 'true')
+  } else {
+    await setSessionLocked(page, true)
+  }
 })
 
 async function resetAndOpenSoundscapes(page: Page) {

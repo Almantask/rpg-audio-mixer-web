@@ -248,12 +248,16 @@ export function SoundboardTab({ sceneId, entries, onRemove, onAddSound, locked =
           )
         })}
 
-        {!atCap && !locked ? (
+        {!atCap ? (
           <button
             type="button"
             aria-label="Add Sound"
             data-soundboard-add="true"
-            className="flex min-h-[120px] flex-col items-center justify-center rounded-lg border border-dashed border-gold/40 p-4 text-gold hover:border-gold/70"
+            disabled={locked}
+            className={cn(
+              'flex min-h-[120px] flex-col items-center justify-center rounded-lg border border-dashed border-gold/40 p-4 text-gold hover:border-gold/70',
+              locked && 'cursor-not-allowed opacity-40',
+            )}
             onClick={onAddSound}
           >
             <Plus className="mb-2 h-6 w-6" />

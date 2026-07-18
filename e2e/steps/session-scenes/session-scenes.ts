@@ -211,6 +211,23 @@ When('I open the Import Scene picker for {string}', async ({ page }, sessionLabe
   await page.locator('[data-import-scene-row]').click()
 })
 
+When('I open the New Scene dialog from Session Scenes', async ({ page }) => {
+  const screen = page.locator('[data-screen="Session Scenes screen"]')
+  await expect(screen).toBeVisible()
+  await screen.locator('[data-new-scene-row]').click()
+})
+
+When(
+  'I create a new scene named {string} from Session Scenes via the New Scene dialog',
+  async ({ page }, name: string) => {
+    const screen = page.locator('[data-screen="Session Scenes screen"]')
+    await expect(screen).toBeVisible()
+    await screen.locator('[data-new-scene-row]').click()
+    await page.getByLabel('Scene name').fill(name)
+    await page.getByRole('dialog').getByRole('button', { name: 'Create', exact: true }).click()
+  },
+)
+
 When('I search the picker for {string}', async ({ page }, query: string) => {
   await page.locator('[data-import-scene-search]').fill(query)
 })
@@ -253,6 +270,15 @@ When('I duplicate {string} from the session scene list', async ({ page }, sceneN
   await page.locator(`[data-duplicate-scene="${sceneName}"]`).click()
 })
 
+When(
+  'I tap the duplicate icon on the {string} session scene card',
+  async ({ page }, sceneName: string) => {
+    const screen = page.locator('[data-screen="Session Scenes screen"]')
+    await expect(screen).toBeVisible()
+    await screen.locator(`[data-duplicate-scene="${sceneName}"]`).click()
+  },
+)
+
 When('I edit {string} from the session scene list', async ({ page }, sceneName: string) => {
   await page.locator(`[data-edit-scene="${sceneName}"]`).click()
 })
@@ -283,12 +309,47 @@ Then(
   'I see {string} below the {string} scene row',
   async ({ page }, label: string, sceneName: string) => {
     const row = page.locator(`[data-session-scene-card="${sceneName}"]`)
-    const importRow = page.getByRole('button', { name: label })
+    const ctaRow = page.getByRole('button', { name: label })
     const rowBox = await row.boundingBox()
-    const importBox = await importRow.boundingBox()
-    expect(rowBox && importBox && importBox.y > rowBox.y).toBeTruthy()
+    const ctaBox = await ctaRow.boundingBox()
+    expect(rowBox && ctaBox && ctaBox.y > rowBox.y).toBeTruthy()
   },
 )
+
+Then(
+  '{string} appears to the left of {string}',
+  async ({ page }, leftLabel: string, rightLabel: string) => {
+    const screen = page.locator('[data-screen="Session Scenes screen"]')
+    const left = screen.getByRole('button', { name: leftLabel })
+    const right = screen.getByRole('button', { name: rightLabel })
+    await expect(left).toBeVisible()
+    await expect(right).toBeVisible()
+    const leftBox = await left.boundingBox()
+    const rightBox = await right.boundingBox()
+    expect(leftBox && rightBox && leftBox.x < rightBox.x).toBeTruthy()
+  },
+)
+
+Then('I see the New Scene create dialog', async ({ page }) => {
+  const dialog = page.getByRole('dialog')
+  await expect(dialog).toBeVisible()
+  await expect(dialog.getByRole('heading', { name: 'New Scene' })).toBeVisible()
+})
+
+Then('I see a required {string} field', async ({ page }, label: string) => {
+  const dialog = page.getByRole('dialog')
+  await expect(dialog.getByLabel(label, { exact: true })).toBeVisible()
+})
+
+Then('I see an optional {string} field', async ({ page }, label: string) => {
+  const dialog = page.getByRole('dialog')
+  await expect(dialog.getByLabel(label, { exact: true })).toBeVisible()
+})
+
+Then('I remain on Session Scenes for {string}', async ({ page }, sessionLabel: string) => {
+  await expect(page.locator('[data-screen="Session Scenes screen"]')).toBeVisible()
+  await expect(page.locator(`[data-session-label="${sessionLabel}"]`)).toBeVisible()
+})
 
 Then(
   'the {string} session scene card shows a Last Active indicator',

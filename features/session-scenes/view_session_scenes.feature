@@ -36,13 +36,15 @@ Feature: View session scenes
     Given I have a session "Session 1 – The Dark Arrival" with no scenes
     When I open that session
     Then I see the empty session scenes state
+    And I see a "New Scene" button
     And I see an "Import Scene" button
-    And I see an optional link to create a scene in Scenes
 
-  Scenario: Import Scene appears at the bottom of a populated session scene list
+  Scenario: New Scene and Import Scene appear at the bottom of a populated session scene list
     Given "Tavern" is linked to "Session 1"
     And I am viewing Session Scenes for "Session 1"
-    Then I see "Import Scene" below the "Tavern" scene row
+    Then I see "New Scene" below the "Tavern" scene row
+    And I see "Import Scene" below the "Tavern" scene row
+    And "New Scene" appears to the left of "Import Scene"
 
   Scenario: Session scene cards show soundscape and effect counts
     Given "Tavern" is linked to "Session 1"

@@ -140,6 +140,8 @@ export class SceneAudioManager {
   private readonly soundboardInstances: SoundboardInstance[] = []
   private readonly soundscapeSlots = new Map<string, SoundscapeSlotRuntime>()
   private readonly listeners = new Set<StateListener>()
+  private interruptionStartedAt: number | null = null
+  private readonly wasPlayingSlotsBeforeInterruption = new Set<string>()
 
   private soundboardMasterVolume = 85
   private soundscapeMasterVolume = 100
@@ -157,6 +159,69 @@ export class SceneAudioManager {
 
     this.applySoundboardMasterVolume()
     this.applySoundscapeMasterVolume()
+
+    this.ctx.addEventListener('statechange', () => {
+      if (this.ctx.state === 'suspended') {
+        const hasPlaying = [...this.soundscapeSlots.values()].some(s => s.playing && !s.paused) || this.soundboardInstances.length > 0
+        if (hasPlaying) {
+          this.handleInterruptionStart(0)
+        }
+      } else if (this.ctx.state === 'running') {
+        void this.handleInterruptionEnd()
+      }
+    })
+
+    if (typeof window !== 'undefined') {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (window as any).__ARCANUM_SIMULATE_INTERRUPTION_START__ = (simulatedDurationMs?: number) => {
+        this.handleInterruptionStart(simulatedDurationMs ?? 0)
+      }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (window as any).__ARCANUM_SIMULATE_INTERRUPTION_END__ = () => {
+        void this.handleInterruptionEnd()
+      }
+    }
+  }
+
+  handleInterruptionStart(simulatedDurationMs = 0): void {
+    if (this.interruptionStartedAt !== null) {
+      return
+    }
+    this.interruptionStartedAt = Date.now() - simulatedDurationMs
+
+    this.wasPlayingSlotsBeforeInterruption.clear()
+    for (const [slotId, slot] of this.soundscapeSlots) {
+      if (slot.playing && !slot.paused) {
+        this.wasPlayingSlotsBeforeInterruption.add(slotId)
+        this.pauseSoundscape(slotId)
+      }
+    }
+
+    for (const inst of [...this.soundboardInstances]) {
+      try {
+        inst.source.stop()
+      } catch {
+        // ignore
+      }
+      this.removeSoundboardInstance(inst.instanceId, false)
+    }
+    this.notify()
+  }
+
+  async handleInterruptionEnd(): Promise<void> {
+    if (this.interruptionStartedAt === null) {
+      return
+    }
+    const elapsed = Date.now() - this.interruptionStartedAt
+    this.interruptionStartedAt = null
+
+    if (elapsed <= 180000) {
+      for (const slotId of this.wasPlayingSlotsBeforeInterruption) {
+        await this.playSoundscape(slotId)
+      }
+    }
+    this.wasPlayingSlotsBeforeInterruption.clear()
+    this.notify()
   }
 
   subscribe(listener: StateListener): () => void {
