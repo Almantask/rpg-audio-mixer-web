@@ -18,7 +18,7 @@ Feature: Create campaign
     And I enter the description "Whispers from a shattered keep"
     And I confirm creation
     Then I see "Echoes of the Void" on its campaign card
-    And I see the description snippet "Whispers from a shattered keep" on the card
+    And I see the description snippet "Whispers from a shattered keep" on the "Echoes of the Void" campaign card
 
   Scenario: Campaign creation requires a name
     When I tap "Create Campaign"

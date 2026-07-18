@@ -1,7 +1,6 @@
 ---
 name: product-owner
 description: 'Senior Product Owner. Use when: defining business rules, reviewing feature designs, verifying UX against requirements, syncing documentation, or granting final feature approval.'
-argument-hint: 'Provide the task description and references to the specific feature and design documents.'
 ---
 
 # Product Owner

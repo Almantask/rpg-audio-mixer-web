@@ -13,7 +13,11 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-    "types": ["node"]
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+    "types": ["node", "vite/client"]
   },
-  "include": ["e2e/**/*.ts", ".features-gen/**/*.ts"]
+  "include": ["e2e/**/*.ts", "e2e/**/*.d.ts", ".features-gen/**/*.ts"]
 }

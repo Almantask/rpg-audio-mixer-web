@@ -3,12 +3,19 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
-Set-Location $PSScriptRoot\..\..\..\..\..
+Set-Location $PSScriptRoot\..\..\..\..
 
 if (-not (Test-Path "package.json")) {
     Write-Error "package.json not found. Run from the web app repository root."
     exit 1
 }
+
+if (Get-Command pnpm -ErrorAction SilentlyContinue) {
+    pnpm exec bddgen
+} else {
+    npx bddgen
+}
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
 if ($FeaturePath) {
     if (Get-Command pnpm -ErrorAction SilentlyContinue) {

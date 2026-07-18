@@ -63,13 +63,8 @@ Anchored in the **sidebar footer** on web; **collapsible panel in sheet header**
 | Control | Component | Description |
 |---|---|---|
 | Search | `Input` | Placeholder: "Search effects…" with magnifying glass |
-| FX Types | `Select` | Dropdown — e.g. "All Types" |
-| Base Intensity | `Slider` | Horizontal slider with speaker icons at each end — **filters grid only** (same semantics as AL-06 on Library page) |
-| Sort Order | `Select` | Dropdown — e.g. "Recently Added" |
 
-Filters apply to the modal grid in real time (debounced search).
-
-**Base Intensity filter:** narrows which tracks appear in the grid. Preview volume always uses each track's saved default — the filter does **not** affect preview loudness.
+Search filters the modal grid in real time (debounced). The grid defaults to recently added order.
 
 ---
 
@@ -132,7 +127,6 @@ Filters apply to the modal grid in real time (debounced search).
 | Toggle checkbox | Adds/removes track from selection |
 | Click **Add Selected (N)** | Adds all checked tracks to the scene soundboard in **selection order**; clears selection on success; modal **stays open**; **Sonner toast** — e.g. "2 effects added" (**PW-25**) |
 | Type in **Search** bar | Filters grid by track name and tags (debounced) |
-| Adjust **Base Intensity** slider | Filters grid to matching intensity tracks; preview volume unaffected |
 | Use sidebar search/filters | Same filter state as main search bar; filters grid in real time |
 | Click ← back | **Stops preview**; closes modal; already-committed adds remain |
 

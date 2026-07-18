@@ -5,9 +5,9 @@ Feature: Browse soundscape categories
   I want to browse soundscape categories in the Library
   So that I can open the composer or preview samples.
 
-  Scenario: Soundscapes tab shows browse subtitle and action buttons
+  Scenario: Soundscapes tab shows action buttons without browse subtitle
     Given I am on the Soundscapes tab in the Library
-    Then I see the subtitle "Browse and manage your soundscape categories."
+    Then I do not see the subtitle "Browse and manage your soundscape categories."
     And I see a "Buy Composition" button
     And I see a "Free Compositions" button
 
@@ -25,11 +25,11 @@ Feature: Browse soundscape categories
   Scenario: Each category card shows the track count per intensity level
     Given "Weather" has 3 tracks at level I, 5 at level II, and 2 at level III
     When I open the Soundscapes tab in the Library
-    Then the "Weather" card shows "I: 3 · II: 5 · III: 2"
+    Then the "Weather" soundscape category card shows "I: 3 · II: 5 · III: 2"
 
   Scenario: Opening a category from the library grid opens the Category Composer
     Given "Interior" is in the soundscape categories grid
-    When I tap the "Interior" card body
+    When I tap the "Interior" soundscape category card body
     Then I see the Soundscape Category Composer for "Interior"
 
   Scenario: Soundscape categories show skeleton cards while loading
@@ -47,3 +47,8 @@ Feature: Browse soundscape categories
     Given "Empty Category" exists with 0 tracks at all intensity levels
     When I open the Soundscapes tab in the Library
     Then I see "Empty Category" in the grid
+
+  Scenario: Soundscapes tab has no Category Type or Sort sidebar filters
+    Given I am on the Soundscapes tab in the Library
+    Then I do not see a "Category Type" filter on the Soundscapes tab
+    And I do not see a "Sort Order" control on the Soundscapes tab

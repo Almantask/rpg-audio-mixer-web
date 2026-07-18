@@ -8,13 +8,14 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: 'bg-gold text-charcoal hover:bg-gold/90',
+        default: 'bg-gold text-charcoal hover:bg-gold-bright',
+        outline: 'border border-parchment/15 bg-transparent hover:border-gold/40 hover:bg-gold/5',
         ghost: 'hover:bg-white/5 hover:text-gold',
         sidebar: 'w-full justify-start rounded-none px-4 py-3 text-left font-normal',
       },
       size: {
-        default: 'h-10 px-4 py-2',
-        icon: 'h-10 w-10',
+        default: 'h-11 px-4 py-2',
+        icon: 'h-11 w-11',
       },
     },
     defaultVariants: {

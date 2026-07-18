@@ -8,8 +8,7 @@ Feature: View created scenes
   Scenario: The Scenes screen shows the page header and search bar
     When I view Scenes
     Then I see the page title "Scenes"
-    And I see the subtitle "Curate and manage your immersive environments."
-    And I see the search field with placeholder "Search scenes…"
+    And I see the search field with placeholder "Search scenes by name or tag…"
 
   Scenario: Scenes reflects a scene created elsewhere
     Given a scene named "Tavern" exists
@@ -58,6 +57,15 @@ Feature: View created scenes
       | Dragon's Lair     |
       | The Rusty Tankard |
     When I search Scenes for "Dragon"
+    Then I see the "Dragon's Lair" scene in Scenes
+    And I do not see "The Rusty Tankard" in Scenes
+
+  Scenario: Search filters scenes by tag
+    Given a scene named "Dragon's Lair" exists
+    And the "Dragon's Lair" scene has the tag "Combat"
+    And a scene named "The Rusty Tankard" exists
+    And the "The Rusty Tankard" scene has the tag "Tavern"
+    When I search Scenes for "Combat"
     Then I see the "Dragon's Lair" scene in Scenes
     And I do not see "The Rusty Tankard" in Scenes
 

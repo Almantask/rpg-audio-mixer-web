@@ -7,20 +7,20 @@ Feature: Preview FX track in library
 
   Scenario: Tapping an FX card body opens the mini player
     Given "Thunder Crack" is in the FX library
-    When I tap the "Thunder Crack" card body
+    When I tap the "Thunder Crack" FX card body
     Then the mini player appears at the bottom of the main content area
     And "Thunder Crack" begins playing
-    And the "Thunder Crack" card shows a playing preview state
+    And the "Thunder Crack" FX card shows a playing preview state
 
   Scenario: Tapping an FX card thumbnail opens the mini player
     Given "Thunder Crack" is in the FX library
-    When I tap the "Thunder Crack" card thumbnail
+    When I tap the "Thunder Crack" FX card thumbnail
     Then the mini player appears at the bottom of the main content area
     And "Thunder Crack" begins playing
 
   Scenario: The mini player shows the previewing track name
     Given "Wolf Howl" is in the FX library
-    When I preview "Wolf Howl" from its card
+    When I preview "Wolf Howl" from its FX card
     Then the mini player displays "Wolf Howl" as the track name
 
   Scenario: Tapping pause in the mini player stops playback
@@ -33,13 +33,13 @@ Feature: Preview FX track in library
     Given the mini player is showing and "Thunder Crack" is paused
     When I tap the play button in the mini player
     Then "Thunder Crack" begins playing again
-    And the "Thunder Crack" card shows a playing preview state
+    And the "Thunder Crack" FX card shows a playing preview state
 
   Scenario: Tapping a playing FX card again stops preview
-    Given the "Thunder Crack" card is previewing with a playing preview state
-    When I tap the "Thunder Crack" card body again
+    Given the "Thunder Crack" FX card is previewing with a playing preview state
+    When I tap the "Thunder Crack" FX card body again
     Then "Thunder Crack" stops playing
-    And the "Thunder Crack" card no longer shows a playing preview state
+    And the "Thunder Crack" FX card no longer shows a playing preview state
 
   Scenario: The mini player is only visible on the Library screen
     Given the mini player is visible while previewing "Thunder Crack"
@@ -49,7 +49,8 @@ Feature: Preview FX track in library
 
   Scenario: Previewing a second track replaces the first in the mini player
     Given the mini player is showing "Thunder Crack"
-    When I preview "Wolf Howl" from its card while "Thunder Crack" is playing
+    And "Wolf Howl" is in the FX library
+    When I preview "Wolf Howl" from its FX card while "Thunder Crack" is playing
     Then "Thunder Crack" stops
     And "Wolf Howl" begins playing
     And the mini player updates to show "Wolf Howl"

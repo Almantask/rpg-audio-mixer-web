@@ -1,13 +1,120 @@
 @import 'tailwindcss';
 
 @theme {
-  --color-charcoal: #0d0d0d;
-  --color-charcoal-elevated: #121212;
-  --color-gold: #d4af37;
-  --color-gold-bright: #eab308;
-  --color-muted: #a3a3a3;
+  --color-charcoal: #0a0b0f;
+  --color-charcoal-elevated: #12131a;
+  --color-ink-overlay: #1a1b24;
+  --color-gold: #c9a227;
+  --color-gold-bright: #e0b83a;
+  --color-violet: #8b6cc7;
+  --color-parchment: #e8e4d9;
+  --color-muted: #9a9588;
   --font-serif: 'Cinzel', serif;
-  --font-sans: 'Inter', sans-serif;
+  --font-sans: 'Figtree', system-ui, sans-serif;
+}
+
+@layer base {
+  :root {
+    --aa-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+    --aa-ease-in: cubic-bezier(0.32, 0, 0.67, 0);
+    --aa-dur-fast: 140ms;
+    --aa-dur: 180ms;
+    --aa-dur-slow: 240ms;
+  }
+
+  @keyframes aa-screen-enter {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes aa-screen-exit {
+    from {
+      opacity: 1;
+      transform: translateX(0);
+    }
+    to {
+      opacity: 0;
+      transform: translateX(-8px);
+    }
+  }
+
+  @keyframes aa-dialog-overlay-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes aa-dialog-overlay-out {
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0;
+    }
+  }
+
+  @keyframes aa-dialog-content-in {
+    from {
+      opacity: 0;
+      transform: translateY(8px) scale(0.98);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  @keyframes aa-dialog-content-out {
+    from {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+    to {
+      opacity: 0;
+      transform: translateY(8px) scale(0.98);
+    }
+  }
+
+  @keyframes aa-mini-player-in {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes aa-mini-player-out {
+    from {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    to {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+  }
+
+  @keyframes aa-wave-pulse {
+    0%,
+    100% {
+      transform: scaleY(0.55);
+    }
+    50% {
+      transform: scaleY(1);
+    }
+  }
 }
 
 @layer base {
@@ -16,11 +123,80 @@
   }
 
   body {
-    @apply bg-charcoal text-white antialiased;
+    @apply bg-charcoal text-parchment antialiased;
     font-family: var(--font-sans);
+    background-image:
+      radial-gradient(ellipse 70% 45% at 15% -5%, rgba(201, 162, 39, 0.09), transparent 55%),
+      radial-gradient(ellipse 50% 35% at 95% 10%, rgba(139, 108, 199, 0.05), transparent 45%);
+    background-attachment: fixed;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.03;
+    z-index: 50;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   }
 
   #root {
-    @apply min-h-screen;
+    @apply relative z-10 min-h-screen;
+  }
+}
+
+@layer utilities {
+  .aa-screen-enter {
+    animation: aa-screen-enter var(--aa-dur) var(--aa-ease-out) both;
+  }
+
+  .aa-screen-exit {
+    animation: aa-screen-exit var(--aa-dur-fast) var(--aa-ease-in) both;
+  }
+
+  .aa-dialog-overlay-in {
+    animation: aa-dialog-overlay-in var(--aa-dur-fast) var(--aa-ease-out) both;
+  }
+
+  .aa-dialog-overlay-out {
+    animation: aa-dialog-overlay-out var(--aa-dur-fast) var(--aa-ease-in) both;
+  }
+
+  .aa-dialog-content-in {
+    animation: aa-dialog-content-in var(--aa-dur) var(--aa-ease-out) both;
+  }
+
+  .aa-dialog-content-out {
+    animation: aa-dialog-content-out var(--aa-dur) var(--aa-ease-in) both;
+  }
+
+  .aa-mini-player-in {
+    animation: aa-mini-player-in var(--aa-dur) var(--aa-ease-out) both;
+  }
+
+  .aa-mini-player-out {
+    animation: aa-mini-player-out var(--aa-dur) var(--aa-ease-in) both;
+  }
+
+  .aa-wave-bar {
+    animation: aa-wave-pulse 1.2s ease-in-out infinite;
+    transform-origin: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  @layer utilities {
+    .aa-screen-enter,
+    .aa-screen-exit,
+    .aa-dialog-overlay-in,
+    .aa-dialog-overlay-out,
+    .aa-dialog-content-in,
+    .aa-dialog-content-out,
+    .aa-mini-player-in,
+    .aa-mini-player-out,
+    .aa-wave-bar {
+      animation: none !important;
+    }
   }
 }

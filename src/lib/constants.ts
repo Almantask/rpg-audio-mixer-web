@@ -1,6 +1,6 @@
 export const SIDEBAR_ITEMS = [
   'Home',
-  'Campaign',
+  'Campaigns',
   'Scenes',
   'Library',
   'Credits',
@@ -11,7 +11,7 @@ export type SidebarItem = (typeof SIDEBAR_ITEMS)[number]
 
 export const SIDEBAR_ROUTES: Record<SidebarItem, string> = {
   Home: '/',
-  Campaign: '/campaigns',
+  Campaigns: '/campaigns',
   Scenes: '/scenes',
   Library: '/library',
   Credits: '/credits',

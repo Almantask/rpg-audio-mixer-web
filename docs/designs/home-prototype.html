@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Home — Arcanum Audio (prototype)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            ink: { DEFAULT: '#0a0b0f', raised: '#12131a', overlay: '#1a1b24' },
+            parchment: { DEFAULT: '#e8e4d9', muted: '#9a9588' },
+            ember: { DEFAULT: '#c9a227', bright: '#e0b83a' },
+            violet: { DEFAULT: '#8b6cc7' },
+            mist: '#9a9588',
+          },
+          fontFamily: {
+            display: ['Cinzel', 'serif'],
+            sans: ['Figtree', 'system-ui', 'sans-serif'],
+          },
+        },
+      },
+    }
+  </script>
+  <style>
+    :root { --aa-ease: cubic-bezier(0.22, 1, 0.36, 1); }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Figtree, system-ui, sans-serif;
+      color: #e8e4d9;
+      background:
+        radial-gradient(ellipse 70% 45% at 15% -5%, rgba(201,162,39,0.09), transparent 55%),
+        radial-gradient(ellipse 50% 35% at 95% 10%, rgba(139,108,199,0.05), transparent 45%),
+        #0a0b0f;
+      min-height: 100vh;
+    }
+    body::before {
+      content: "";
+      position: fixed; inset: 0; pointer-events: none; opacity: 0.03; z-index: 40;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+    .aa-display { font-family: Cinzel, serif; letter-spacing: 0.04em; }
+    .shell { display: flex; min-height: 100vh; position: relative; z-index: 1; }
+    .sidebar {
+      width: 15.5rem;
+      flex-shrink: 0;
+      background: rgba(18,19,26,0.92);
+      border-right: 1px solid rgba(232,228,217,0.07);
+      display: flex;
+      flex-direction: column;
+      padding: 1.25rem 0.85rem;
+    }
+    .nav-item {
+      display: flex; align-items: center; gap: 0.75rem;
+      min-height: 44px; padding: 0 0.85rem; border-radius: 8px;
+      color: #9a9588; text-decoration: none; font-size: 0.9375rem; font-weight: 500;
+      transition: background 160ms var(--aa-ease), color 160ms var(--aa-ease);
+    }
+    .nav-item:hover { color: #e8e4d9; background: rgba(255,255,255,0.03); }
+    .nav-item[aria-current="page"] {
+      color: #e0b83a;
+      background: rgba(201,162,39,0.12);
+      box-shadow: inset 3px 0 0 #c9a227;
+    }
+    .nav-item:focus-visible { outline: 2px solid #e0b83a; outline-offset: 2px; }
+    .main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+    .topbar {
+      display: flex; align-items: center; gap: 0.75rem;
+      min-height: 3.5rem; padding: 0 1.5rem;
+      border-bottom: 1px solid rgba(232,228,217,0.06);
+      background: rgba(10,11,15,0.65);
+      backdrop-filter: blur(8px);
+    }
+    .content { flex: 1; padding: 1.5rem 1.5rem 2.5rem; }
+    .content-inner { max-width: 72rem; margin: 0 auto; }
+    .hero {
+      position: relative; overflow: hidden; border-radius: 14px;
+      border: 1px solid rgba(201,162,39,0.22);
+      min-height: 220px;
+      background:
+        linear-gradient(105deg, rgba(10,11,15,0.92) 0%, rgba(10,11,15,0.55) 45%, rgba(10,11,15,0.35) 100%),
+        linear-gradient(160deg, #1c1830 0%, #2a2210 50%, #0f1218 100%);
+      animation: enter 420ms var(--aa-ease) both;
+    }
+    .hero-inner { position: relative; z-index: 1; display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 1.25rem; padding: 1.75rem 1.75rem 1.5rem; }
+    .stat {
+      border-radius: 12px; border: 1px solid rgba(232,228,217,0.08);
+      background: #12131a; padding: 1.25rem 1.35rem;
+      display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+      transition: border-color 180ms var(--aa-ease), transform 180ms var(--aa-ease);
+      animation: enter 480ms var(--aa-ease) both;
+    }
+    .stat:hover { transform: translateY(-2px); }
+    .stat-sc { border-color: rgba(201,162,39,0.28); animation-delay: 60ms; }
+    .stat-fx { border-color: rgba(139,108,199,0.35); animation-delay: 120ms; }
+    .play {
+      width: 48px; height: 48px; border-radius: 999px; flex-shrink: 0;
+      display: grid; place-items: center; border: none; cursor: pointer;
+      transition: transform 160ms var(--aa-ease), background 160ms var(--aa-ease);
+    }
+    .play:hover { transform: scale(1.05); }
+    .play:focus-visible { outline: 2px solid #e0b83a; outline-offset: 3px; }
+    .play-sc { background: #c9a227; color: #0a0b0f; }
+    .play-fx { background: #8b6cc7; color: #0a0b0f; }
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      min-height: 44px; padding: 0 1.35rem; border-radius: 8px;
+      font-weight: 600; font-size: 0.9375rem; border: none; cursor: pointer;
+      background: #c9a227; color: #0a0b0f;
+      transition: background 160ms var(--aa-ease), transform 160ms var(--aa-ease);
+    }
+    .btn:hover { background: #e0b83a; transform: translateY(-1px); }
+    .btn:focus-visible { outline: 2px solid #e0b83a; outline-offset: 3px; }
+    .badge {
+      display: inline-flex; align-items: center; border-radius: 6px;
+      border: 1px solid; padding: 0.15rem 0.45rem; font-size: 0.6875rem; font-weight: 600; letter-spacing: 0.04em;
+    }
+    .icon-btn {
+      width: 44px; height: 44px; border-radius: 8px; border: 1px solid rgba(232,228,217,0.1);
+      background: transparent; color: #e8e4d9; display: grid; place-items: center; cursor: pointer;
+    }
+    .icon-btn:focus-visible { outline: 2px solid #e0b83a; outline-offset: 2px; }
+    @keyframes enter {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @media (max-width: 1023px) {
+      .sidebar { display: none; }
+      .sidebar.open {
+        display: flex; position: fixed; inset: 0 auto 0 0; z-index: 30;
+        box-shadow: 8px 0 40px rgba(0,0,0,0.5);
+      }
+      .scrim { position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 25; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <div id="scrim" class="scrim hidden" hidden></div>
+    <aside class="sidebar" id="sidebar" aria-label="Primary">
+      <div class="mb-8 px-2">
+        <p class="aa-display text-lg font-semibold text-ember leading-tight">Arcanum<br/>Audio</p>
+        <p class="mt-1 text-xs text-mist">Session desk</p>
+      </div>
+      <nav class="flex flex-1 flex-col gap-1" aria-label="Main">
+        <a class="nav-item" href="home-prototype.html" aria-current="page">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-5v-6H10v6H5a1 1 0 0 1-1-1v-9.5Z"/></svg>
+          Home
+        </a>
+        <a class="nav-item" href="campaigns-prototype.html">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/></svg>
+          Campaign
+        </a>
+        <a class="nav-item" href="scenes-list-prototype.html">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="10.5" r="1.5"/><path d="m21 15-4.5-4.5L7 20"/></svg>
+          Scenes
+        </a>
+        <a class="nav-item" href="library-prototype.html">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+          Library
+        </a>
+        <a class="nav-item" href="#">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M4 19.5V6a2 2 0 0 1 2-2h9l5 5v10.5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z"/><path d="M14 4v5h5"/></svg>
+          Credits
+        </a>
+        <a class="nav-item" href="#">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>
+          Trash
+        </a>
+      </nav>
+      <div class="mt-auto px-2 pt-4">
+        <a class="text-xs text-mist hover:text-ember" href="visual-theme-system.html">Theme system →</a>
+      </div>
+    </aside>
+
+    <div class="main">
+      <header class="topbar">
+        <button type="button" class="icon-btn lg:hidden" id="menuBtn" aria-label="Open menu" aria-controls="sidebar" aria-expanded="false">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+        </button>
+        <p class="text-sm text-mist"><span class="text-parchment font-medium">Home</span> · Jump back into play</p>
+      </header>
+
+      <main class="content" aria-label="Home screen">
+        <div class="content-inner space-y-8">
+          <section aria-labelledby="campaign-heading">
+            <h2 id="campaign-heading" class="sr-only">Active campaign</h2>
+            <article class="hero">
+              <div class="hero-inner">
+                <div>
+                  <p class="text-xs font-semibold uppercase tracking-[0.18em] text-ember/90">Continue session</p>
+                  <h1 class="aa-display mt-2 text-3xl font-semibold text-ember md:text-4xl">Demo Adventure</h1>
+                  <p class="mt-2 max-w-xl text-mist">Session 1 — The Ancient Gate awaits your party’s next move.</p>
+                </div>
+                <button type="button" class="btn">Resume</button>
+              </div>
+            </article>
+          </section>
+
+          <section aria-labelledby="top-heading">
+            <div class="mb-4 flex items-end justify-between gap-4">
+              <h2 id="top-heading" class="aa-display text-xl text-ember">Most played</h2>
+              <p class="text-sm text-mist">Your all-time favourites</p>
+            </div>
+            <div class="grid gap-4 lg:grid-cols-2">
+              <article class="stat stat-sc">
+                <div>
+                  <p class="text-xs font-semibold uppercase tracking-widest text-mist">Top soundscape</p>
+                  <h3 class="aa-display mt-1 text-2xl text-ember">Forest</h3>
+                  <div class="mt-3 flex flex-wrap items-center gap-2">
+                    <span class="badge border-ember/40 text-ember">SOUNDSCAPE</span>
+                    <span class="badge border-ember/40 text-ember">LOOPABLE</span>
+                    <span class="text-xs text-mist">4 plays</span>
+                  </div>
+                </div>
+                <button type="button" class="play play-sc" aria-label="Preview Forest" aria-pressed="false" data-preview>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7L8 5Z"/></svg>
+                </button>
+              </article>
+              <article class="stat stat-fx">
+                <div>
+                  <p class="text-xs font-semibold uppercase tracking-widest text-mist">Top FX</p>
+                  <h3 class="aa-display mt-1 text-2xl text-violet">Arrow</h3>
+                  <div class="mt-3 flex flex-wrap items-center gap-2">
+                    <span class="badge border-violet/50 text-violet">FX</span>
+                    <span class="text-xs text-mist">18 plays</span>
+                  </div>
+                </div>
+                <button type="button" class="play play-fx" aria-label="Preview Arrow" aria-pressed="false" data-preview>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7L8 5Z"/></svg>
+                </button>
+              </article>
+            </div>
+            <p class="sr-only" aria-live="polite" id="preview-live"></p>
+          </section>
+        </div>
+      </main>
+    </div>
+  </div>
+  <script>
+    const sidebar = document.getElementById('sidebar');
+    const scrim = document.getElementById('scrim');
+    const menuBtn = document.getElementById('menuBtn');
+    const live = document.getElementById('preview-live');
+    function closeNav() {
+      sidebar.classList.remove('open');
+      scrim.classList.add('hidden');
+      scrim.hidden = true;
+      menuBtn.setAttribute('aria-expanded', 'false');
+    }
+    menuBtn?.addEventListener('click', () => {
+      const open = !sidebar.classList.contains('open');
+      sidebar.classList.toggle('open', open);
+      scrim.classList.toggle('hidden', !open);
+      scrim.hidden = !open;
+      menuBtn.setAttribute('aria-expanded', String(open));
+    });
+    scrim?.addEventListener('click', closeNav);
+    document.querySelectorAll('[data-preview]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const pressed = btn.getAttribute('aria-pressed') === 'true';
+        document.querySelectorAll('[data-preview]').forEach((b) => b.setAttribute('aria-pressed', 'false'));
+        btn.setAttribute('aria-pressed', String(!pressed));
+        live.textContent = !pressed ? (btn.getAttribute('aria-label') + ' playing') : 'Preview stopped';
+      });
+    });
+  </script>
+</body>
+</html>

@@ -22,7 +22,7 @@ Feature: Create session
     And I enter the session name "Pre-planned Finale"
     And I confirm creation
     Then I see the new session in the sessions list
-    And the session card shows the chosen future date
+    And the new session card shows the chosen future date
 
   Scenario: Session cover art can be set from an image upload
     Given I am creating a session named "Castle Ravenloft" in "Curse of Strahd"
@@ -34,7 +34,7 @@ Feature: Create session
     Given I am creating a session named "The Dark Arrival" in "The Shattered Throne"
     When I enter an optional description "The party arrives at Barovia"
     And I confirm creation
-    Then the session card shows the description snippet
+    Then the "The Dark Arrival" session card shows the description snippet
 
   Scenario: Cancelling session creation leaves the list unchanged
     Given I have a campaign "The Shattered Throne" with no sessions

@@ -29,16 +29,11 @@ Feature: Play mixed track loops and sounds
     Then "Forest Loop" plays at the reduced level
     But "Wolf Howl" is unaffected by the Master Volume slider
 
-  Scenario: Soundscapes duck to 40% when a soundboard effect is triggered
+  Scenario: Soundscapes stay at full volume when a soundboard effect is triggered
     Given "Weather" is looping at full volume
     When I tap "Thunder Crack" on the soundboard
-    Then all playing soundscape categories duck to 40% volume
-
-  Scenario: Soundscapes restore volume after a soundboard effect ends
-    Given "Weather" is looping at full volume
-    And "Weather" is ducked to 40% volume while "Thunder Crack" plays
-    When "Thunder Crack" finishes playing
-    Then "Weather" restores to its previous volume
+    Then "Weather" continues looping at full volume
+    And "Thunder Crack" plays simultaneously with the "Weather" loop
 
   Scenario: Starting an 11th soundscape stops the oldest loop
     Given there are 10 soundscape categories currently looping

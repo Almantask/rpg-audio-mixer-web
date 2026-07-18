@@ -12,10 +12,21 @@ Feature: View campaign sessions
     And I see "Campaign Sessions" as the page subtitle
     And I see the campaign hero banner with cover art
 
-  Scenario: Home sidebar stays active while viewing campaign sessions
+  Scenario: Campaigns sidebar stays active while viewing campaign sessions
     Given I have a campaign "The Shattered Throne"
     When I open "The Shattered Throne"
-    Then the "Home" sidebar item is the active sidebar item
+    Then the "Campaigns" sidebar item is the active sidebar item
+    And the "Home" sidebar item does not appear highlighted
+
+  Scenario: Campaign Sessions shows the campaign description in the hero
+    Given I have a campaign "The Shattered Throne" with description "Whispers from a shattered keep"
+    When I open "The Shattered Throne"
+    Then I see the campaign description "Whispers from a shattered keep" on the Campaign Sessions screen
+
+  Scenario: Campaign Sessions without a description offers Add a description
+    Given I have a campaign "New Adventure" with no description
+    When I open "New Adventure"
+    Then I see an "Add a description" action on the Campaign Sessions hero
 
   Scenario: Campaign Sessions has no explicit back link
     Given I am on the Campaign Sessions screen for "The Shattered Throne"
@@ -55,9 +66,9 @@ Feature: View campaign sessions
       | number     | name              | date  | scenes |
       | Session 14 | The Howling Crags | Mar 12 | 4      |
     When I open "Curse of Strahd"
-    Then I see "Session 14" on the session card
-    And I see "The Howling Crags" on the session card
-    And I see "Mar 12 · 4 Scenes" on the session card
+    Then I see "Session 14" on the "Session 14" session card
+    And I see "The Howling Crags" on the "Session 14" session card
+    And I see "Mar 12 · 4 Scenes" on the "Session 14" session card
 
   Scenario: Sessions are sorted by date, most recent first
     Given I have sessions "Session 1" dated last month and "Session 2" dated today in "Curse of Strahd"
@@ -68,8 +79,8 @@ Feature: View campaign sessions
     Given I have a campaign "Curse of Strahd" with sessions "Session 1" and "Session 2"
     And I most recently opened session "Session 1"
     When I view the Campaign Sessions screen for "Curse of Strahd"
-    Then the "Session 1" card shows a "Last Active" badge
-    And the "Session 2" card does not show a "Last Active" badge
+    Then the "Session 1" session card shows a "Last Active" badge
+    And the "Session 2" session card does not show a "Last Active" badge
 
   Scenario: Sessions list shows loading skeletons while data loads
     Given sessions for "Curse of Strahd" are still loading
@@ -85,6 +96,6 @@ Feature: View campaign sessions
   Scenario: Tapping Edit on a session card does not navigate to scenes
     Given I have session "Session 1" in "Curse of Strahd"
     And I am on the Campaign Sessions screen for "Curse of Strahd"
-    When I tap Edit on the "Session 1" card
+    When I tap Edit on the "Session 1" session card
     Then I see the session edit dialog
     And I remain on the Campaign Sessions screen

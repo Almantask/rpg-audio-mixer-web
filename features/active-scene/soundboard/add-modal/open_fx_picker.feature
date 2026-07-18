@@ -15,7 +15,6 @@ Feature: Open FX picker on Active Scene
     And I see the title "Sound Effects"
     And I see the subtitle "Select effects for this scene's soundboard."
     And I see the picker search bar with placeholder "Search effects…"
-    And I see FX Types, Base Intensity, and Sort Order filters for the picker
     And I can select effects for addition to the soundboard from the picker grid
 
   Scenario: The FX picker does not offer Import, Buy More, or Free Tracks
@@ -23,6 +22,11 @@ Feature: Open FX picker on Active Scene
     Then I do not see an Import action in the picker
     And I do not see a "Buy More" button in the picker
     And I do not see a "Free Tracks" button in the picker
+
+  Scenario: The FX picker has no Type or Sort filters
+    Given the Sound Effects picker modal is open
+    Then I do not see an "FX Types" filter in the picker
+    And I do not see a "Sort Order" control in the picker
 
   Scenario: Empty library directs the GM to the Library page
     Given the FX library has no tracks

@@ -1,20 +1,27 @@
 import type { SidebarItem } from './constants'
 
+export interface SidebarLocationState {
+  campaignId?: string
+  sessionId?: string
+}
+
 /**
  * Determines which sidebar item should appear highlighted for a given pathname.
- * See docs/designs/platform-design.md — Active highlight (PW-06).
+ * Active Scene opened from a campaign session keeps Campaigns highlighted.
  */
-export function getActiveSidebarItem(pathname: string): SidebarItem {
-  if (pathname.startsWith('/campaigns/')) {
-    return 'Home'
-  }
-
+export function getActiveSidebarItem(
+  pathname: string,
+  state?: SidebarLocationState | null,
+): SidebarItem {
   if (pathname.match(/^\/scenes\/[^/]+\/active$/)) {
+    if (state?.campaignId) {
+      return 'Campaigns'
+    }
     return 'Scenes'
   }
 
-  if (pathname === '/campaigns') {
-    return 'Campaign'
+  if (pathname === '/campaigns' || pathname.startsWith('/campaigns/')) {
+    return 'Campaigns'
   }
 
   if (pathname === '/scenes' || pathname.startsWith('/scenes/')) {

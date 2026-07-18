@@ -1,0 +1,90 @@
+import { Link, useNavigate } from 'react-router-dom'
+import type { Campaign, Session } from '@/types/campaign'
+import { Button } from '@/components/ui/button'
+import { HeroCardSurface } from '@/components/shared/HeroCardSurface'
+import { formatSessionContextLabel } from '@/lib/sessionTitle'
+
+interface ActiveCampaignHeroProps {
+  campaign?: Campaign
+  session?: Session
+  empty?: boolean
+}
+
+function sessionSubtitle(session: Session): string {
+  if (session.description?.trim()) {
+    return `Session ${session.number}: ${session.description.trim()}`
+  }
+  return formatSessionContextLabel(session)
+}
+
+export function ActiveCampaignHero({ campaign, session, empty = false }: ActiveCampaignHeroProps) {
+  const navigate = useNavigate()
+
+  if (empty || !campaign) {
+    return (
+      <section aria-label="Active Campaigns" className="w-full space-y-3">
+        <h2 className="font-serif text-lg tracking-wide text-gold">Active Campaigns</h2>
+        <div
+          data-testid="active-campaign-hero"
+          className="flex w-full min-w-0 flex-col items-center rounded-xl border border-gold/30 bg-charcoal-elevated p-6 text-center sm:p-8"
+        >
+          <p className="font-serif text-xl text-gold">Create your first campaign</p>
+          <Button asChild className="mt-6 w-full min-h-11 sm:w-auto" data-hero-create-campaign>
+            <Link to="/campaigns">Create your first campaign</Link>
+          </Button>
+        </div>
+      </section>
+    )
+  }
+
+  const handleResume = () => {
+    const hero = document.querySelector('[data-testid="active-campaign-hero"]')
+    hero?.setAttribute('data-hero-expanding', 'true')
+    window.setTimeout(() => {
+      navigate(`/campaigns/${campaign.id}/sessions`)
+    }, 150)
+  }
+
+  return (
+    <section aria-label="Active Campaigns" className="w-full space-y-3">
+      <h2 className="font-serif text-lg tracking-wide text-gold">Active Campaigns</h2>
+      <HeroCardSurface
+        data-testid="active-campaign-hero"
+        data-hero-campaign={campaign.name}
+        size="hero"
+        coverArtUrl={campaign.coverArtUrl}
+        className={
+          'data-[hero-expanding=true]:fixed data-[hero-expanding=true]:inset-0 data-[hero-expanding=true]:z-40 data-[hero-expanding=true]:rounded-none'
+        }
+      >
+        <div className="relative flex h-full min-h-[13.5rem] w-full min-w-0 flex-col justify-end gap-4 p-5 sm:flex-row sm:items-end sm:justify-between sm:p-7 lg:min-h-[18rem] xl:min-h-[22rem]">
+          <div className="min-w-0 max-w-4xl">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gold/90">
+              Continue session
+            </p>
+            <h3 className="mt-2 break-words font-serif text-2xl tracking-wide text-gold sm:text-3xl md:text-4xl xl:text-5xl">
+              {campaign.name}
+            </h3>
+            {session ? (
+              <p
+                className="mt-2 max-w-3xl text-sm text-muted sm:text-base xl:text-lg"
+                data-hero-session-subtitle
+              >
+                {sessionSubtitle(session)}
+              </p>
+            ) : null}
+          </div>
+          <Button
+            type="button"
+            data-hero-resume
+            aria-label="Resume"
+            className="min-h-11 w-full min-w-[7rem] shrink-0 sm:w-auto"
+            onClick={handleResume}
+          >
+            Resume
+          </Button>
+        </div>
+      </HeroCardSurface>
+    </section>
+  )
+}

@@ -17,6 +17,6 @@ Feature: Master controls
     Then the "Combat" soundscape should fade out and stop
     And the "Fire" soundscape should fade out and stop
     And the "Scream" sound effect should stop immediately
-    And the "Combat" category shows a paused state
-    And the "Fire" category shows a paused state
+    And the "Combat" category is idle
+    And the "Fire" category is idle
     And the Master Volume slider position is unchanged

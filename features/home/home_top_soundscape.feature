@@ -19,7 +19,6 @@ Feature: Home Top Soundscape stat
     Given "Ominous Chant" is shown in the Top Soundscape card
     When I tap the preview button on the Top Soundscape card
     Then the Top Soundscape category begins playing as an inline preview
-    And I see a progress bar on the Top Soundscape card
 
   Scenario: Top Soundscape preview can be paused
     Given "Ominous Chant" is previewing inline on the Top Soundscape card

@@ -5,20 +5,31 @@ Feature: Edit FX in library
   I want to edit and delete FX tracks inline
   So that I can keep my library metadata accurate.
 
-  Scenario: Edit an FX track from its card
+  Scenario: Edit an FX track from its FX card
     Given "Wolf Howl" is in the FX library
-    When I edit "Wolf Howl" from its card
-    Then I see inline edit on the "Wolf Howl" card with fields for Name and Tags
+    When I edit "Wolf Howl" from its FX card
+    Then I see inline edit on the "Wolf Howl" FX card with fields for Name and Tags
 
   Scenario: Edit the name of an FX track inline
     Given I am editing "wolf_howl.mp3" inline on its FX card
     When I rename "wolf_howl.mp3" to "Wolf Howl" and save inline edit
     Then the track appears as "Wolf Howl" in the FX library card grid
 
-  Scenario: Add tags to an FX track inline
+  Scenario: Add tags to an FX track from suggestions
     Given I am editing "Wolf Howl" inline on its FX card
     When I add the tag "Combat" to "Wolf Howl" from the predefined list and save
-    Then "Wolf Howl" shows the "Combat" tag chip on its card
+    Then "Wolf Howl" shows the "Combat" tag chip on its FX card
+
+  Scenario: Enter comma-separated tags on an FX track
+    Given I am editing "Wolf Howl" inline on its FX card
+    When I enter tags "Combat, Creature" for "Wolf Howl" and save
+    Then "Wolf Howl" shows the "Combat" tag chip on its FX card
+    And "Wolf Howl" shows the "Creature" tag chip on its FX card
+
+  Scenario: Draft tag chips update while typing comma-separated FX tags
+    Given I am editing "Wolf Howl" inline on its FX card
+    When I type "Combat, Creature" in the FX tags field for "Wolf Howl"
+    Then the "Wolf Howl" FX card shows "Combat" and "Creature" tag chips
 
   Scenario: Delete an FX track via inline edit
     Given I am editing "Wolf Howl" inline on its FX card

@@ -7,6 +7,7 @@ Feature: Home inline preview behavior
 
   Scenario: Only one Home preview plays at a time
     Given "Ominous Chant" is previewing inline on the Top Soundscape card
+    And "Dragon Roar" is shown in the Top FX card
     When I tap the preview button on the Top FX card
     Then the Top Soundscape preview stops
     And "Dragon Roar" plays as an inline one-shot preview

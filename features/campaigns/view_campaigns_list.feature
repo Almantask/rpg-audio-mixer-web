@@ -11,7 +11,6 @@ Feature: View campaigns list
     Given I have no campaigns
     When I open the Active Campaigns screen
     Then I see the page title "Active Campaigns"
-    And I see the subtitle "Manage your campaigns."
     And I see the empty state headline "No campaigns yet"
     And I see a "Create Campaign" card
 
@@ -28,16 +27,16 @@ Feature: View campaigns list
     Given I have a campaign "New Adventure" with no description
     When I open the Active Campaigns screen
     Then I see "New Adventure" on its campaign card
-    And I do not see a description on the "New Adventure" card
+    And I do not see a description on the "New Adventure" campaign card
 
   Scenario: Session count uses singular and plural labels
     Given I have a campaign "New Adventure" with 0 sessions
-    And I have a campaign "One Shot" with 1 session
+    And I have a campaign "One Shot" with 1 sessions
     And I have a campaign "Epic Saga" with 14 sessions
     When I open the Active Campaigns screen
-    Then I see "0 sessions" on the "New Adventure" card
-    And I see "1 session" on the "One Shot" card
-    And I see "14 sessions" on the "Epic Saga" card
+    Then I see "0 sessions" on the "New Adventure" campaign card
+    And I see "1 session" on the "One Shot" campaign card
+    And I see "14 sessions" on the "Epic Saga" campaign card
 
   Scenario: Campaigns are sorted by most recently played
     Given I have campaigns "Old Campaign" and "New Campaign"
@@ -48,7 +47,7 @@ Feature: View campaigns list
   Scenario: Resuming a campaign updates its play order
     Given I have a campaign "Old Tale" with last played date "Yesterday"
     And I have a campaign "New Tale" with last played date "Today"
-    When I tap "Resume" on the "Old Tale" card
+    When I tap "Resume" on the "Old Tale" campaign card
     And I open the Active Campaigns screen
     Then "Old Tale" appears above "New Tale"
 

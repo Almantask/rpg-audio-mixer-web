@@ -2,13 +2,13 @@
 Feature: Open campaign sessions
 
   As a GM
-  I want to open a campaign's sessions from its card
+  I want to open a campaign's sessions from its campaign card
   So that I can continue or start a campaign.
 
   Scenario: A campaign with no sessions shows Start
     Given I have a campaign "New Adventure" with 0 sessions
     And I am on the Active Campaigns screen
-    Then I see a "Start" button on the "New Adventure" card
+    Then I see a "Start" button on the "New Adventure" campaign card
 
   Scenario: Start opens the campaign sessions list
     Given I have a campaign "New Adventure" with 0 sessions
@@ -19,7 +19,7 @@ Feature: Open campaign sessions
   Scenario: A campaign with sessions shows Resume
     Given I have a campaign "The Shattered Throne" with at least one session
     And I am on the Active Campaigns screen
-    Then I see a "Resume" button on the "The Shattered Throne" card
+    Then I see a "Resume" button on the "The Shattered Throne" campaign card
 
   Scenario: Resume opens the campaign sessions list
     Given I have a campaign "The Shattered Throne" with at least one session

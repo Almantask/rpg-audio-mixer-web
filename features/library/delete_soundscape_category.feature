@@ -13,6 +13,6 @@ Feature: Delete soundscape category
 
     Examples:
       | category | action                              |
-      | Weather  | delete "Weather" from the grid      |
-      | Weather  | swipe right on the "Weather" card   |
+      | Weather  | delete "Weather" from the soundscape grid    |
+      | Weather  | swipe right on the "Weather" soundscape card |
 

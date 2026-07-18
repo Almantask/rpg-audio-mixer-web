@@ -42,17 +42,9 @@ For **picker mode** (Add Sound from Active Scene), see [`audio-library-fx-modal-
 
 ---
 
-## Sidebar Filter Panel
+## Filters
 
-Anchored in the **sidebar footer** while Library → Sound Effects is active. **No search field in the sidebar.**
-
-| Control | Component | Description |
-|---|---|---|
-| FX Types | `Select` | e.g. "All Types" |
-| Base Intensity | `Slider` | **Filter** — show tracks with base intensity **≤** selected value (inclusive ceiling). Stops: **I**, **II**, **III** only |
-| Sort Order | `Select` | e.g. "Recently Added" |
-
-Filters apply to the grid in real time (debounced). Text search is **main-content only**.
+Sound Effects has **no sidebar filter panel**. Text search is **main-content only**. The grid defaults to recently added order.
 
 ---
 
@@ -111,7 +103,6 @@ Preview volume uses each track's saved default with **Cubic ($x^3$) mapping**.
 | Click **Buy More** | Storefront |
 | Click **Free Tracks** | Demo FX download with progress |
 | Type in main **Search** bar | Filters grid by track name and tags (debounced) |
-| Use sidebar filters | Filters grid in real time (types, base intensity, sort) |
 | Leave Library (sidebar nav) | Stops FX preview; hides mini player |
 
 ---

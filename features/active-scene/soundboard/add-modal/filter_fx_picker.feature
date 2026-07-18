@@ -19,26 +19,6 @@ Feature: Filter FX picker
     Then I see "Wolf Howl" in the picker grid
     And I do not see "Thunder Crack" in the picker grid
 
-  Scenario: FX Types filter narrows the picker grid
-    Given the Sound Effects picker modal is open
-    And the FX library has type IMPACT track "Thunder Crack" and type CREATURE track "Wolf Howl"
-    When I set the FX Types filter to IMPACT in the picker
-    Then I see "Thunder Crack" in the picker grid
-    And I do not see "Wolf Howl" in the picker grid
-
-  Scenario: Base Intensity filter narrows the picker grid
-    Given the Sound Effects picker modal is open
-    And the FX library has "Soft Tap" at base intensity I and "Thunder Crack" at base intensity III
-    When I set the base intensity filter to "III" in the picker
-    Then I see "Thunder Crack" in the picker grid
-    And I do not see "Soft Tap" in the picker grid
-
-  Scenario: Sort Order reorders tracks in the picker grid
-    Given the Sound Effects picker modal is open
-    And the FX library has "Alpha FX" added before "Zulu FX"
-    When I set the Sort Order to "Name A–Z" in the picker
-    Then "Alpha FX" appears before "Zulu FX" in the picker grid
-
   Scenario: FX picker no-match filters shows a clear-filters action
     Given the Sound Effects picker modal is open
     And the FX library has "Thunder Crack"

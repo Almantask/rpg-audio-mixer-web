@@ -9,13 +9,13 @@ Feature: Commit soundscape selection to scene
     Given the Add Soundscape picker modal is open
     And my library has the category "Weather" with at least one track
     Then I can select "Weather" for addition to the scene from the picker grid
-    And "Weather" cannot be added instantly from its card
+    And "Weather" cannot be added instantly from its soundscape picker card
 
   Scenario: Composition cards show track and layer counts
     Given the Add Soundscape picker modal is open
     And my library has the category "Weather" with 12 tracks across 3 layers
-    Then the "Weather" card shows "12 tracks"
-    And the "Weather" card shows "3 layers"
+    Then the "Weather" soundscape picker card shows "12 tracks"
+    And the "Weather" soundscape picker card shows "3 layers"
 
   Scenario: Categories with zero tracks are excluded from the picker grid
     Given my library has the category "Empty Category" with no tracks at any intensity level

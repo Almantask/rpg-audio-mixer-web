@@ -59,6 +59,7 @@ GM can browse and manage scenes, link scenes to sessions, manage the FX library,
 | `features/session-scenes/view_session_scenes.feature` | View session scenes |
 | `features/session-scenes/open_scene_from_session.feature` | Open scene from session |
 | `features/session-scenes/import_scene_to_session.feature` | Import scene to session |
+| `features/session-scenes/create_scene_from_session.feature` | Create scene from session |
 | `features/session-scenes/unlink_scene_from_session.feature` | Unlink scene from session |
 | `features/library/browse_fx_library.feature` | Browse FX library |
 | `features/library/edit_fx_in_library.feature` | Edit FX in library |

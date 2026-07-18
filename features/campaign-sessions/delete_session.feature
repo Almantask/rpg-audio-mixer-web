@@ -8,7 +8,7 @@ Feature: Delete session
   Scenario Outline: Deleting a session requires confirmation before Trash
     Given I have session "Session 1" in "Curse of Strahd"
     And I am on the Campaign Sessions screen for "Curse of Strahd"
-    When I <gesture> on the "Session 1" card
+    When I <gesture> on the "Session 1" session card
     And I confirm deletion in the dialog
     Then "Session 1" is no longer in the sessions list
     And "Session 1" is available for recovery in Trash

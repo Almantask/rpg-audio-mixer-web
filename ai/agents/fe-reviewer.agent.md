@@ -1,7 +1,6 @@
 ---
 name: fe-reviewer
-description: 'Senior Frontend Code Reviewer. Use when: reviewing PRs, building the project, and evaluating performance, audio quality, latency, accessibility, code smells, potential bugs, and architectural integrity.'
-argument-hint: 'Describe the feature or PR to review from a React and audio-performance perspective.'
+description: 'Senior Frontend Code Reviewer. Use when reviewing PRs, building the project, and evaluating performance, audio quality, latency, accessibility, code smells, potential bugs, and architectural integrity.'
 ---
 
 # Frontend Code Reviewer
