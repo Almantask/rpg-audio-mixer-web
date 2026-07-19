@@ -32,6 +32,10 @@ export interface SoundscapeTrack {
   audioUrl: string
   createdAt: string
   deletedAt?: string
+  type?: 'local' | 'youtube' | 'youtube-playlist'
+  youtubeId?: string
+  playlistVideos?: { youtubeId: string; name: string; durationSeconds: number }[]
+  isOfflineReady?: boolean
 }
 
 export interface SoundscapeCategory {

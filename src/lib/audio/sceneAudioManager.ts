@@ -3,6 +3,12 @@ import { resolveAudioUrl } from '@/lib/resolveAudioUrl'
 import { getAudioContext, resumeAudioContext } from './audioContextManager'
 import { publishAudioState, type PlayingTrackSnapshot } from './audioState'
 import { mapVolumeCubic } from './volume'
+import {
+  extractYoutubeIdFromAudioUrl,
+  isYoutubeAudioUrl,
+  startYoutubePlayback,
+  type YoutubePlaybackSession,
+} from './youtubePlayer'
 
 const CROSSFADE_SECONDS = 2
 const MAX_SOUNDBOARD_GLOBAL = 5
@@ -53,11 +59,115 @@ export function resolvePlaySceneSlotAction(input: {
   return 'start'
 }
 
+/** Keep a loaded track across React reconfigure when persisted currentTrackId is omitted. */
+export function resolveConfiguredTrackId(input: {
+  incomingTrackId?: string
+  existingTrackId?: string
+  trackIds: string[]
+}): string | undefined {
+  const candidate = input.incomingTrackId ?? input.existingTrackId
+  return candidate && input.trackIds.includes(candidate) ? candidate : undefined
+}
+
 export interface SoundscapeTrackRef {
   id: string
   name: string
   audioUrl: string
   durationSeconds: number
+  type?: 'local' | 'youtube' | 'youtube-playlist'
+  youtubeId?: string
+  playlistVideos?: { youtubeId: string; name: string; durationSeconds: number }[]
+  isOfflineReady?: boolean
+}
+
+/** One pickable item in an intensity pool — playlist videos share the pool with local tracks (YT-02). */
+export type SoundscapePoolPick =
+  | { kind: 'track'; trackId: string }
+  | { kind: 'playlist-video'; playlistTrackId: string; videoIndex: number }
+
+export function buildExpandedSoundscapePool(
+  trackIds: string[],
+  tracksById: Record<string, SoundscapeTrackRef>,
+): SoundscapePoolPick[] {
+  const picks: SoundscapePoolPick[] = []
+  for (const trackId of trackIds) {
+    const track = tracksById[trackId]
+    if (!track) {
+      continue
+    }
+    if (track.type === 'youtube-playlist' && (track.playlistVideos?.length ?? 0) > 0) {
+      for (let videoIndex = 0; videoIndex < track.playlistVideos!.length; videoIndex += 1) {
+        picks.push({ kind: 'playlist-video', playlistTrackId: trackId, videoIndex })
+      }
+      continue
+    }
+    picks.push({ kind: 'track', trackId })
+  }
+  return picks
+}
+
+export function pickExpandedSoundscapeEntry(
+  picks: SoundscapePoolPick[],
+  exclude?: SoundscapePoolPick,
+): SoundscapePoolPick | undefined {
+  if (picks.length === 0) {
+    return undefined
+  }
+  const candidates = exclude
+    ? picks.filter((pick) => {
+        if (pick.kind !== exclude.kind) {
+          return true
+        }
+        if (pick.kind === 'track' && exclude.kind === 'track') {
+          return pick.trackId !== exclude.trackId
+        }
+        if (pick.kind === 'playlist-video' && exclude.kind === 'playlist-video') {
+          return !(
+            pick.playlistTrackId === exclude.playlistTrackId &&
+            pick.videoIndex === exclude.videoIndex
+          )
+        }
+        return true
+      })
+    : picks
+  const pool = candidates.length > 0 ? candidates : picks
+  return pool[Math.floor(Math.random() * pool.length)]
+}
+
+export function defaultIntensityForCategoryLevels(
+  levels: Record<SoundscapeIntensity, string[]> | undefined,
+): SoundscapeIntensity {
+  if ((levels?.I.length ?? 0) > 0) {
+    return 'I'
+  }
+  if ((levels?.II.length ?? 0) > 0) {
+    return 'II'
+  }
+  if ((levels?.III.length ?? 0) > 0) {
+    return 'III'
+  }
+  return 'II'
+}
+
+/**
+ * Composer adds tracks to Level I by default while scene slots historically defaulted to II.
+ * When II has no YouTube content but I does, prefer I so d20/Play Scene can reach imported YT.
+ */
+export function resolveSceneIntensityForYoutube(
+  intensity: SoundscapeIntensity,
+  levels: Record<SoundscapeIntensity, string[]> | undefined,
+  tracksById: Record<string, SoundscapeTrackRef>,
+): SoundscapeIntensity {
+  const levelHasYoutube = (level: SoundscapeIntensity) =>
+    (levels?.[level] ?? []).some((trackId) => {
+      const track = tracksById[trackId]
+      return track?.type === 'youtube' || track?.type === 'youtube-playlist'
+    })
+
+  if (intensity !== 'II' || levelHasYoutube('II') || !levelHasYoutube('I')) {
+    return intensity
+  }
+  return 'I'
 }
 
 export interface SoundscapeSlotConfig {
@@ -109,7 +219,9 @@ interface SoundboardInstance {
 }
 
 interface ActiveSoundscapeSource {
-  source: AudioBufferSourceNode
+  kind: 'local' | 'youtube'
+  source?: AudioBufferSourceNode
+  youtube?: YoutubePlaybackSession
   trackId: string
   trackName: string
   startedAt: number
@@ -129,6 +241,11 @@ interface SoundscapeSlotRuntime {
   startedAtMs: number
   progressRaf?: number
   frozenProgress?: number
+  playlistState?: {
+    playlistTrackId: string
+    videos: { youtubeId: string; name: string; durationSeconds: number }[]
+    currentVideoIndex: number
+  }
 }
 
 export class SceneAudioManager {
@@ -270,18 +387,29 @@ export class SceneAudioManager {
 
   configureSoundscapeSlot(config: SoundscapeSlotConfig): void {
     const normalizedConfig = { ...config }
-    // Do not auto-load a track — play stays disabled until d20/play loads one.
-    if (
-      normalizedConfig.currentTrackId &&
-      normalizedConfig.trackIds.length > 0 &&
-      !normalizedConfig.trackIds.includes(normalizedConfig.currentTrackId)
-    ) {
-      normalizedConfig.currentTrackId = undefined
-    }
-
     const existing = this.soundscapeSlots.get(normalizedConfig.slotId)
+
+    // Prefer an explicit persisted track id; otherwise keep a still-valid runtime load.
+    // Reconfigure from React often omits currentTrackId and must not wipe a loaded/paused track.
+    normalizedConfig.currentTrackId = resolveConfiguredTrackId({
+      incomingTrackId: normalizedConfig.currentTrackId,
+      existingTrackId: existing?.config.currentTrackId,
+      trackIds: normalizedConfig.trackIds,
+    })
+
     if (existing) {
       existing.config = normalizedConfig
+      if (
+        existing.playlistState &&
+        !normalizedConfig.trackIds.includes(existing.playlistState.playlistTrackId)
+      ) {
+        existing.playlistState = undefined
+      }
+      // Stale paused chrome without a loaded track would leave ▶ disabled forever.
+      if (!normalizedConfig.currentTrackId && existing.paused && !existing.playing) {
+        existing.paused = false
+        existing.playlistState = undefined
+      }
       this.updateSlotGain(existing)
       this.notify()
       return
@@ -340,6 +468,7 @@ export class SceneAudioManager {
     if (!slot) {
       return
     }
+    slot.playlistState = undefined
     slot.config.intensity = intensity
     if (trackIds) {
       slot.config.trackIds = trackIds
@@ -408,12 +537,48 @@ export class SceneAudioManager {
     if (!slot) {
       return false
     }
+    const isOffline = typeof window !== 'undefined' && !window.navigator.onLine
+    if (isOffline) {
+      const hasOnlineOnly = slot.config.trackIds.some((trackId) => {
+        const track = slot.config.tracksById[trackId]
+        return (
+          track &&
+          ((track as any).type === 'youtube' || (track as any).type === 'youtube-playlist') &&
+          !(track as any).isOfflineReady
+        )
+      })
+      if (hasOnlineOnly) {
+        return false
+      }
+    }
     return slot.config.trackIds.length > 0
   }
 
   hasLoadedSoundscapeTrack(slotId: string): boolean {
     const slot = this.soundscapeSlots.get(slotId)
-    return Boolean(slot?.config.currentTrackId)
+    const loadedTrackId =
+      slot?.config.currentTrackId ??
+      (slot?.playlistState && slot.config.trackIds.includes(slot.playlistState.playlistTrackId)
+        ? slot.playlistState.playlistTrackId
+        : undefined)
+    if (!slot || !loadedTrackId) {
+      return false
+    }
+    if (!slot.config.currentTrackId) {
+      slot.config.currentTrackId = loadedTrackId
+    }
+    const isOffline = typeof window !== 'undefined' && !window.navigator.onLine
+    if (isOffline) {
+      const track = slot.config.tracksById[loadedTrackId]
+      const isOnlineOnly =
+        track &&
+        ((track as any).type === 'youtube' || (track as any).type === 'youtube-playlist') &&
+        !(track as any).isOfflineReady
+      if (isOnlineOnly) {
+        return false
+      }
+    }
+    return true
   }
 
   async playSoundscape(slotId: string): Promise<void> {
@@ -421,20 +586,30 @@ export class SceneAudioManager {
     if (!slot || slot.config.trackIds.length === 0) {
       return
     }
+    if (!this.canPlaySoundscape(slotId)) {
+      return
+    }
 
     await resumeAudioContext()
 
-    if (slot.paused && slot.config.currentTrackId) {
+    if (slot.paused) {
+      const resumeTrackId =
+        (slot.config.currentTrackId &&
+        slot.config.trackIds.includes(slot.config.currentTrackId)
+          ? slot.config.currentTrackId
+          : undefined) ??
+        (slot.playlistState &&
+        slot.config.trackIds.includes(slot.playlistState.playlistTrackId)
+          ? slot.playlistState.playlistTrackId
+          : undefined) ??
+        pickRandomTrackId(slot.config.trackIds)
+      if (!resumeTrackId) {
+        return
+      }
+      slot.config.currentTrackId = resumeTrackId
       slot.paused = false
       this.enforceSoundscapeConcurrency(slotId)
-      const trackStillValid = slot.config.trackIds.includes(slot.config.currentTrackId)
-      const trackId = trackStillValid
-        ? slot.config.currentTrackId
-        : pickRandomTrackId(slot.config.trackIds) ?? slot.config.currentTrackId
-      if (!trackStillValid && trackId) {
-        slot.config.currentTrackId = trackId
-      }
-      await this.startSoundscapeTrack(slot, trackId, false)
+      await this.startSoundscapeTrack(slot, resumeTrackId, false)
       return
     }
 
@@ -443,15 +618,14 @@ export class SceneAudioManager {
     }
 
     if (!slot.config.currentTrackId) {
-      const trackId = pickRandomTrackId(slot.config.trackIds)
-      if (!trackId) {
+      const applied = this.applyPoolPick(slot, this.pickFromExpandedPool(slot))
+      if (!applied) {
         return
       }
-      slot.config.currentTrackId = trackId
     }
 
     this.enforceSoundscapeConcurrency(slotId)
-    await this.startSoundscapeTrack(slot, slot.config.currentTrackId, false)
+    await this.startSoundscapeTrack(slot, slot.config.currentTrackId!, false)
   }
 
   pauseSoundscape(slotId: string): void {
@@ -460,12 +634,7 @@ export class SceneAudioManager {
       return
     }
     slot.frozenProgress = this.getSlotProgress(slot)
-    try {
-      slot.currentSource.source.stop()
-    } catch {
-      // ignore
-    }
-    slot.currentSource.source.onended = null
+    this.stopActiveSource(slot.currentSource)
     slot.currentSource = undefined
     slot.playing = false
     slot.paused = true
@@ -482,11 +651,43 @@ export class SceneAudioManager {
       return
     }
     await resumeAudioContext()
-    const nextTrackId = pickRandomTrackId(slot.config.trackIds, slot.config.currentTrackId)
+
+    // YT-09: once inside a playlist, d20 re-picks inside that playlist.
+    if (slot.playlistState && slot.playlistState.videos.length > 0) {
+      const videos = slot.playlistState.videos
+      let nextIndex = slot.playlistState.currentVideoIndex
+      if (videos.length > 1) {
+        const candidates = Array.from({ length: videos.length }, (_, i) => i).filter(
+          (i) => i !== slot.playlistState!.currentVideoIndex,
+        )
+        nextIndex = candidates[Math.floor(Math.random() * candidates.length)]
+      }
+      slot.playlistState.currentVideoIndex = nextIndex
+
+      this.notify()
+      try {
+        if (slot.playing && !slot.paused) {
+          await this.startSoundscapeTrack(slot, slot.playlistState.playlistTrackId, true)
+        } else {
+          this.enforceSoundscapeConcurrency(slotId)
+          await this.startSoundscapeTrack(slot, slot.playlistState.playlistTrackId, false)
+        }
+      } finally {
+        this.notify()
+      }
+      return
+    }
+
+    // YT-02: playlist videos share the intensity pool with local / single YouTube tracks.
+    const exclude = this.currentPoolPick(slot)
+    const pick = this.pickFromExpandedPool(slot, exclude)
+    if (!pick || !this.applyPoolPick(slot, pick)) {
+      return
+    }
+    const nextTrackId = slot.config.currentTrackId
     if (!nextTrackId) {
       return
     }
-    slot.config.currentTrackId = nextTrackId
     // Surface the loaded track in UI before async buffer decode/start.
     this.notify()
     try {
@@ -503,6 +704,7 @@ export class SceneAudioManager {
 
   async playScene(): Promise<void> {
     for (const [slotId, slot] of this.soundscapeSlots) {
+      slot.playlistState = undefined
       const action = resolvePlaySceneSlotAction({
         playing: slot.playing,
         paused: slot.paused,
@@ -516,11 +718,9 @@ export class SceneAudioManager {
         continue
       }
       if (!slot.config.currentTrackId) {
-        const trackId = pickRandomTrackId(slot.config.trackIds)
-        if (!trackId) {
+        if (!this.applyPoolPick(slot, this.pickFromExpandedPool(slot))) {
           continue
         }
-        slot.config.currentTrackId = trackId
       }
       await this.playSoundscape(slotId)
     }
@@ -589,16 +789,12 @@ export class SceneAudioManager {
 
       for (const slot of this.soundscapeSlots.values()) {
         if (slot.currentSource) {
-          try {
-            slot.currentSource.source.stop()
-          } catch {
-            // ignore
-          }
-          slot.currentSource.source.onended = null
+          this.stopActiveSource(slot.currentSource)
           slot.currentSource = undefined
         }
         slot.playing = false
         slot.paused = false
+        slot.playlistState = undefined
         if (slot.progressRaf) {
           cancelAnimationFrame(slot.progressRaf)
           slot.progressRaf = undefined
@@ -629,13 +825,22 @@ export class SceneAudioManager {
       const track = slot.config.currentTrackId
         ? slot.config.tracksById[slot.config.currentTrackId]
         : undefined
+      let trackName = track?.name
+      if (slot.currentSource) {
+        trackName = slot.currentSource.trackName
+      } else if (slot.playlistState) {
+        const video = slot.playlistState.videos[slot.playlistState.currentVideoIndex]
+        if (video) {
+          trackName = video.name
+        }
+      }
       soundscapes[slot.config.slotId] = {
         slotId: slot.config.slotId,
         categoryName: slot.config.categoryName,
         playing: slot.playing && !slot.paused,
         paused: slot.paused,
         progress: this.getSlotProgress(slot),
-        trackName: track?.name,
+        trackName,
         intensity: slot.config.intensity,
         volume: slot.config.volume,
         hasLoadedTrack: Boolean(slot.config.currentTrackId),
@@ -653,6 +858,9 @@ export class SceneAudioManager {
   }
 
   private async loadBuffer(audioUrl: string): Promise<AudioBuffer> {
+    if (isYoutubeAudioUrl(audioUrl)) {
+      throw new Error(`YouTube URLs cannot be decoded as AudioBuffers: ${audioUrl}`)
+    }
     const resolvedUrl = resolveAudioUrl(audioUrl)
     const cached = this.bufferCache.get(resolvedUrl)
     if (cached) {
@@ -672,6 +880,33 @@ export class SceneAudioManager {
     }
   }
 
+  private getYoutubeOutputVolume(slot: SoundscapeSlotRuntime): number {
+    if (this.soundscapeMuted) {
+      return 0
+    }
+    return Math.round(
+      mapVolumeCubic(this.soundscapeMasterVolume) * mapVolumeCubic(slot.config.volume) * 100,
+    )
+  }
+
+  private stopActiveSource(active: ActiveSoundscapeSource | undefined): void {
+    if (!active) {
+      return
+    }
+    if (active.kind === 'youtube') {
+      active.youtube?.stop()
+      return
+    }
+    try {
+      active.source?.stop()
+    } catch {
+      // already stopped
+    }
+    if (active.source) {
+      active.source.onended = null
+    }
+  }
+
   private applySoundboardMasterVolume(): void {
     this.soundboardMasterBus.gain.value = computeSoundboardGain(this.soundboardMasterVolume)
   }
@@ -686,6 +921,9 @@ export class SceneAudioManager {
 
   private updateSlotGain(slot: SoundscapeSlotRuntime): void {
     slot.slotGain.gain.value = mapVolumeCubic(slot.config.volume)
+    if (slot.currentSource?.kind === 'youtube') {
+      slot.currentSource.youtube?.setVolume(this.getYoutubeOutputVolume(slot))
+    }
   }
 
   private async startSoundscapeTrack(
@@ -698,11 +936,93 @@ export class SceneAudioManager {
       return
     }
 
+    let activeTrack = track
+    if (track.type === 'youtube-playlist') {
+      if (!slot.playlistState || slot.playlistState.playlistTrackId !== trackId) {
+        const videos = track.playlistVideos ?? []
+        const startIndex = videos.length > 0 ? Math.floor(Math.random() * videos.length) : 0
+        slot.playlistState = {
+          playlistTrackId: trackId,
+          videos,
+          currentVideoIndex: startIndex,
+        }
+      }
+      const video = slot.playlistState.videos[slot.playlistState.currentVideoIndex]
+      if (video) {
+        activeTrack = {
+          id: `${trackId}__video__${video.youtubeId}`,
+          name: video.name,
+          audioUrl: `youtube:${video.youtubeId}`,
+          durationSeconds: video.durationSeconds,
+          type: 'youtube',
+        }
+      }
+    }
+
+    const previous = slot.currentSource
+    const startedAt = Date.now()
+
+    if (isYoutubeAudioUrl(activeTrack.audioUrl)) {
+      const videoId =
+        extractYoutubeIdFromAudioUrl(activeTrack.audioUrl) ||
+        track.youtubeId ||
+        extractYoutubeIdFromAudioUrl(track.audioUrl)
+      if (!videoId) {
+        console.error(`Soundscape playback failed for "${activeTrack.name}": missing YouTube id`)
+        return
+      }
+
+      const onEnded = () => {
+        if (slot.currentSource?.trackId !== activeTrack.id || slot.currentSource.kind !== 'youtube') {
+          return
+        }
+        void this.handleSoundscapeTrackEnded(slot)
+      }
+
+      let youtube: YoutubePlaybackSession
+      try {
+        youtube = await startYoutubePlayback({
+          videoId,
+          volume: this.getYoutubeOutputVolume(slot),
+          onEnded,
+          onError: (message) => {
+            console.error(`Soundscape playback failed for "${activeTrack.name}"`, message)
+          },
+        })
+      } catch (error) {
+        console.error(`Soundscape playback failed for "${activeTrack.name}"`, error)
+        return
+      }
+
+      this.stopActiveSource(previous)
+      if (previous?.source) {
+        previous.source.onended = null
+      }
+
+      slot.currentSource = {
+        kind: 'youtube',
+        youtube,
+        trackId: activeTrack.id,
+        trackName: activeTrack.name,
+        startedAt,
+        duration: activeTrack.durationSeconds,
+        onEnded,
+      }
+      slot.config.currentTrackId = trackId
+      slot.playing = true
+      slot.paused = false
+      slot.frozenProgress = undefined
+      slot.startedAtMs = startedAt
+      this.startProgressLoop(slot)
+      this.notify()
+      return
+    }
+
     let buffer: AudioBuffer
     try {
-      buffer = await this.loadBuffer(track.audioUrl)
+      buffer = await this.loadBuffer(activeTrack.audioUrl)
     } catch (error) {
-      console.error(`Soundscape playback failed for "${track.name}"`, error)
+      console.error(`Soundscape playback failed for "${activeTrack.name}"`, error)
       return
     }
     const source = this.ctx.createBufferSource()
@@ -713,7 +1033,6 @@ export class SceneAudioManager {
     const currentCrossfade = slot.activeCrossfade === 'A' ? slot.crossfadeA : slot.crossfadeB
     source.connect(targetCrossfade)
 
-    const startedAt = Date.now()
     const onEnded = () => {
       if (slot.currentSource?.source !== source) {
         return
@@ -722,23 +1041,20 @@ export class SceneAudioManager {
     }
 
     const activeSource: ActiveSoundscapeSource = {
+      kind: 'local',
       source,
-      trackId,
-      trackName: track.name,
+      trackId: activeTrack.id,
+      trackName: activeTrack.name,
       startedAt,
-      duration: track.durationSeconds,
+      duration: activeTrack.durationSeconds,
       onEnded,
     }
 
-    if (crossfade && slot.currentSource) {
+    if (crossfade && previous?.kind === 'local' && previous.source) {
       await this.runCrossfade(slot, currentCrossfade, targetCrossfade)
-      try {
-        slot.currentSource.source.stop()
-      } catch {
-        // ignore
-      }
-      slot.currentSource.source.onended = null
+      this.stopActiveSource(previous)
     } else {
+      this.stopActiveSource(previous)
       currentCrossfade.gain.value = 0
       targetCrossfade.gain.value = 1
     }
@@ -756,14 +1072,59 @@ export class SceneAudioManager {
     this.notify()
   }
 
+  private pickFromExpandedPool(
+    slot: SoundscapeSlotRuntime,
+    exclude?: SoundscapePoolPick,
+  ): SoundscapePoolPick | undefined {
+    return pickExpandedSoundscapeEntry(
+      buildExpandedSoundscapePool(slot.config.trackIds, slot.config.tracksById),
+      exclude,
+    )
+  }
+
+  private currentPoolPick(slot: SoundscapeSlotRuntime): SoundscapePoolPick | undefined {
+    if (slot.playlistState) {
+      return {
+        kind: 'playlist-video',
+        playlistTrackId: slot.playlistState.playlistTrackId,
+        videoIndex: slot.playlistState.currentVideoIndex,
+      }
+    }
+    if (slot.config.currentTrackId) {
+      return { kind: 'track', trackId: slot.config.currentTrackId }
+    }
+    return undefined
+  }
+
+  private applyPoolPick(slot: SoundscapeSlotRuntime, pick: SoundscapePoolPick | undefined): boolean {
+    if (!pick) {
+      return false
+    }
+    if (pick.kind === 'playlist-video') {
+      const track = slot.config.tracksById[pick.playlistTrackId]
+      const videos = track?.playlistVideos ?? []
+      if (!track || videos.length === 0) {
+        return false
+      }
+      slot.playlistState = {
+        playlistTrackId: pick.playlistTrackId,
+        videos,
+        currentVideoIndex: pick.videoIndex,
+      }
+      slot.config.currentTrackId = pick.playlistTrackId
+      return true
+    }
+    slot.playlistState = undefined
+    slot.config.currentTrackId = pick.trackId
+    return true
+  }
+
   private async crossfadeSoundscapeToRandomTrack(slot: SoundscapeSlotRuntime): Promise<void> {
-    const trackIds = slot.config.trackIds
-    const nextTrackId = pickRandomTrackId(trackIds, slot.config.currentTrackId)
-    if (!nextTrackId) {
+    const pick = this.pickFromExpandedPool(slot, this.currentPoolPick(slot))
+    if (!pick || !this.applyPoolPick(slot, pick) || !slot.config.currentTrackId) {
       return
     }
-    slot.config.currentTrackId = nextTrackId
-    await this.crossfadeSoundscapeToTrack(slot, nextTrackId)
+    await this.crossfadeSoundscapeToTrack(slot, slot.config.currentTrackId)
   }
 
   private async crossfadeSoundscapeToTrack(slot: SoundscapeSlotRuntime, trackId: string): Promise<void> {
@@ -775,15 +1136,22 @@ export class SceneAudioManager {
     if (!slot.playing || slot.paused) {
       return
     }
-    const nextTrackId = pickRandomTrackId(slot.config.trackIds, slot.config.currentTrackId)
-    if (!nextTrackId) {
+    if (slot.playlistState && slot.playlistState.videos.length > 0) {
+      const videos = slot.playlistState.videos
+      const nextIndex = Math.floor(Math.random() * videos.length)
+      slot.playlistState.currentVideoIndex = nextIndex
+      await this.startSoundscapeTrack(slot, slot.playlistState.playlistTrackId, true)
+      return
+    }
+
+    const pick = this.pickFromExpandedPool(slot, this.currentPoolPick(slot))
+    if (!pick || !this.applyPoolPick(slot, pick) || !slot.config.currentTrackId) {
       slot.playing = false
       slot.currentSource = undefined
       this.notify()
       return
     }
-    slot.config.currentTrackId = nextTrackId
-    await this.startSoundscapeTrack(slot, nextTrackId, true)
+    await this.startSoundscapeTrack(slot, slot.config.currentTrackId, true)
   }
 
   private async runCrossfade(
@@ -835,16 +1203,12 @@ export class SceneAudioManager {
       return
     }
     if (slot.currentSource) {
-      try {
-        slot.currentSource.source.stop()
-      } catch {
-        // ignore
-      }
-      slot.currentSource.source.onended = null
+      this.stopActiveSource(slot.currentSource)
       slot.currentSource = undefined
     }
     slot.playing = false
     slot.paused = false
+    slot.playlistState = undefined
     if (slot.progressRaf) {
       cancelAnimationFrame(slot.progressRaf)
       slot.progressRaf = undefined
@@ -895,6 +1259,13 @@ export class SceneAudioManager {
   private getSlotProgress(slot: SoundscapeSlotRuntime): number {
     if (!slot.playing || slot.paused || !slot.currentSource) {
       return slot.paused ? slot.frozenProgress ?? 0 : 0
+    }
+    if (slot.currentSource.kind === 'youtube' && slot.currentSource.youtube) {
+      const duration = Math.max(
+        slot.currentSource.youtube.getDuration() || slot.currentSource.duration,
+        0.001,
+      )
+      return Math.min(1, slot.currentSource.youtube.getCurrentTime() / duration)
     }
     const elapsed = (Date.now() - slot.currentSource.startedAt) / 1000
     const duration = Math.max(slot.currentSource.duration, 0.001)

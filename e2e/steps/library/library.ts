@@ -1308,3 +1308,194 @@ Then('{string} is no longer in the soundscape categories grid', async ({ page },
   await page.goto('/library?tab=soundscapes')
   await expect(page.locator(`[data-sc-card="${name}"]`)).toHaveCount(0)
 })
+
+When('I enter YouTube URL {string}', async ({ page }, url) => {
+  await page.locator('[data-youtube-url-input]').fill(url)
+})
+
+Then('I see {string} in the track picker list', async ({ page }, name) => {
+  const picker = page.getByRole('dialog')
+  await expect(picker.locator(`[data-picker-track="${name}"]`)).toBeVisible()
+})
+
+When('I check {string}', async ({ page }, name) => {
+  const picker = page.getByRole('dialog')
+  await picker.getByRole('checkbox', { name: `Select ${name}`, exact: true }).check()
+})
+
+Then('I see track {string} in {string}', async ({ page }, trackName, levelName) => {
+  const lvl = levelName.split(' ')[1]
+  const levelContent = page.locator(`[data-sc-level-content="${lvl}"]`)
+  await expect(levelContent.locator(`[data-sc-composer-track="${trackName}"]`)).toBeVisible()
+})
+
+Then('I see a {string} badge next to {string}', async ({ page }, badgeText, name) => {
+  const trackRow = page.locator(`[data-sc-composer-track="${name}"]`)
+  await expect(trackRow.locator(`span:has-text("${badgeText}")`)).toBeVisible()
+})
+
+Then('I see the "Attach YouTube Playlist" dialog', async ({ page }) => {
+  const dialog = page.getByRole('dialog')
+  await expect(dialog.getByText('Attach YouTube Playlist', { exact: true })).toBeVisible()
+})
+
+Given('{string} is a YouTube track attached to {string} in {string}', async ({ page }, trackName, levelName, catName) => {
+  const lvl = levelName.split(' ')[1]
+  const track = {
+    id: 'track-yt-acceptance',
+    name: trackName,
+    durationSeconds: 180,
+    format: 'YouTube',
+    channels: 'Stereo',
+    audioUrl: 'https://youtube.com/watch?v=acceptance',
+    createdAt: new Date().toISOString(),
+    type: trackName.toLowerCase().includes('playlist') ? ('youtube-playlist' as const) : ('youtube' as const),
+    isOfflineReady: false,
+    playlistVideos: trackName.toLowerCase().includes('playlist') ? [
+      { youtubeId: 'video1', name: 'Playlist Video A (PL678)', durationSeconds: 180 },
+      { youtubeId: 'video2', name: 'Playlist Video B (PL678)', durationSeconds: 120 },
+      { youtubeId: 'video3', name: 'Playlist Video C (PL678)', durationSeconds: 240 },
+    ] : undefined,
+  }
+  const category = {
+    id: `category-${catName.toLowerCase()}`,
+    name: catName,
+    trackCount: 1,
+    levels: {
+      I: lvl === 'I' ? [track.id] : [],
+      II: lvl === 'II' ? [track.id] : [],
+      III: lvl === 'III' ? [track.id] : [],
+    }
+  }
+  await mergeE2EData(page, {
+    soundscapeCategories: [category],
+    soundscapeTracks: [track]
+  }, { navigateHome: false })
+  await page.goto(`/library/soundscapes/category-${catName.toLowerCase()}/compose`)
+  const levelContent = page.locator(`[data-sc-level-content="${lvl}"]`)
+  if (!(await levelContent.isVisible())) {
+    await page.locator(`[data-sc-level-header="${lvl}"]`).click()
+  }
+})
+
+Given('{string} is not offline-ready', async ({ page }, trackName) => {
+  const trackRow = page.locator(`[data-sc-composer-track="${trackName}"]`)
+  await expect(trackRow.locator('button:has-text("Make Offline-Ready")')).toBeVisible()
+})
+
+When('I tap the "Make Offline-Ready" toggle for {string}', async ({ page }, trackName) => {
+  const trackRow = page.locator(`[data-sc-composer-track="${trackName}"]`)
+  await trackRow.locator('[data-toggle-offline-ready]').click()
+})
+
+Then('the status for {string} changes to "Offline Ready"', async ({ page }, trackName) => {
+  const trackRow = page.locator(`[data-sc-composer-track="${trackName}"]`)
+  await expect(trackRow.locator('button:has-text("Offline Ready")')).toBeVisible()
+})
+
+When('I go to the Active Scene screen', async ({ page }) => {
+  const campaign = {
+    id: 'c-1',
+    name: 'Camp 1',
+    createdAt: new Date().toISOString(),
+    lastPlayedAt: new Date().toISOString(),
+  }
+  const session = {
+    id: 's-1',
+    campaignId: 'c-1',
+    name: 'Session 1',
+    number: 1,
+    date: new Date().toISOString(),
+    sceneCount: 1,
+  }
+  const scene = {
+    id: 'scene-1',
+    name: 'Scene 1',
+    tags: [],
+    createdAt: new Date().toISOString(),
+    lastUsedAt: new Date().toISOString(),
+  }
+  const slot = {
+    id: 'slot-1',
+    sceneId: 'scene-1',
+    categoryId: 'category-meteorological',
+    order: 1,
+    volume: 100,
+    intensity: 'I' as const,
+    // Seed a loaded YouTube track so category ▶ can resume/play without relying on d20.
+    currentTrackId: 'track-yt-acceptance',
+  }
+  await mergeE2EData(page, {
+    campaigns: [campaign],
+    sessions: [session],
+    scenes: [scene],
+    sceneSoundscapeSlots: [slot],
+  }, { navigateHome: false })
+  await page.goto('/scenes/scene-1/active?tab=soundscapes')
+  await expect(page.locator('[data-active-scene-tab="Soundscapes"]')).toHaveAttribute(
+    'data-active',
+    'true',
+  )
+})
+
+Then('{string} button for {string} is disabled', async ({ page }, levelName, catName) => {
+  const lvl = levelName.split(' ')[1]
+  const btn = page.locator(`[data-soundscape-intensity-level="${catName}-${lvl}"]`)
+  await expect(btn).toBeDisabled()
+})
+
+Then('{string} button shows a tooltip {string}', async ({ page }, levelName, expectedTooltip) => {
+  const lvl = levelName.split(' ')[1]
+  const btn = page.locator(`[data-soundscape-intensity-level$="-${lvl}"]`).first()
+  // Enabled intensity buttons use "Intensity X, <hint>"; disabled buttons use the hint alone.
+  await expect(btn).toHaveAttribute(
+    'aria-label',
+    new RegExp(`^(Intensity ${lvl}, )?${expectedTooltip.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`),
+  )
+})
+
+Given('the user is offline', async ({ context }) => {
+  await context.setOffline(true)
+})
+
+Given('the user is online', async ({ context }) => {
+  await context.setOffline(false)
+})
+
+Given('{string} is offline-ready', async ({ page }, name) => {
+  const trackRow = page.locator(`[data-sc-composer-track="${name}"]`)
+  const btn = trackRow.locator('[data-toggle-offline-ready]')
+  if (await btn.textContent() === 'Make Offline-Ready') {
+    await btn.click()
+  }
+})
+
+Then('{string} button for {string} is enabled', async ({ page }, levelName, catName) => {
+  const lvl = levelName.split(' ')[1]
+  const btn = page.locator(`[data-soundscape-intensity-level="${catName}-${lvl}"]`)
+  await expect(btn).toBeEnabled()
+})
+
+Then('I see {string} playing', async ({ page }, trackName) => {
+  await expect(page.locator('[data-soundscapes-tab]').getByText(trackName)).toBeVisible()
+  await expectAudioPlaying(page, trackName)
+})
+
+Then('I see {string}, {string}, or {string} playing', async ({ page }, optionA, optionB, optionC) => {
+  const textA = page.locator('[data-soundscapes-tab]').getByText(optionA)
+  const textB = page.locator('[data-soundscapes-tab]').getByText(optionB)
+  const textC = page.locator('[data-soundscapes-tab]').getByText(optionC)
+
+  let matchedOption = ''
+  if (await textA.isVisible()) {
+    matchedOption = optionA
+  } else if (await textB.isVisible()) {
+    matchedOption = optionB
+  } else if (await textC.isVisible()) {
+    matchedOption = optionC
+  } else {
+    await expect(textA).toBeVisible()
+  }
+
+  await expectAudioPlaying(page, matchedOption)
+})

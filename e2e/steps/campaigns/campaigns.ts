@@ -13,6 +13,7 @@ import {
   seedE2EData,
   setE2EControls,
   tableColumnValues,
+  tapCategoryPlay,
 } from '../shared/test-data'
 import { swipeRight } from '../shared/gestures'
 
@@ -208,6 +209,11 @@ When('I tap {string}', async ({ page }, label: string) => {
   }
   if (label === 'Stop Scene') {
     await page.locator('[data-stop-scene]').click()
+    return
+  }
+  const playCategory = label.match(/^Play (.+)$/)
+  if (playCategory) {
+    await tapCategoryPlay(page, playCategory[1])
     return
   }
   await page.getByRole('button', { name: label, exact: true }).click()

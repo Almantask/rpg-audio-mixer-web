@@ -9,6 +9,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { useCampaignData } from '@/context/CampaignDataContext'
 import { useToast } from '@/components/shared/ToastProvider'
 import { audioPreview } from '@/lib/audioPreview'
+import {
+  isYoutubePlaylistUrl,
+  resolveYoutubePlaylist,
+  resolveYoutubeVideo,
+} from '@/lib/youtubeResolve'
 import type { SoundscapeCategory, SoundscapeTrack } from '@/types/library'
 
 function formatDuration(seconds: number): string {
@@ -24,6 +29,8 @@ export function CategoryComposerPage() {
   const {
     data,
     updateSoundscapeCategory,
+    updateSoundscapeTrack,
+    updateSoundscapeSlot,
   } = useCampaignData()
 
   const category = useMemo(() => {
@@ -178,16 +185,45 @@ export function CategoryComposerPage() {
                             const track = data.soundscapeTracks?.find((t) => t.id === trackId)
                             if (!track) return null
 
+                            const isYt = track.type === 'youtube' || track.type === 'youtube-playlist'
+                            const isOffline = track.isOfflineReady ?? false
+
                             return (
                               <div
                                 key={track.id}
                                 className="flex items-center justify-between p-3 rounded-md bg-charcoal border border-white/5 hover:border-white/10 group"
                                 data-sc-composer-track={track.name}
                               >
-                                <div>
-                                  <p className="font-medium text-white text-sm">{track.name}</p>
+                                <div className="flex-1 min-w-0 pr-4">
+                                  <div className="flex items-center flex-wrap gap-2">
+                                    <p className="font-medium text-white text-sm truncate">{track.name}</p>
+                                    {isYt && (
+                                      <span className="text-[10px] px-1 py-0.2 rounded bg-gold/15 text-gold border border-gold/30 uppercase font-semibold">
+                                        YouTube
+                                      </span>
+                                    )}
+                                    {track.type === 'youtube-playlist' && (
+                                      <span className="text-[10px] px-1 py-0.2 rounded bg-blue-500/15 text-blue-400 border border-blue-500/30 uppercase font-semibold">
+                                        Playlist
+                                      </span>
+                                    )}
+                                    {isYt && (
+                                      <button
+                                        type="button"
+                                        onClick={() => updateSoundscapeTrack(track.id, { isOfflineReady: !isOffline })}
+                                        className={`text-[10px] px-1.5 py-0.2 rounded border font-semibold cursor-pointer transition-colors ${
+                                          isOffline
+                                            ? "bg-green-500/10 text-green-400 border-green-500/30"
+                                            : "bg-red-500/10 text-red-400 border-red-500/30 hover:bg-red-500/20"
+                                        }`}
+                                        data-toggle-offline-ready={track.name}
+                                      >
+                                        {isOffline ? "Offline Ready" : "Make Offline-Ready"}
+                                      </button>
+                                    )}
+                                  </div>
                                   <p className="text-xs text-muted mt-0.5">
-                                    {track.format} · {track.channels} · {formatDuration(track.durationSeconds)}
+                                    {isYt ? 'YouTube' : track.format} · {track.type === 'youtube-playlist' ? 'Playlist' : track.channels} · {formatDuration(track.durationSeconds)}
                                   </p>
                                 </div>
                                 <button
@@ -228,6 +264,16 @@ export function CategoryComposerPage() {
               [pickerLevel]: [...currentIds, ...newIds],
             }
             updateSoundscapeCategory(category.id, { levels: updatedLevels })
+            // Keep active-scene intensity aligned with the level that received the new tracks
+            // (Composer defaults to Level I; scene slots previously defaulted to II).
+            for (const slot of data.sceneSoundscapeSlots.filter((s) => s.categoryId === category.id)) {
+              if (slot.intensity !== pickerLevel) {
+                updateSoundscapeSlot(slot.id, {
+                  intensity: pickerLevel,
+                  currentTrackId: undefined,
+                })
+              }
+            }
             showToast(`${tracks.length} track${tracks.length === 1 ? '' : 's'} added`)
           }}
         />
@@ -245,11 +291,15 @@ interface TrackPickerModalProps {
 }
 
 function TrackPickerModal({ open, onClose, level, category, onAddTracks }: TrackPickerModalProps) {
-  const { data, importSoundscapeTrack, e2e } = useCampaignData()
+  const { data, importSoundscapeTrack, importYoutubeTrack, e2e } = useCampaignData()
   const [search, setSearch] = useState('')
   const [checkedIds, setCheckedIds] = useState<Record<string, boolean>>({})
   const [previewTrackId, setPreviewTrackId] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const [ytUrl, setYtUrl] = useState('')
+  const [playlistPromptOpen, setPlaylistPromptOpen] = useState(false)
+  const [pendingPlaylistUrl, setPendingPlaylistUrl] = useState('')
 
   const currentLevelTrackIds = useMemo(() => {
     return new Set(category.levels?.[level] ?? [])
@@ -309,6 +359,61 @@ function TrackPickerModal({ open, onClose, level, category, onAddTracks }: Track
     }))
   }
 
+  const handleImportYoutube = async () => {
+    if (!ytUrl.trim()) return
+
+    const url = ytUrl.trim()
+
+    if (isYoutubePlaylistUrl(url)) {
+      setPendingPlaylistUrl(url)
+      setPlaylistPromptOpen(true)
+    } else {
+      const resolved = await resolveYoutubeVideo(url)
+      const track = await importYoutubeTrack(
+        resolved.name,
+        url,
+        false,
+        undefined,
+        resolved.youtubeId,
+      )
+      setCheckedIds((prev) => ({
+        ...prev,
+        [track.id]: true,
+      }))
+      setYtUrl('')
+    }
+  }
+
+  const handleSelectPlaylistImport = async (choice: 'linked' | 'snapshot') => {
+    const url = pendingPlaylistUrl
+    setPlaylistPromptOpen(false)
+    setPendingPlaylistUrl('')
+    setYtUrl('')
+
+    const resolved = await resolveYoutubePlaylist(url)
+
+    if (choice === 'linked') {
+      const track = await importYoutubeTrack(resolved.name, url, true, resolved.videos)
+      setCheckedIds((prev) => ({
+        ...prev,
+        [track.id]: true,
+      }))
+    } else if (choice === 'snapshot') {
+      const newChecked: Record<string, boolean> = { ...checkedIds }
+      for (const item of resolved.videos) {
+        const track = await importYoutubeTrack(
+          item.name,
+          `https://www.youtube.com/watch?v=${item.youtubeId}`,
+          false,
+          undefined,
+          item.youtubeId,
+        )
+        newChecked[track.id] = true
+      }
+      setCheckedIds(newChecked)
+    }
+  }
+
   const handleAddSelected = () => {
     const selectedTracks = (data.soundscapeTracks ?? []).filter((t) => checkedIds[t.id])
     onAddTracks(selectedTracks)
@@ -332,31 +437,52 @@ function TrackPickerModal({ open, onClose, level, category, onAddTracks }: Track
         </DialogHeader>
 
         {/* Action button (Import) */}
-        <div className="flex items-center justify-between gap-4 mt-4">
-          <input
-            type="file"
-            ref={fileInputRef}
-            onChange={handleImport}
-            className="hidden"
-            accept="audio/*"
-          />
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => fileInputRef.current?.click()}
-            className="gap-2 border-white/10 hover:bg-white/5 bg-transparent text-white cursor-pointer"
-          >
-            <Upload className="h-4 w-4 text-gold" />
-            Import
-          </Button>
+        <div className="flex flex-col gap-3 mt-4 border-b border-white/10 pb-4">
+          <div className="flex items-center justify-between gap-4">
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleImport}
+              className="hidden"
+              accept="audio/*"
+            />
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => fileInputRef.current?.click()}
+              className="gap-2 border-white/10 hover:bg-white/5 bg-transparent text-white cursor-pointer"
+            >
+              <Upload className="h-4 w-4 text-gold" />
+              Import
+            </Button>
 
-          <Input
-            placeholder="Search tracks…"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="max-w-xs"
-            data-picker-search
-          />
+            <Input
+              placeholder="Search tracks…"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="max-w-xs"
+              data-picker-search
+            />
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Input
+              placeholder="Paste YouTube Video or Playlist URL…"
+              value={ytUrl}
+              onChange={(e) => setYtUrl(e.target.value)}
+              data-youtube-url-input
+              className="flex-1 bg-transparent text-white border-white/10 focus-visible:ring-gold"
+            />
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleImportYoutube}
+              data-import-youtube-button
+              className="border-white/10 hover:bg-white/5 bg-transparent text-white cursor-pointer"
+            >
+              Import YouTube
+            </Button>
+          </div>
         </div>
 
         {/* Track Selection Grid */}
@@ -382,6 +508,7 @@ function TrackPickerModal({ open, onClose, level, category, onAddTracks }: Track
               {availableTracks.map((track) => {
                 const isChecked = Boolean(checkedIds[track.id])
                 const isPreviewing = previewTrackId === track.id
+                const isYtTrack = track.type === 'youtube' || track.type === 'youtube-playlist'
 
                 return (
                   <div
@@ -408,10 +535,22 @@ function TrackPickerModal({ open, onClose, level, category, onAddTracks }: Track
                       aria-label={isPreviewing ? `Pause preview ${track.name}` : `Preview ${track.name}`}
                       aria-pressed={isPreviewing}
                     >
-                      <div className="min-w-0">
-                        <p className="font-medium text-white text-sm">{track.name}</p>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center flex-wrap gap-2">
+                          <p className="font-medium text-white text-sm truncate">{track.name}</p>
+                          {isYtTrack && (
+                            <span className="text-[10px] px-1 py-0.2 rounded bg-gold/15 text-gold border border-gold/30 uppercase font-semibold">
+                              YouTube
+                            </span>
+                          )}
+                          {track.type === 'youtube-playlist' && (
+                            <span className="text-[10px] px-1 py-0.2 rounded bg-blue-500/15 text-blue-400 border border-blue-500/30 uppercase font-semibold">
+                              Playlist
+                            </span>
+                          )}
+                        </div>
                         <p className="text-xs text-muted mt-0.5">
-                          {track.format} · {track.channels} · {formatDuration(track.durationSeconds)}
+                          {isYtTrack ? 'YouTube' : track.format} · {track.type === 'youtube-playlist' ? 'Playlist' : track.channels} · {formatDuration(track.durationSeconds)}
                         </p>
                       </div>
 
@@ -444,6 +583,46 @@ function TrackPickerModal({ open, onClose, level, category, onAddTracks }: Track
           </Button>
         </div>
       </DialogContent>
+      {playlistPromptOpen && (
+        <Dialog open={playlistPromptOpen} onOpenChange={setPlaylistPromptOpen}>
+          <DialogContent className="max-w-md bg-charcoal border border-white/10 text-white">
+            <DialogHeader>
+              <DialogTitle className="text-gold">Attach YouTube Playlist</DialogTitle>
+            </DialogHeader>
+            <p className="text-sm text-muted">
+              How would you like to attach this YouTube playlist?
+            </p>
+            <div className="flex flex-col gap-2 mt-4">
+              <Button
+                type="button"
+                onClick={() => handleSelectPlaylistImport('linked')}
+                data-playlist-option-linked
+                className="bg-gold text-black hover:bg-gold/80"
+              >
+                Keep linked to YouTube (Live-linked)
+              </Button>
+              <Button
+                type="button"
+                onClick={() => handleSelectPlaylistImport('snapshot')}
+                data-playlist-option-snapshot
+                className="border border-white/10 hover:bg-white/5 text-white"
+              >
+                Import current videos as items (One-time snapshot)
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => {
+                  setPlaylistPromptOpen(false)
+                  setPendingPlaylistUrl('')
+                }}
+              >
+                Cancel
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </Dialog>
   )
 }

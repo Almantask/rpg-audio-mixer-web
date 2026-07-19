@@ -69,6 +69,10 @@ function tracksForCategory(
         name: track.name,
         audioUrl: track.audioUrl,
         durationSeconds: track.durationSeconds,
+        type: track.type,
+        youtubeId: track.youtubeId,
+        playlistVideos: track.playlistVideos,
+        isOfflineReady: track.isOfflineReady,
       }
     }
   }

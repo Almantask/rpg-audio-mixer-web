@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState, type DragEvent } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type DragEvent } from 'react'
 import { Dices, GripVertical, Pause, Play, Plus, Trash2, Volume2, VolumeX } from 'lucide-react'
 import type { SceneSoundscapeSlot, SoundscapeIntensity } from '@/types/scene'
 import type { SoundscapeCategory } from '@/types/library'
@@ -12,6 +12,24 @@ import { useHtml5CardDragPreview } from '@/hooks/useHtml5CardDragPreview'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Tooltip } from '@/components/ui/tooltip'
+
+function useOnlineStatus() {
+  const [isOnline, setIsOnline] = useState(() => typeof window !== 'undefined' ? window.navigator.onLine : true)
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const handleOnline = () => setIsOnline(true)
+    const handleOffline = () => setIsOnline(false)
+    window.addEventListener('online', handleOnline)
+    window.addEventListener('offline', handleOffline)
+    return () => {
+      window.removeEventListener('online', handleOnline)
+      window.removeEventListener('offline', handleOffline)
+    }
+  }, [])
+
+  return isOnline
+}
 
 interface SoundscapesTabProps {
   sceneId: string
@@ -128,6 +146,9 @@ function SoundscapeCategoryCard({
   onDrop,
 }: SoundscapeCategoryCardProps) {
   const categoryName = slot.category?.name ?? slot.categoryId
+  const { data } = useCampaignData()
+  const isOnline = useOnlineStatus()
+  const isOffline = !isOnline
   const {
     getSoundscapeTileState,
     playSoundscape,
@@ -281,12 +302,26 @@ function SoundscapeCategoryCard({
           <p className="mb-2 text-xs uppercase tracking-widest text-muted">Intensity</p>
           <div className="flex gap-2" data-soundscape-intensity={categoryName} data-state={intensity}>
             {INTENSITIES.map((level) => {
-              const trackCount = slot.category?.levels?.[level]?.length ?? 0
-              const enabled = trackCount > 0
-              const levelHint = enabled
-                ? trackCount === 1
-                  ? '1 track'
-                  : `${trackCount} tracks`
+              const trackIds = slot.category?.levels?.[level] ?? []
+              const trackCount = trackIds.length
+
+              const onlineOnlyTracks = trackIds
+                .map((trackId) => data.soundscapeTracks?.find((t) => t.id === trackId))
+                .filter(
+                  (t) =>
+                    t &&
+                    (t.type === 'youtube' || t.type === 'youtube-playlist') &&
+                    !t.isOfflineReady,
+                )
+              const hasOnlineOnly = onlineOnlyTracks.length > 0 && isOffline
+              const enabled = trackCount > 0 && !hasOnlineOnly
+
+              const levelHint = trackCount > 0
+                ? hasOnlineOnly
+                  ? 'Offline playback required. Make YouTube tracks offline-ready in Category Composer.'
+                  : trackCount === 1
+                    ? '1 track'
+                    : `${trackCount} tracks`
                 : EMPTY_INTENSITY_LEVEL_HINT
               return (
                 <Tooltip

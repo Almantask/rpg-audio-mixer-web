@@ -20,7 +20,10 @@ describe('Sidebar', () => {
 
     expect(screen.getByRole('heading', { name: 'Arcanum Audio' })).toBeInTheDocument()
     expect(screen.getByText('Session desk')).toBeInTheDocument()
-    expect(document.querySelector('[data-brand-logo]')).toHaveAttribute('src', '/logo3.png')
+    expect(document.querySelector('[data-brand-logo]')).toHaveAttribute(
+      'src',
+      `${import.meta.env.BASE_URL}logo3.png`,
+    )
   })
 
   it('shows a close control instead of overlapping the brand when open', () => {

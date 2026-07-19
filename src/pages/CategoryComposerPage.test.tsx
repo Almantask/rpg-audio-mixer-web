@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -15,7 +15,7 @@ const fixture = vi.hoisted(() => ({
     id: 'category-1',
     name: 'Woodland',
     trackCount: 0,
-    levels: { I: [], II: [], III: [] },
+    levels: { I: [] as string[], II: [] as string[], III: [] as string[] },
   },
   track: {
     id: 'track-1',
@@ -26,6 +26,8 @@ const fixture = vi.hoisted(() => ({
     audioUrl: '/audio/forest-rain.mp3',
     createdAt: '2026-07-12T00:00:00.000Z',
   },
+  categoriesList: [] as any[],
+  tracksList: [] as any[],
 }))
 
 const audioPreviewMock = vi.hoisted(() => {
@@ -47,15 +49,33 @@ const audioPreviewMock = vi.hoisted(() => {
   }
 })
 
+const importYoutubeTrackMock = vi.fn((name, url, isPlaylist, playlistVideos) => ({
+  id: 'track-yt-mock',
+  name,
+  durationSeconds: 180,
+  format: 'YouTube',
+  channels: 'Stereo',
+  audioUrl: url,
+  createdAt: new Date().toISOString(),
+  type: isPlaylist ? 'youtube-playlist' : 'youtube',
+  isOfflineReady: false,
+  playlistVideos,
+}))
+const updateSoundscapeTrackMock = vi.fn()
+
 vi.mock('@/context/CampaignDataContext', () => ({
   useCampaignData: () => ({
     data: {
-      soundscapeCategories: [fixture.category],
-      soundscapeTracks: [fixture.track],
+      soundscapeCategories: fixture.categoriesList,
+      soundscapeTracks: fixture.tracksList,
+      sceneSoundscapeSlots: [],
     },
     e2e: { fxLibraryState: 'ready' },
     importSoundscapeTrack: vi.fn(),
+    importYoutubeTrack: importYoutubeTrackMock,
+    updateSoundscapeTrack: updateSoundscapeTrackMock,
     updateSoundscapeCategory: vi.fn(),
+    updateSoundscapeSlot: vi.fn(),
   }),
 }))
 
@@ -89,6 +109,8 @@ async function openTrackPicker() {
 
 describe('CategoryComposerPage track picker', () => {
   beforeEach(() => {
+    fixture.categoriesList = [fixture.category]
+    fixture.tracksList = [fixture.track]
     vi.clearAllMocks()
   })
 
@@ -138,5 +160,81 @@ describe('CategoryComposerPage track picker', () => {
     expect(checkbox).toBeChecked()
     expect(audioPreviewMock.play).not.toHaveBeenCalled()
     expect(screen.getByRole('button', { name: 'Add Selected (1)' })).toBeEnabled()
+  })
+
+  it('imports YouTube video URL successfully', async () => {
+    const user = await openTrackPicker()
+    const input = screen.getByPlaceholderText('Paste YouTube Video or Playlist URL…')
+    const button = screen.getByRole('button', { name: 'Import YouTube' })
+
+    await user.type(input, 'https://www.youtube.com/watch?v=12345')
+    await user.click(button)
+
+    await waitFor(() => {
+      expect(importYoutubeTrackMock).toHaveBeenCalledWith(
+        'YouTube Video 12345',
+        'https://www.youtube.com/watch?v=12345',
+        false,
+        undefined,
+        '12345',
+      )
+    })
+  })
+
+  it('presents live-linked vs snapshot dialog for YouTube playlist URL', async () => {
+    const user = await openTrackPicker()
+    const input = screen.getByPlaceholderText('Paste YouTube Video or Playlist URL…')
+    const button = screen.getByRole('button', { name: 'Import YouTube' })
+
+    await user.type(input, 'https://www.youtube.com/playlist?list=PL6789')
+    await user.click(button)
+
+    expect(screen.getByText('Attach YouTube Playlist')).toBeInTheDocument()
+
+    const liveLinkedBtn = screen.getByRole('button', {
+      name: 'Keep linked to YouTube (Live-linked)',
+    })
+    await user.click(liveLinkedBtn)
+
+    await waitFor(() => {
+      expect(importYoutubeTrackMock).toHaveBeenCalledWith(
+        'YouTube Playlist (PL6789)',
+        'https://www.youtube.com/playlist?list=PL6789',
+        true,
+        expect.arrayContaining([
+          expect.objectContaining({ name: 'Playlist Video A (PL678)' }),
+        ]),
+      )
+    })
+  })
+
+  it('toggles Make Offline-Ready on YouTube tracks', async () => {
+    const user = userEvent.setup()
+    
+    // Add YouTube track to level I in the category
+    fixture.category.levels = { I: ['track-yt'], II: [], III: [] }
+    fixture.category.trackCount = 1
+    
+    const ytTrack = {
+      id: 'track-yt',
+      name: 'Cave Ambient',
+      durationSeconds: 180,
+      format: 'YouTube',
+      channels: 'Stereo',
+      audioUrl: 'https://youtube.com/watch?v=cave',
+      createdAt: '2026-07-12T00:00:00.000Z',
+      type: 'youtube' as const,
+      isOfflineReady: false,
+    }
+    fixture.tracksList = [fixture.track, ytTrack]
+    
+    renderComposer()
+    
+    expect(screen.getByText('Cave Ambient')).toBeInTheDocument()
+    
+    const offlineBtn = screen.getByRole('button', { name: 'Make Offline-Ready' })
+    await user.click(offlineBtn)
+    
+    expect(updateSoundscapeTrackMock).toHaveBeenCalledWith('track-yt', { isOfflineReady: true })
   })
 })

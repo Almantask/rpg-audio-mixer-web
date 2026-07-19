@@ -74,6 +74,11 @@ import {
 } from '@/lib/sceneStorage'
 
 import { formatTodayIso } from '@/lib/dateFormat'
+import {
+  defaultIntensityForCategoryLevels,
+  resolveSceneIntensityForYoutube,
+  type SoundscapeTrackRef,
+} from '@/lib/audio/sceneAudioManager'
 import { getTopFxTrack, getTopSoundscapeCategory, incrementFxPlayCount, incrementSoundscapePlayCount } from '@/lib/playStats'
 import { resolveRestoredName } from '@/lib/trashStorage'
 
@@ -307,6 +312,16 @@ interface CampaignDataContextValue {
 
   importSoundscapeTrack: (file: File) => SoundscapeTrack
 
+  importYoutubeTrack: (
+    name: string,
+    url: string,
+    isPlaylist: boolean,
+    playlistVideos?: { youtubeId: string; name: string; durationSeconds: number }[],
+    youtubeId?: string,
+  ) => SoundscapeTrack
+
+  updateSoundscapeTrack: (id: string, updates: Partial<SoundscapeTrack>) => void
+
   downloadFreeCompositions: () => number
 
   seedData: (partial: Partial<AppData>) => void
@@ -390,6 +405,39 @@ function inferFxType(name: string): FxType {
 
 
 
+function realignLegacyYoutubeSceneIntensities(appData: AppData): AppData {
+  const tracksById: Record<string, SoundscapeTrackRef> = {}
+  for (const track of appData.soundscapeTracks ?? []) {
+    tracksById[track.id] = {
+      id: track.id,
+      name: track.name,
+      audioUrl: track.audioUrl,
+      durationSeconds: track.durationSeconds,
+      type: track.type,
+      youtubeId: track.youtubeId,
+      playlistVideos: track.playlistVideos,
+      isOfflineReady: track.isOfflineReady,
+    }
+  }
+
+  let changed = false
+  const sceneSoundscapeSlots = appData.sceneSoundscapeSlots.map((slot) => {
+    const category = appData.soundscapeCategories.find((item) => item.id === slot.categoryId)
+    const nextIntensity = resolveSceneIntensityForYoutube(
+      slot.intensity ?? 'II',
+      category?.levels,
+      tracksById,
+    )
+    if (nextIntensity === (slot.intensity ?? 'II')) {
+      return slot
+    }
+    changed = true
+    return { ...slot, intensity: nextIntensity, currentTrackId: undefined }
+  })
+
+  return changed ? { ...appData, sceneSoundscapeSlots } : appData
+}
+
 export function CampaignDataProvider({ children }: { children: ReactNode }) {
 
   const [data, setData] = useState<AppData>(() => {
@@ -401,15 +449,16 @@ export function CampaignDataProvider({ children }: { children: ReactNode }) {
       return loaded
     }
     try {
-      const next = ensureBundledAppSeed(loaded)
-      if (!next) {
-        return loaded
-      }
+      const seeded = ensureBundledAppSeed(loaded)
+      const base = seeded ?? loaded
+      const realigned = realignLegacyYoutubeSceneIntensities(base)
       const synced = {
-        ...next,
-        sessions: syncSessionSceneCounts(next.sessions, next.sessionSceneLinks),
+        ...realigned,
+        sessions: syncSessionSceneCounts(realigned.sessions, realigned.sessionSceneLinks),
       }
-      persist(synced)
+      if (seeded || realigned !== base) {
+        persist(synced)
+      }
       return synced
     } catch (error) {
       console.error('Failed to seed bundled demo data', error)
@@ -1561,6 +1610,7 @@ export function CampaignDataProvider({ children }: { children: ReactNode }) {
     (sceneId: string, categoryId: string): SceneSoundscapeSlot => {
 
       const existing = data.sceneSoundscapeSlots.filter((slot) => slot.sceneId === sceneId)
+      const category = data.soundscapeCategories.find((item) => item.id === categoryId)
 
       const slot: SceneSoundscapeSlot = {
 
@@ -1574,7 +1624,7 @@ export function CampaignDataProvider({ children }: { children: ReactNode }) {
 
         volume: 100,
 
-        intensity: 'II',
+        intensity: defaultIntensityForCategoryLevels(category?.levels),
 
       }
 
@@ -1590,7 +1640,7 @@ export function CampaignDataProvider({ children }: { children: ReactNode }) {
 
     },
 
-    [data.sceneSoundscapeSlots, updateData],
+    [data.sceneSoundscapeSlots, data.soundscapeCategories, updateData],
 
   )
 
@@ -1604,7 +1654,9 @@ export function CampaignDataProvider({ children }: { children: ReactNode }) {
 
       let order = existing.length
 
-      const newSlots: SceneSoundscapeSlot[] = categoryIds.map((categoryId) => ({
+      const newSlots: SceneSoundscapeSlot[] = categoryIds.map((categoryId) => {
+        const category = data.soundscapeCategories.find((item) => item.id === categoryId)
+        return {
 
         id: createId('soundscape-slot'),
 
@@ -1616,9 +1668,10 @@ export function CampaignDataProvider({ children }: { children: ReactNode }) {
 
         volume: 100,
 
-        intensity: 'II',
+        intensity: defaultIntensityForCategoryLevels(category?.levels),
 
-      }))
+      }
+      })
 
       updateData((current) => ({
 
@@ -1632,7 +1685,7 @@ export function CampaignDataProvider({ children }: { children: ReactNode }) {
 
     },
 
-    [data.sceneSoundscapeSlots, updateData],
+    [data.sceneSoundscapeSlots, data.soundscapeCategories, updateData],
 
   )
 
@@ -2375,6 +2428,51 @@ export function CampaignDataProvider({ children }: { children: ReactNode }) {
     [updateData]
   )
 
+  const importYoutubeTrack = useCallback(
+    (
+      name: string,
+      url: string,
+      isPlaylist: boolean,
+      playlistVideos?: { youtubeId: string; name: string; durationSeconds: number }[],
+      youtubeId?: string,
+    ): SoundscapeTrack => {
+      const now = new Date().toISOString()
+      const track: SoundscapeTrack = {
+        id: createId('track'),
+        name,
+        durationSeconds: isPlaylist
+          ? (playlistVideos ?? []).reduce((acc, v) => acc + v.durationSeconds, 0)
+          : 180,
+        format: 'YouTube',
+        channels: 'Stereo',
+        audioUrl: url,
+        createdAt: now,
+        type: isPlaylist ? 'youtube-playlist' : 'youtube',
+        isOfflineReady: false,
+        playlistVideos,
+        youtubeId,
+      }
+      updateData((current) => ({
+        ...current,
+        soundscapeTracks: [...(current.soundscapeTracks ?? []), track],
+      }))
+      return track
+    },
+    [updateData]
+  )
+
+  const updateSoundscapeTrack = useCallback(
+    (id: string, updates: Partial<SoundscapeTrack>) => {
+      updateData((current) => ({
+        ...current,
+        soundscapeTracks: (current.soundscapeTracks ?? []).map((t) =>
+          t.id === id ? { ...t, ...updates } : t
+        ),
+      }))
+    },
+    [updateData]
+  )
+
   const downloadFreeCompositions = useCallback((): number => {
     let added = 0
     updateData((current) => {
@@ -3027,6 +3125,10 @@ export function CampaignDataProvider({ children }: { children: ReactNode }) {
 
       importSoundscapeTrack,
 
+      importYoutubeTrack,
+
+      updateSoundscapeTrack,
+
       downloadFreeCompositions,
 
       seedData,
@@ -3172,6 +3274,10 @@ export function CampaignDataProvider({ children }: { children: ReactNode }) {
       purgeSoundscapeCategory,
 
       importSoundscapeTrack,
+
+      importYoutubeTrack,
+
+      updateSoundscapeTrack,
 
       downloadFreeCompositions,
 

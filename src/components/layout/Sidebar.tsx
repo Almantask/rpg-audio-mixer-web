@@ -46,7 +46,7 @@ export function Sidebar({ open, onNavigate, onClose }: SidebarProps) {
     >
       <div className="flex items-start gap-3 px-4 pb-2 pt-5">
         <img
-          src="/logo3.png"
+          src={`${import.meta.env.BASE_URL}logo3.png`}
           alt=""
           width={40}
           height={40}

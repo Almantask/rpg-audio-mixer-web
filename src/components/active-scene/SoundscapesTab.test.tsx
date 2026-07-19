@@ -51,9 +51,14 @@ vi.mock('@/context/SceneAudioContext', () => ({
   }),
 }))
 
+const mockSoundscapeTracks: any[] = []
+
 vi.mock('@/context/CampaignDataContext', () => ({
   useCampaignData: () => ({
     reorderSoundscapeSlots,
+    data: {
+      soundscapeTracks: mockSoundscapeTracks,
+    },
   }),
 }))
 
@@ -523,5 +528,71 @@ describe('SoundscapesTab live drag reorder', () => {
 
     fireEvent.dragEnd(handle, { dataTransfer })
     expect(preview).not.toBeVisible()
+  })
+
+  it('disables the intensity button if it contains an online-only YouTube track (user is offline)', () => {
+    vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false)
+
+    mockSoundscapeTracks.push({
+      id: 't2',
+      name: 'Ambient Cave Video',
+      durationSeconds: 180,
+      format: 'YouTube',
+      channels: 'Stereo',
+      audioUrl: 'https://youtube.com/watch?v=cave',
+      createdAt: '2026-07-12T00:00:00.000Z',
+      type: 'youtube' as const,
+      isOfflineReady: false,
+    })
+
+    render(
+      <SoundscapesTab
+        sceneId="scene-1"
+        slots={[slots[0]]}
+        onRemoveSlot={() => undefined}
+        onAddSoundscape={() => undefined}
+      />,
+    )
+
+    const levelIIBtn = screen.getByRole('button', {
+      name: /Offline playback required/i,
+    })
+    expect(levelIIBtn).toBeDisabled()
+
+    mockSoundscapeTracks.length = 0
+    vi.restoreAllMocks()
+  })
+
+  it('keeps the intensity button enabled if it contains an online-only YouTube track but user is online', () => {
+    vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(true)
+
+    mockSoundscapeTracks.push({
+      id: 't2',
+      name: 'Ambient Cave Video',
+      durationSeconds: 180,
+      format: 'YouTube',
+      channels: 'Stereo',
+      audioUrl: 'https://youtube.com/watch?v=cave',
+      createdAt: '2026-07-12T00:00:00.000Z',
+      type: 'youtube' as const,
+      isOfflineReady: false,
+    })
+
+    render(
+      <SoundscapesTab
+        sceneId="scene-1"
+        slots={[slots[0]]}
+        onRemoveSlot={() => undefined}
+        onAddSoundscape={() => undefined}
+      />,
+    )
+
+    const levelIIBtn = screen.getByRole('button', {
+      name: /Intensity II, 1 track/i,
+    })
+    expect(levelIIBtn).not.toBeDisabled()
+
+    mockSoundscapeTracks.length = 0
+    vi.restoreAllMocks()
   })
 })
