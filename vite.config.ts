@@ -39,8 +39,14 @@ function serveAssetsAudioPlugin() {
       server.middlewares.use(middleware)
     },
     closeBundle() {
-      const outDir = path.resolve(__dirname, 'dist/assets/audio')
-      cpSync(assetsRoot, outDir, { recursive: true })
+      try {
+        const outDir = path.resolve(__dirname, 'dist/assets/audio')
+        if (!fs.existsSync(outDir)) {
+          cpSync(assetsRoot, outDir, { recursive: true, force: true })
+        }
+      } catch (e) {
+        console.warn('Audio copy warning during closeBundle:', e)
+      }
     },
   }
 }
