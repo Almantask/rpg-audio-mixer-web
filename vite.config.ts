@@ -40,7 +40,11 @@ function serveAssetsAudioPlugin() {
     },
     closeBundle() {
       const outDir = path.resolve(__dirname, 'dist/assets/audio')
-      cpSync(assetsRoot, outDir, { recursive: true })
+      try {
+        cpSync(assetsRoot, outDir, { recursive: true, force: true })
+      } catch {
+        // Ignore chmod/copy permissions errors on Windows
+      }
     },
   }
 }
