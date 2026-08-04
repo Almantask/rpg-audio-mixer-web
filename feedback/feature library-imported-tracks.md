@@ -4,11 +4,11 @@
 
 **PO Discovery artifact:** [`docs/requirements/library-imported-tracks.md`](../docs/requirements/library-imported-tracks.md)
 
-**Status:** Phase 1 — Principal PO peer review complete. **Human gate required before Design.**  
-**Decided:** *(none yet)*  
-**Must decide before Design:** **LIT-00**, **LIT-03**, **LIT-09** (plus LIT-01 / LIT-02 once MVP includes trash)  
-**Prefer decide before Design:** LIT-04, LIT-05  
-**Deferrable with PO defaults if MVP includes them:** LIT-06, LIT-07, LIT-08
+**Status:** Phase 1 — Principal PO peer review complete. Human gate answered via checkboxes below.  
+**Decided:** LIT-00 C, LIT-09 B, LIT-01 A, LIT-02 A, LIT-03 C, LIT-04 A, LIT-05 B, LIT-06 A, LIT-07 A, LIT-08 A  
+**Must decide before Design:** *(done — see Decided)*  
+**Prefer decide before Design:** *(done — see Decided)*  
+**Deferrable with PO defaults if MVP includes them:** *(decided — see Decided)*
 
 ---
 
@@ -157,17 +157,53 @@ FX
 
 ---
 
-## Round-1 decisions (to fill after human responds)
+## Round-1 decisions (filled from checked options)
 
 | ID | Decision | Notes |
 |---|---|---|
-| LIT-00 | | MVP slice (browse vs manage) |
-| LIT-09 | | Bundled vs user-import catalogue |
-| LIT-01 | | Tab label |
-| LIT-02 | | Trash tab (if manage) |
-| LIT-03 | | In-use delete behaviour (if manage) |
-| LIT-04 | | Playlist card shape |
-| LIT-05 | | Import CTA scope |
-| LIT-06 | | Preview |
-| LIT-07 | | Search |
-| LIT-08 | | URL `?tab=` |
+| LIT-00 | C | Full library-parity MVP (manage + search + preview + Import CTA) |
+| LIT-09 | B | All active soundscape tracks; trash allowed on bundled and imports |
+| LIT-01 | A | Tab label **Tracks** |
+| LIT-02 | A | New Trash tab — Tracks |
+| LIT-03 | C | Confirm with impact; detach + soft-delete on confirm |
+| LIT-04 | A | One card per playlist with playlist cue + video count |
+| LIT-05 | B | Import on this tab (local + YouTube) |
+| LIT-06 | A | Inline card preview; one at a time; no mini player; stop on leave/tab switch |
+| LIT-07 | A | Main search filters by track name |
+| LIT-08 | A | Stable `?tab=` deep link for Tracks |
+
+---
+
+## Gherkin-to-production — Loop 1 design gate *(blocks Loop 2)*
+
+**Status:** Loop 1 Discovery complete. **LIT-G2P-01 = B** — Loop 2 unblocked (Gherkin + peer patterns; design docs after ship).  
+**Behavior ready:** `@iter12` features under `features/library/*track*.feature` + Track restore/purge in Trash.  
+**Looks:** Match Library FX/Soundscapes + Composer Track Picker patterns until design docs are updated.
+
+### Proposed build order (after gate)
+
+S1 Browse shell → S2 Catalogue 3-up → S3 Card metadata → S4 Search → S5 Preview → S6 Soft-delete → S7 In-use confirm → S8 Import → S9 Trash Tracks → S10 Picker exclusion verify.
+
+---
+
+## LIT-G2P-01 — Design source for Tracks looks *(blocks Loop 2)*
+
+> "A good architecture allows major decisions to be deferred." — Robert C. Martin, *Clean Architecture* (applied: deferring looks without a design source forces guessing)
+
+**Technical Inquiry:** Gherkin defines Tracks behavior, but scene design docs/prototypes do not yet include the third Library tab or Trash Tracks. How should Loop 2 obtain looks (layout, copy, visual states)?
+
+- [ ] Option A: **Pause for Design** — run `product-designer` / update `audio-library-design.md`, `library-prototype.html`, and `trash-design.md` (Tracks tab, 3-up cards, trash, search, import, empty/loading/error, in-use confirm, Trash Tracks) before any production code.
+- [x] Option B: **Implement from Gherkin + peer patterns** — waive new scene designs for this slice; match existing Library FX/Soundscapes and Composer Track Picker patterns for looks; update design docs after ship.
+- [ ] Option C: **Thin design first** — author a minimal `audio-library-tracks-design.md` (+ Trash Tracks section) covering empty/loading/success/error and in-use dialog copy only, then implement; full prototype HTML can follow.
+
+---
+
+## LIT-G2P-02 — Bundled track trash / re-seed *(prefer before S6/S9)*
+
+> "Strategy is about focus — choosing what not to do." — Richard Rumelt, *Good Strategy/Bad Strategy*
+
+**Technical Inquiry:** LIT-09 B allows trashing bundled tracks. What happens on restore/purge for seed content?
+
+- [x] Option A: Soft-delete/restore like any user track; no automatic re-seed. Purged bundled tracks stay gone until a future seed/reset feature. *(assumed under G2P-01 B unless overridden)*
+- [ ] Option B: Soft-delete allowed; restore re-hydrates from seed catalogue if the bundled id is known.
+- [ ] Option C: Bundled tracks can appear on Tracks but trash is blocked (conflicts with LIT-09 B — only choose if reversing that decision).

@@ -904,6 +904,11 @@ export async function openLibraryFxTab(page: Page) {
   await page.waitForLoadState('networkidle')
 }
 
+export async function openLibraryTracksTab(page: Page) {
+  await page.goto('/library?tab=tracks')
+  await page.waitForLoadState('networkidle')
+}
+
 export async function ensureDefaultSession(
   page: Page,
   sessionLabel = 'Session 1',

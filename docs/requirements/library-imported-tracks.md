@@ -51,7 +51,7 @@ Narrower viewports may reduce columns for readability, but the wide-layout targe
 
 Each track card exposes a clear **trash** affordance.  
 Activating it removes the track from the third-tab grid (soft-delete — see AC-5).  
-Affordance style should align with platform delete patterns (🗑 on web/tablet; swipe on touch where Library already uses swipe for delete).
+Affordance style should use a clear trash control on each track card (no swipe-to-delete on this tab).
 
 ### AC-5 — Soft-delete and recovery (platform Trash model)
 

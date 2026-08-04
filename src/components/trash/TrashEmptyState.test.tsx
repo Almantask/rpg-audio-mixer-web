@@ -13,4 +13,12 @@ describe('TrashEmptyState', () => {
     render(<TrashEmptyState tab="campaigns" />)
     expect(screen.getByRole('heading', { name: 'No deleted campaigns' })).toBeInTheDocument()
   })
+
+  it('shows tab-specific empty headline for Tracks', () => {
+    render(<TrashEmptyState tab="tracks" />)
+    expect(screen.getByRole('heading', { name: 'No deleted Tracks' })).toBeInTheDocument()
+    expect(
+      screen.getByText('Deleted soundscape tracks will appear here for 7 days.'),
+    ).toBeInTheDocument()
+  })
 })

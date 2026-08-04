@@ -21,6 +21,10 @@ const EMPTY_STATE_COPY: Record<
     headline: 'No deleted soundscapes',
     description: 'Deleted soundscapes will appear here for 7 days.',
   },
+  tracks: {
+    headline: 'No deleted Tracks',
+    description: 'Deleted soundscape tracks will appear here for 7 days.',
+  },
   fx: {
     headline: 'No deleted FX',
     description: 'Deleted FX tracks will appear here for 7 days.',

@@ -38,7 +38,7 @@ describe('TrashPage', () => {
     const tablist = screen.getByRole('tablist', { name: 'Trash tabs' })
     expect(tablist.className).toMatch(/overflow-x-auto/)
 
-    for (const label of ['Campaigns', 'Sessions', 'Scenes', 'Soundscapes', 'FX']) {
+    for (const label of ['Campaigns', 'Sessions', 'Scenes', 'Soundscapes', 'Tracks', 'FX']) {
       const tab = screen.getByRole('tab', { name: label })
       expect(tab.className).toMatch(/shrink-0/)
       expect(tab.className).toMatch(/whitespace-nowrap/)
@@ -54,6 +54,9 @@ describe('TrashPage', () => {
     await user.click(screen.getByRole('tab', { name: 'FX' }))
     expect(screen.getByRole('heading', { name: 'No deleted FX' })).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /restore all/i })).not.toBeInTheDocument()
+
+    await user.click(screen.getByRole('tab', { name: 'Tracks' }))
+    expect(screen.getByRole('heading', { name: 'No deleted Tracks' })).toBeInTheDocument()
   })
 
   it('shows select all and selection bar when items exist', async () => {
@@ -120,5 +123,60 @@ describe('TrashPage', () => {
     expect(screen.getByText('2 selected')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Restore Selected' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Purge Selected' })).toBeInTheDocument()
+  })
+
+  it('lists soft-deleted tracks and restores them from the Tracks tab', async () => {
+    window.localStorage.clear()
+    window.localStorage.setItem(
+      'arcanum-audio-data',
+      JSON.stringify({
+        campaigns: [],
+        sessions: [],
+        lastActiveSessionByCampaign: {},
+        scenes: [],
+        sessionSceneLinks: [],
+        sceneSoundboardEntries: [],
+        sceneSoundscapeSlots: [],
+        sceneSoundboardSettings: [],
+        sceneSoundscapeSettings: [],
+        fxTracks: [],
+        soundscapeCategories: [],
+        soundscapeTracks: [
+          {
+            id: 't1',
+            name: 'Thunderous Downpour',
+            durationSeconds: 80,
+            format: 'MP3',
+            channels: 'Stereo',
+            audioUrl: 'blob:test',
+            createdAt: '2026-07-01T00:00:00.000Z',
+            deletedAt: '2026-07-10T00:00:00.000Z',
+          },
+          {
+            id: 't2',
+            name: 'Forest Ambience',
+            durationSeconds: 80,
+            format: 'MP3',
+            channels: 'Stereo',
+            audioUrl: 'blob:test2',
+            createdAt: '2026-07-01T00:00:00.000Z',
+            deletedAt: '2026-07-11T00:00:00.000Z',
+          },
+        ],
+        lastActiveSceneBySession: {},
+        playStats: { soundscapeCategories: {}, fxTracks: {} },
+      }),
+    )
+
+    const user = userEvent.setup()
+    renderTrashPage()
+    await user.click(screen.getByRole('tab', { name: 'Tracks' }))
+
+    expect(screen.getByText('Thunderous Downpour')).toBeInTheDocument()
+    expect(screen.getByText('Forest Ambience')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: /restore thunderous downpour/i }))
+    expect(screen.queryByText('Thunderous Downpour')).not.toBeInTheDocument()
+    expect(screen.getByText('Forest Ambience')).toBeInTheDocument()
   })
 })

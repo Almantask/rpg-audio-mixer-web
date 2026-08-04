@@ -12,11 +12,21 @@ Feature: Restore from Trash
     And <restore_destination>
 
     Examples:
-      | name             | type       | restore_destination                                                 |
-      | Cursed Catacombs | Scene      | it reappears in the Scenes list with all prior session links intact |
-      | Winter's Breath  | Soundscape | it reappears in the Audio Library soundscapes list                  |
-      | Dragon Roar      | FX         | it reappears in the Audio Library FX list                           |
-      | Session 12       | Session    | it reappears in its parent campaign's sessions list                 |
+      | name                | type       | restore_destination                                                 |
+      | Cursed Catacombs    | Scene      | it reappears in the Scenes list with all prior session links intact |
+      | Winter's Breath     | Soundscape | it reappears in the Audio Library soundscapes list                  |
+      | Dragon Roar         | FX         | it reappears in the Audio Library FX list                           |
+      | Thunderous Downpour | Track      | it reappears in the Audio Library Tracks tab grid                   |
+      | Session 12          | Session    | it reappears in its parent campaign's sessions list                 |
+
+  Scenario: Restoring a soft-deleted track returns it to Library and Track Picker without re-attaching
+    Given "Thunderous Downpour" was detached from "Level I" in "Weather" when soft-deleted
+    And "Thunderous Downpour" is in the Trash Tracks tab
+    When I tap "Restore" on the "Thunderous Downpour" trashed track card
+    Then "Thunderous Downpour" is removed from Trash
+    And "Thunderous Downpour" reappears in the Tracks tab grid
+    And "Thunderous Downpour" is available again in the Track Picker
+    And "Thunderous Downpour" is not re-attached to "Level I" in "Weather"
 
   Scenario: Restoring a campaign also restores its orphaned sessions
     Given I have a campaign "Curse of Strahd" in Trash
@@ -38,11 +48,24 @@ Feature: Restore from Trash
     Then "Dragon Roar" and "Wolf Howl" are removed from Trash
     And they reappear in the Audio Library FX list
 
+  Scenario: Restore Selected restores checked Tracks on the active tab
+    Given the "Tracks" tab contains "Thunderous Downpour" and "Forest Ambience"
+    And I have selected "Thunderous Downpour" and "Forest Ambience"
+    When I tap "Restore Selected"
+    Then "Thunderous Downpour" and "Forest Ambience" are removed from Trash
+    And they reappear in the Audio Library Tracks tab grid
+
   Scenario: Restore All always confirms and restores every item on the active tab
     Given the "FX" tab contains "Dragon Roar" and "Wolf Howl"
     When I tap "Restore All" and confirm the restore action
     Then "Dragon Roar" and "Wolf Howl" are removed from Trash
     And they reappear in the Audio Library FX list
+
+  Scenario: Restore All always confirms and restores every Track on the active tab
+    Given the "Tracks" tab contains "Thunderous Downpour" and "Forest Ambience"
+    When I tap "Restore All" and confirm the restore action
+    Then "Thunderous Downpour" and "Forest Ambience" are removed from Trash
+    And they reappear in the Audio Library Tracks tab grid
 
   Scenario: Bulk restore partial failure keeps failed items selected
     Given the "FX" tab contains "Dragon Roar", "Wolf Howl", and "Broken Clip"

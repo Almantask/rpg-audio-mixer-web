@@ -11,6 +11,13 @@ Feature: Purge from Trash
     Then "Dragon Roar" is permanently deleted
     And it can no longer be restored
 
+  Scenario: Permanently purging a soft-deleted track cannot be undone
+    Given "Thunderous Downpour" is in the Trash Tracks tab
+    When I tap "Purge" on the "Thunderous Downpour" trashed track card and confirm the destructive action
+    Then "Thunderous Downpour" is permanently deleted
+    And it can no longer be restored
+    And "Thunderous Downpour" does not reappear in the Tracks tab or Track Picker
+
   Scenario: Purge Selected permanently deletes checked items after confirmation
     Given the "FX" tab contains "Dragon Roar" and "Wolf Howl"
     And I have selected "Dragon Roar" and "Wolf Howl"

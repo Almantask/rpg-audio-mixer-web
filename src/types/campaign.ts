@@ -55,7 +55,7 @@ export interface AppData {
   playStats: PlayStats
 }
 
-export type TrashTab = 'campaigns' | 'sessions' | 'scenes' | 'soundscapes' | 'fx'
+export type TrashTab = 'campaigns' | 'sessions' | 'scenes' | 'soundscapes' | 'tracks' | 'fx'
 
 export interface BulkTrashResult {
   succeeded: string[]

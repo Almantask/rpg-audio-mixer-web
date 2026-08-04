@@ -23,6 +23,7 @@ import { useCampaignData } from '@/context/CampaignDataContext'
 import { getTrashedCampaigns, getTrashedSessions } from '@/lib/campaignStorage'
 import { getTrashedFxTracks } from '@/lib/libraryStorage'
 import { getTrashedScenes } from '@/lib/sceneStorage'
+import { getTrashedSoundscapeTracks } from '@/lib/soundscapeTrackTrash'
 import { formatSessionContextLabel } from '@/lib/sessionTitle'
 import { sortByDaysRemaining } from '@/lib/trashStorage'
 import type { BulkTrashResult, TrashTab } from '@/types/campaign'
@@ -33,6 +34,7 @@ const TABS: { id: TrashTab; label: string }[] = [
   { id: 'sessions', label: 'Sessions' },
   { id: 'scenes', label: 'Scenes' },
   { id: 'soundscapes', label: 'Soundscapes' },
+  { id: 'tracks', label: 'Tracks' },
   { id: 'fx', label: 'FX' },
 ]
 
@@ -41,6 +43,7 @@ const TAB_SECTION_ATTR: Record<TrashTab, string> = {
   sessions: 'data-trash-sessions',
   scenes: 'data-trash-scenes',
   soundscapes: 'data-trash-soundscapes',
+  tracks: 'data-trash-tracks',
   fx: 'data-trash-fx',
 }
 
@@ -64,7 +67,8 @@ function trashTabFromQuery(value: string | null): TrashTab {
     value === 'scenes' ||
     value === 'fx' ||
     value === 'campaigns' ||
-    value === 'soundscapes'
+    value === 'soundscapes' ||
+    value === 'tracks'
   ) {
     return value
   }
@@ -97,11 +101,13 @@ export function TrashPage() {
     restoreScene,
     restoreFx,
     restoreSoundscapeCategory,
+    restoreSoundscapeTrack,
     purgeCampaign,
     purgeSession,
     purgeScene,
     purgeFx,
     purgeSoundscapeCategory,
+    purgeSoundscapeTrack,
     restoreTrashItems,
     purgeTrashItems,
   } = useCampaignData()
@@ -154,6 +160,16 @@ export function TrashPage() {
           title: category.name,
           dataLabel: category.name,
           deletedAt: category.deletedAt!,
+        }))
+      case 'tracks':
+        return sortByDaysRemaining(
+          getTrashedSoundscapeTracks(data.soundscapeTracks ?? []),
+        ).map((track) => ({
+          id: track.id,
+          type: 'track',
+          title: track.name,
+          dataLabel: track.name,
+          deletedAt: track.deletedAt!,
         }))
       case 'fx':
         return sortByDaysRemaining(getTrashedFxTracks(data.fxTracks)).map((track) => ({
@@ -250,6 +266,9 @@ export function TrashPage() {
       case 'soundscape':
         restoreSoundscapeCategory(id)
         break
+      case 'track':
+        restoreSoundscapeTrack(id)
+        break
       case 'fx':
         restoreFx(id)
         break
@@ -283,6 +302,9 @@ export function TrashPage() {
         break
       case 'soundscape':
         purgeSoundscapeCategory(id)
+        break
+      case 'track':
+        purgeSoundscapeTrack(id)
         break
       case 'fx':
         purgeFx(id)

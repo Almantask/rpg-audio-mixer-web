@@ -58,6 +58,11 @@ import { ensureBundledAppSeed } from '@/lib/ensureBundledAppSeed'
 import { readAudioDurationSeconds } from '@/lib/readAudioDuration'
 import { createBundledFxTracks } from '@/lib/seedBundledFx'
 import { createBundledSoundscapeLibrary } from '@/lib/seedBundledSoundscapes'
+import {
+  detachTrackFromCategories,
+  getActiveSoundscapeTracks,
+  humanizeAudioFileName,
+} from '@/lib/soundscapeTrackTrash'
 
 import {
 
@@ -322,6 +327,12 @@ interface CampaignDataContextValue {
 
   updateSoundscapeTrack: (id: string, updates: Partial<SoundscapeTrack>) => void
 
+  softDeleteSoundscapeTrack: (id: string) => void
+
+  restoreSoundscapeTrack: (id: string) => void
+
+  purgeSoundscapeTrack: (id: string) => void
+
   downloadFreeCompositions: () => number
 
   seedData: (partial: Partial<AppData>) => void
@@ -527,7 +538,7 @@ export function CampaignDataProvider({ children }: { children: ReactNode }) {
   const activeFxTracks = useMemo(() => getActiveFxTracks(data.fxTracks), [data.fxTracks])
 
   const activeSoundscapeTracks = useMemo(
-    () => (data.soundscapeTracks ?? []).filter((track) => !track.deletedAt),
+    () => getActiveSoundscapeTracks(data.soundscapeTracks ?? []),
     [data.soundscapeTracks],
   )
 
@@ -2412,12 +2423,13 @@ export function CampaignDataProvider({ children }: { children: ReactNode }) {
       const ext = file.name.split('.').pop()?.toUpperCase() ?? 'MP3'
       const track: SoundscapeTrack = {
         id: createId('track'),
-        name: file.name,
+        name: humanizeAudioFileName(file.name),
         durationSeconds: 222,
         format: ext,
         channels: 'Stereo',
         audioUrl: URL.createObjectURL(file),
         createdAt: now,
+        type: 'local',
       }
       updateData((current) => ({
         ...current,
@@ -2426,6 +2438,53 @@ export function CampaignDataProvider({ children }: { children: ReactNode }) {
       return track
     },
     [updateData]
+  )
+
+  const softDeleteSoundscapeTrack = useCallback(
+    (id: string) => {
+      const now = new Date().toISOString()
+      updateData((current) => ({
+        ...current,
+        soundscapeCategories: detachTrackFromCategories(id, current.soundscapeCategories ?? []),
+        soundscapeTracks: (current.soundscapeTracks ?? []).map((track) =>
+          track.id === id ? { ...track, deletedAt: now } : track,
+        ),
+      }))
+    },
+    [updateData],
+  )
+
+  const restoreSoundscapeTrack = useCallback(
+    (id: string) => {
+      updateData((current) => {
+        const track = (current.soundscapeTracks ?? []).find((item) => item.id === id)
+        if (!track) {
+          return current
+        }
+        const activeNames = getActiveSoundscapeTracks(current.soundscapeTracks ?? [])
+          .filter((item) => item.id !== id)
+          .map((item) => item.name)
+        const resolvedName = resolveRestoredName(track.name, activeNames)
+        return {
+          ...current,
+          soundscapeTracks: (current.soundscapeTracks ?? []).map((item) =>
+            item.id === id ? { ...item, deletedAt: undefined, name: resolvedName } : item,
+          ),
+        }
+      })
+    },
+    [updateData],
+  )
+
+  const purgeSoundscapeTrack = useCallback(
+    (id: string) => {
+      updateData((current) => ({
+        ...current,
+        soundscapeTracks: (current.soundscapeTracks ?? []).filter((track) => track.id !== id),
+        soundscapeCategories: detachTrackFromCategories(id, current.soundscapeCategories ?? []),
+      }))
+    },
+    [updateData],
   )
 
   const importYoutubeTrack = useCallback(
@@ -2587,10 +2646,94 @@ export function CampaignDataProvider({ children }: { children: ReactNode }) {
     [updateData],
   )
 
+  const restoreSoundscapeTrackItems = useCallback(
+    (ids: string[]): BulkTrashResult => {
+      const result: BulkTrashResult = { succeeded: [], failed: [] }
+      updateData((current) => {
+        const activeNames = getActiveSoundscapeTracks(current.soundscapeTracks ?? []).map(
+          (track) => track.name,
+        )
+        const idsToRestore = new Set<string>()
+
+        for (const id of ids) {
+          const track = (current.soundscapeTracks ?? []).find(
+            (item) => item.id === id && item.deletedAt,
+          )
+          if (!track) {
+            result.failed.push({ id, reason: 'Item not found' })
+            continue
+          }
+          result.succeeded.push(id)
+          idsToRestore.add(id)
+        }
+
+        if (idsToRestore.size === 0) {
+          return current
+        }
+
+        const soundscapeTracks = (current.soundscapeTracks ?? []).map((track) => {
+          if (!idsToRestore.has(track.id)) {
+            return track
+          }
+          const resolvedName = resolveRestoredName(track.name, activeNames)
+          activeNames.push(resolvedName)
+          return { ...track, deletedAt: undefined, name: resolvedName }
+        })
+
+        return { ...current, soundscapeTracks }
+      })
+      return result
+    },
+    [updateData],
+  )
+
+  const purgeSoundscapeTrackItems = useCallback(
+    (ids: string[]): BulkTrashResult => {
+      const result: BulkTrashResult = { succeeded: [], failed: [] }
+      updateData((current) => {
+        const idsToPurge = new Set<string>()
+
+        for (const id of ids) {
+          const track = (current.soundscapeTracks ?? []).find(
+            (item) => item.id === id && item.deletedAt,
+          )
+          if (!track) {
+            result.failed.push({ id, reason: 'Item not found' })
+            continue
+          }
+          result.succeeded.push(id)
+          idsToPurge.add(id)
+        }
+
+        if (idsToPurge.size === 0) {
+          return current
+        }
+
+        let soundscapeCategories = current.soundscapeCategories ?? []
+        for (const id of idsToPurge) {
+          soundscapeCategories = detachTrackFromCategories(id, soundscapeCategories)
+        }
+
+        return {
+          ...current,
+          soundscapeTracks: (current.soundscapeTracks ?? []).filter(
+            (track) => !idsToPurge.has(track.id),
+          ),
+          soundscapeCategories,
+        }
+      })
+      return result
+    },
+    [updateData],
+  )
+
   const restoreTrashItems = useCallback(
     (tab: TrashTab, ids: string[]): BulkTrashResult => {
       if (tab === 'fx') {
         return restoreFxItems(ids)
+      }
+      if (tab === 'tracks') {
+        return restoreSoundscapeTrackItems(ids)
       }
 
       const result: BulkTrashResult = { succeeded: [], failed: [] }
@@ -2696,13 +2839,16 @@ export function CampaignDataProvider({ children }: { children: ReactNode }) {
       })
       return result
     },
-    [restoreFxItems, updateData],
+    [restoreFxItems, restoreSoundscapeTrackItems, updateData],
   )
 
   const purgeTrashItems = useCallback(
     (tab: TrashTab, ids: string[]): BulkTrashResult => {
       if (tab === 'fx') {
         return purgeFxItems(ids)
+      }
+      if (tab === 'tracks') {
+        return purgeSoundscapeTrackItems(ids)
       }
 
       const result: BulkTrashResult = { succeeded: [], failed: [] }
@@ -2817,7 +2963,7 @@ export function CampaignDataProvider({ children }: { children: ReactNode }) {
       })
       return result
     },
-    [purgeFxItems, updateData],
+    [purgeFxItems, purgeSoundscapeTrackItems, updateData],
   )
 
 
@@ -3129,6 +3275,12 @@ export function CampaignDataProvider({ children }: { children: ReactNode }) {
 
       updateSoundscapeTrack,
 
+      softDeleteSoundscapeTrack,
+
+      restoreSoundscapeTrack,
+
+      purgeSoundscapeTrack,
+
       downloadFreeCompositions,
 
       seedData,
@@ -3158,6 +3310,8 @@ export function CampaignDataProvider({ children }: { children: ReactNode }) {
       activeScenes,
 
       activeFxTracks,
+
+      activeSoundscapeTracks,
 
       reload,
 
@@ -3278,6 +3432,12 @@ export function CampaignDataProvider({ children }: { children: ReactNode }) {
       importYoutubeTrack,
 
       updateSoundscapeTrack,
+
+      softDeleteSoundscapeTrack,
+
+      restoreSoundscapeTrack,
+
+      purgeSoundscapeTrack,
 
       downloadFreeCompositions,
 

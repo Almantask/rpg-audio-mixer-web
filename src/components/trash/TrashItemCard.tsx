@@ -14,13 +14,14 @@ import { Card, CardContent } from '@/components/ui/card'
 import { daysRemaining, daysSinceDeleted } from '@/lib/trashStorage'
 import { cn } from '@/lib/utils'
 
-export type TrashEntityType = 'campaign' | 'session' | 'scene' | 'soundscape' | 'fx'
+export type TrashEntityType = 'campaign' | 'session' | 'scene' | 'soundscape' | 'track' | 'fx'
 
 const TYPE_ICONS: Record<TrashEntityType, typeof Flag> = {
   campaign: Flag,
   session: ScrollText,
   scene: Frame,
   soundscape: Music,
+  track: Music,
   fx: Zap,
 }
 
@@ -29,6 +30,7 @@ const DATA_ATTR: Record<TrashEntityType, string> = {
   session: 'data-trashed-session',
   scene: 'data-trashed-scene',
   soundscape: 'data-trashed-soundscape',
+  track: 'data-trashed-track',
   fx: 'data-trashed-fx',
 }
 

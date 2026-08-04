@@ -208,6 +208,27 @@ describe('CategoryComposerPage track picker', () => {
     })
   })
 
+  it('excludes soft-deleted tracks from the Track Picker grid', async () => {
+    fixture.tracksList = [
+      fixture.track,
+      {
+        id: 'track-deleted',
+        name: 'Thunderous Downpour',
+        durationSeconds: 80,
+        format: 'MP3',
+        channels: 'Stereo',
+        audioUrl: '/audio/thunder.mp3',
+        createdAt: '2026-07-12T00:00:00.000Z',
+        deletedAt: '2026-07-15T00:00:00.000Z',
+      },
+    ]
+
+    await openTrackPicker()
+
+    expect(screen.getByText('Forest Rain')).toBeInTheDocument()
+    expect(screen.queryByText('Thunderous Downpour')).not.toBeInTheDocument()
+  })
+
   it('toggles Make Offline-Ready on YouTube tracks', async () => {
     const user = userEvent.setup()
     
