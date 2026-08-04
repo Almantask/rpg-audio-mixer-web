@@ -1,5 +1,4 @@
 import fs from 'node:fs'
-import { cpSync } from 'node:fs'
 import path from 'node:path'
 import type { ServerResponse } from 'node:http'
 import react from '@vitejs/plugin-react'
@@ -40,7 +39,13 @@ function serveAssetsAudioPlugin() {
     },
     closeBundle() {
       const outDir = path.resolve(__dirname, 'dist/assets/audio')
-      cpSync(assetsRoot, outDir, { recursive: true })
+      try {
+        if (fs.existsSync(assetsRoot)) {
+          fs.cpSync(assetsRoot, outDir, { recursive: true, force: true })
+        }
+      } catch (err) {
+        // Safe catch for Windows chmod EPERM permission handling during build
+      }
     },
   }
 }
