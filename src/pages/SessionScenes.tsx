@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Plus, Link, Unlink, Sparkles, AlertTriangle } from 'lucide-react'
+import { Plus, Link, Unlink, Sparkles, AlertTriangle, Edit3 } from 'lucide-react'
 import type { Campaign, Session, Scene, SessionScene } from '../types'
 
 interface SessionScenesProps {
@@ -10,6 +10,7 @@ interface SessionScenesProps {
   onLinkScene: (sceneId: string) => void
   onUnlinkScene: (sceneId: string) => void
   onCreateAndLinkScene: (name: string, description: string) => void
+  onUpdateScene?: (sceneId: string, updates: Partial<Scene>) => void
   onOpenScene: (sceneId: string) => void
   onNavigateToCampaign?: () => void
   onNavigateToSession?: () => void
@@ -23,12 +24,14 @@ export const SessionScenes: React.FC<SessionScenesProps> = ({
   onLinkScene,
   onUnlinkScene,
   onCreateAndLinkScene,
+  onUpdateScene,
   onOpenScene,
   onNavigateToCampaign,
   onNavigateToSession,
 }) => {
   const [isLinkModalOpen, setIsLinkModalOpen] = useState(false)
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
+  const [editingScene, setEditingScene] = useState<Scene | null>(null)
   const [unlinkingSceneId, setUnlinkingSceneId] = useState<string | null>(null)
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
@@ -57,6 +60,16 @@ export const SessionScenes: React.FC<SessionScenesProps> = ({
       return timeB - timeA
     })
   const unlinkedScenes = scenes.filter((sc) => !linkedSceneIds.has(sc.id) && !sc.deletedAt)
+
+  const [linkSearch, setLinkSearch] = useState('')
+
+  const availableScenesToLink = unlinkedScenes.filter((sc) => {
+    if (!linkSearch.trim()) return true
+    const query = linkSearch.toLowerCase()
+    const nameMatch = sc.name.toLowerCase().includes(query)
+    const tagMatch = sc.tags?.some((t) => t.toLowerCase().includes(query))
+    return nameMatch || tagMatch
+  })
 
   const handleCreateSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -166,17 +179,34 @@ export const SessionScenes: React.FC<SessionScenesProps> = ({
                       >
                         {scene.name}
                       </h3>
-                      <button
-                        aria-label={`Unlink ${scene.name}`}
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          setUnlinkingSceneId(scene.id)
-                        }}
-                        className="p-1.5 text-gray-400 hover:text-red-400 rounded hover:bg-white/5"
-                        title="Unlink scene from session"
-                      >
-                        <Unlink className="w-4 h-4" />
-                      </button>
+                      <div className="flex items-center gap-1">
+                        <button
+                          aria-label={`Edit ${scene.name}`}
+                          onClick={(e) => {
+                            e.preventDefault()
+                            e.stopPropagation()
+                            setEditingScene(scene)
+                            setName(scene.name)
+                            setDescription(scene.description || '')
+                          }}
+                          className="p-1.5 text-gray-400 hover:text-amber-400 rounded hover:bg-white/5"
+                          title="Edit scene"
+                        >
+                          <Edit3 className="w-4 h-4" />
+                        </button>
+                        <button
+                          aria-label={`Unlink ${scene.name}`}
+                          onClick={(e) => {
+                            e.preventDefault()
+                            e.stopPropagation()
+                            setUnlinkingSceneId(scene.id)
+                          }}
+                          className="p-1.5 text-gray-400 hover:text-red-400 rounded hover:bg-white/5"
+                          title="Unlink scene from session"
+                        >
+                          <Unlink className="w-4 h-4" />
+                        </button>
+                      </div>
                     </div>
                     {scene.description && (
                       <p className="text-gray-400 text-sm line-clamp-2">{scene.description}</p>
@@ -230,33 +260,54 @@ export const SessionScenes: React.FC<SessionScenesProps> = ({
       {/* Link Scene Modal */}
       {isLinkModalOpen && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-[#161616] border border-amber-500/30 rounded-xl max-w-lg w-full p-6 space-y-4 max-h-[80vh] flex flex-col">
+          <div role="dialog" aria-modal="true" className="bg-[#161616] border border-amber-500/30 rounded-xl max-w-lg w-full p-6 space-y-4 max-h-[80vh] flex flex-col">
             <h2 className="text-xl font-serif font-bold text-amber-400">Import Scene to Session</h2>
             {unlinkedScenes.length === 0 ? (
-              <p className="text-gray-400 text-sm py-4">No available unlinked scenes found.</p>
-            ) : (
-              <div className="overflow-y-auto space-y-2 flex-1 pr-1">
-                {unlinkedScenes.map((sc) => (
-                  <div key={sc.id} className="bg-[#0D0D0D] border border-amber-900/30 rounded-lg p-3 flex items-center justify-between">
-                    <div>
-                      <div className="font-serif font-semibold text-gray-200">{sc.name}</div>
-                      <div className="text-xs text-gray-400">{sc.description || 'No description'}</div>
-                    </div>
-                    <button
-                      onClick={() => {
-                        onLinkScene(sc.id)
-                        setIsLinkModalOpen(false)
-                      }}
-                      className="px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-black text-xs font-semibold rounded"
-                    >
-                      Import
-                    </button>
-                  </div>
-                ))}
+              <div className="space-y-4 py-4 text-center">
+                <p className="text-gray-400 text-sm">All scenes are already in this session</p>
+                <button
+                  onClick={() => {
+                    setIsLinkModalOpen(false)
+                    setIsCreateModalOpen(true)
+                  }}
+                  className="text-amber-400 hover:underline text-sm font-semibold inline-block"
+                >
+                  Create a new scene in Scenes
+                </button>
               </div>
+            ) : (
+              <>
+                <input
+                  type="text"
+                  placeholder="Search scenes by name or tag…"
+                  value={linkSearch}
+                  onChange={(e) => setLinkSearch(e.target.value)}
+                  className="w-full bg-[#0D0D0D] border border-amber-900/40 rounded-lg px-3 py-2 text-gray-100 text-sm focus:outline-none focus:border-amber-400"
+                />
+                <div className="overflow-y-auto space-y-2 flex-1 pr-1">
+                  {availableScenesToLink.map((sc) => (
+                    <div key={sc.id} className="bg-[#0D0D0D] border border-amber-900/30 rounded-lg p-3 flex items-center justify-between">
+                      <div>
+                        <div className="font-serif font-semibold text-gray-200">{sc.name}</div>
+                        <div className="text-xs text-gray-400">{sc.description || 'No description'}</div>
+                      </div>
+                      <button
+                        onClick={() => {
+                          onLinkScene(sc.id)
+                          setIsLinkModalOpen(false)
+                          setLinkSearch('')
+                        }}
+                        className="px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-black text-xs font-semibold rounded"
+                      >
+                        Import
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </>
             )}
             <div className="flex justify-end pt-2">
-              <button onClick={() => setIsLinkModalOpen(false)} className="px-4 py-2 text-gray-400 hover:text-gray-200">
+              <button onClick={() => { setIsLinkModalOpen(false); setLinkSearch(''); }} className="px-4 py-2 text-gray-400 hover:text-gray-200">
                 Cancel
               </button>
             </div>
@@ -267,7 +318,7 @@ export const SessionScenes: React.FC<SessionScenesProps> = ({
       {/* Create Scene Modal */}
       {isCreateModalOpen && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-[#161616] border border-amber-500/30 rounded-xl max-w-md w-full p-6 space-y-4">
+          <div role="dialog" aria-modal="true" className="bg-[#161616] border border-amber-500/30 rounded-xl max-w-md w-full p-6 space-y-4">
             <h2 className="text-xl font-serif font-bold text-amber-400">Create Scene</h2>
             <form onSubmit={handleCreateSubmit} className="space-y-4">
               <div>
@@ -336,6 +387,70 @@ export const SessionScenes: React.FC<SessionScenesProps> = ({
                 Unlink
               </button>
             </div>
+          </div>
+        </div>
+      )}
+      {/* Edit Scene Modal */}
+      {editingScene && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div role="dialog" aria-modal="true" className="bg-[#161616] border border-amber-500/30 rounded-xl max-w-md w-full p-6 space-y-4">
+            <h2 className="text-xl font-serif font-bold text-amber-400">Edit Scene</h2>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault()
+                if (!name.trim()) return
+                if (onUpdateScene) {
+                  onUpdateScene(editingScene.id, { name: name.trim(), description: description.trim() })
+                }
+                setEditingScene(null)
+                setName('')
+                setDescription('')
+              }}
+              className="space-y-4"
+            >
+              <div>
+                <label className="block text-xs uppercase text-amber-400/80 font-semibold mb-1">
+                  Scene Name
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Tavern"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="w-full bg-[#0D0D0D] border border-amber-900/40 rounded-lg px-3 py-2 text-gray-100 focus:outline-none focus:border-amber-400"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs uppercase text-amber-400/80 font-semibold mb-1">
+                  Description
+                </label>
+                <textarea
+                  rows={3}
+                  placeholder="Describe the environment..."
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  className="w-full bg-[#0D0D0D] border border-amber-900/40 rounded-lg px-3 py-2 text-gray-100 text-sm focus:outline-none focus:border-amber-400"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setEditingScene(null)}
+                  className="px-4 py-2 text-gray-400 hover:text-gray-200"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-black font-semibold rounded-lg"
+                >
+                  Save Changes
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

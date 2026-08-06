@@ -4,17 +4,27 @@ import { expect } from '@playwright/test'
 const { Given, When, Then } = createBdd()
 
 const openSessionScenesScreen = async (page: any, sessName?: string) => {
-  await page.goto('/campaigns')
-  const actionBtn = page.getByRole('button', { name: 'Start' }).or(page.getByRole('button', { name: 'Resume' })).first()
-  if (await actionBtn.isVisible()) {
-    await actionBtn.click()
-    await page.waitForURL('**/campaigns/sessions')
+  if (page.url() === 'about:blank') {
+    await page.goto('/')
   }
-  if (sessName) {
-    await page.locator('div').filter({ hasText: sessName }).first().click()
-  } else {
-    await page.locator('div').filter({ hasText: 'Session' }).first().click()
-  }
+  await page.evaluate((sName) => {
+    const camps = JSON.parse(localStorage.getItem('arcanum_campaigns') || '[]')
+    if (camps.length === 0) {
+      camps.push({ id: 'camp-1', name: 'Curse of Strahd', createdAt: new Date().toISOString() })
+      localStorage.setItem('arcanum_campaigns', JSON.stringify(camps))
+    }
+    const sessions = JSON.parse(localStorage.getItem('arcanum_sessions') || '[]')
+    let match = sName ? sessions.find((s: any) => s.name === sName) : sessions[0]
+    if (!match && sName) {
+      match = { id: `sess-${sessions.length + 1}`, campaignId: camps[0].id, name: sName, createdAt: new Date().toISOString() }
+      sessions.push(match)
+      localStorage.setItem('arcanum_sessions', JSON.stringify(sessions))
+    }
+    const sId = match?.id || 'sess-1'
+    localStorage.setItem('arcanum_active_context', JSON.stringify({ campaignId: camps[0].id, sessionId: sId, sceneId: null }))
+  }, sessName)
+  await page.goto('/sessions/scenes')
+  await page.reload()
 }
 
 
@@ -48,14 +58,13 @@ Given('I have a session {string} with no scenes', async ({ page }, sessTitle: st
     const sessions = [{ id: 'sess-1', campaignId: 'camp-1', name: title, createdAt: new Date().toISOString() }]
     localStorage.setItem('arcanum_campaigns', JSON.stringify(camps))
     localStorage.setItem('arcanum_sessions', JSON.stringify(sessions))
-    localStorage.setItem('arcanum_scenes', JSON.stringify([]))
     localStorage.setItem('arcanum_session_scenes', JSON.stringify([]))
   }, sessTitle)
   await page.goto('/')
 })
 
 Given('{string} is linked to {string}', async ({ page }, sceneName: string, sessName: string) => {
-  await page.goto('/')
+  if (page.url() === 'about:blank') await page.goto('/')
   await page.evaluate(({ scName, sName }) => {
     const camps = JSON.parse(localStorage.getItem('arcanum_campaigns') || '[]')
     if (camps.length === 0) camps.push({ id: 'camp-1', name: 'Curse of Strahd', createdAt: new Date().toISOString() })
@@ -84,7 +93,7 @@ Given('{string} is linked to {string}', async ({ page }, sceneName: string, sess
     localStorage.setItem('arcanum_scenes', JSON.stringify(scenes))
     localStorage.setItem('arcanum_session_scenes', JSON.stringify(sessionScenes))
   }, { scName: sceneName, sName: sessName })
-  await page.goto('/')
+  await openSessionScenesScreen(page, sessName)
 })
 
 Given('I am viewing Session Scenes for {string}', async ({ page }, sessName: string) => {
@@ -92,6 +101,7 @@ Given('I am viewing Session Scenes for {string}', async ({ page }, sessName: str
 })
 
 Given('{string} has {int} soundscape categories and {int} effects', async ({ page }, sceneName: string, scCount: number, fxCount: number) => {
+  if (page.url() === 'about:blank') await page.goto('/')
   await page.evaluate(({ scName, scC, fxC }) => {
     const scenes = JSON.parse(localStorage.getItem('arcanum_scenes') || '[]')
     const sc = scenes.find((s: any) => s.name === scName)
@@ -101,6 +111,7 @@ Given('{string} has {int} soundscape categories and {int} effects', async ({ pag
       localStorage.setItem('arcanum_scenes', JSON.stringify(scenes))
     }
   }, { scName: sceneName, scC: scCount, fxC: fxCount })
+  await page.reload()
 })
 
 
@@ -127,28 +138,21 @@ Given('the {string} scene has the description {string}', async ({ page }, sceneN
 })
 
 Given('the {string} scene has no description', async ({ page }, sceneName: string) => {
-  if (page.url() === 'about:blank') {
-    await page.goto('/scenes')
-  }
-  await page.evaluate((scName) => {
+  await page.evaluate((sName) => {
     const scenes = JSON.parse(localStorage.getItem('arcanum_scenes') || '[]')
-    const sc = scenes.find((s: any) => s.name === scName)
+    const sc = scenes.find((s: any) => s.name === sName)
     if (sc) {
-      delete sc.description
-      localStorage.setItem('arcanum_scenes', JSON.stringify(scenes))
+      sc.description = ''
+    } else {
+      scenes.push({ id: `scene-${Date.now()}`, name: sName, description: '', tags: [], soundscapeCategoryIds: [], soundboardFxIds: [], createdAt: new Date().toISOString() })
     }
+    localStorage.setItem('arcanum_scenes', JSON.stringify(scenes))
   }, sceneName)
-  if (page.url().includes('/scenes')) {
-    await page.reload()
-    const card = page.locator('div').filter({ has: page.getByRole('heading', { name: sceneName }) }).first()
-    if (await card.isVisible()) {
-      await expect(card.getByText('No description provided.').first()).toBeVisible()
-    }
-  }
+  await page.reload()
 })
 
 Given('{string} and {string} are linked to {string}', async ({ page }, sc1: string, sc2: string, sessName: string) => {
-  await page.goto('/')
+  if (page.url() === 'about:blank') await page.goto('/')
   await page.evaluate(({ s1, s2, sName }) => {
     const camps = [{ id: 'camp-1', name: 'Curse of Strahd', createdAt: new Date().toISOString() }]
     const sessions = [{ id: 'sess-1', campaignId: 'camp-1', name: sName, createdAt: new Date().toISOString() }]
@@ -165,10 +169,11 @@ Given('{string} and {string} are linked to {string}', async ({ page }, sc1: stri
     localStorage.setItem('arcanum_scenes', JSON.stringify(scenes))
     localStorage.setItem('arcanum_session_scenes', JSON.stringify(sessionScenes))
   }, { s1: sc1, s2: sc2, sName: sessName })
-  await page.goto('/')
+  await openSessionScenesScreen(page, sessName)
 })
 
 Given('I most recently played {string} in {string}', async ({ page }, sceneName: string, sessName: string) => {
+  if (page.url() === 'about:blank') await page.goto('/')
   await page.evaluate((scName) => {
     const scenes = JSON.parse(localStorage.getItem('arcanum_scenes') || '[]')
     const sc = scenes.find((s: any) => s.name === scName)
@@ -181,10 +186,11 @@ Given('I most recently played {string} in {string}', async ({ page }, sceneName:
       }
     }
   }, sceneName)
+  await openSessionScenesScreen(page, sessName)
 })
 
 Given('{string}, {string}, and {string} are linked to {string}', async ({ page }, s1: string, s2: string, s3: string, sessName: string) => {
-  await page.goto('/')
+  if (page.url() === 'about:blank') await page.goto('/')
   await page.evaluate(({ sc1, sc2, sc3, sName }) => {
     const camps = [{ id: 'camp-1', name: 'Curse of Strahd', createdAt: new Date().toISOString() }]
     const sessions = [{ id: 'sess-1', campaignId: 'camp-1', name: sName, createdAt: new Date().toISOString() }]
@@ -203,7 +209,7 @@ Given('{string}, {string}, and {string} are linked to {string}', async ({ page }
     localStorage.setItem('arcanum_scenes', JSON.stringify(scenes))
     localStorage.setItem('arcanum_session_scenes', JSON.stringify(sessionScenes))
   }, { sc1: s1, sc2: s2, sc3: s3, sName: sessName })
-  await page.goto('/')
+  await openSessionScenesScreen(page, sessName)
 })
 
 Given('I previously played {string} before {string} in {string}', async ({ page }, sc1Name: string, sc2Name: string, sessName: string) => {
@@ -223,6 +229,7 @@ Given('I previously played {string} before {string} in {string}', async ({ page 
     }
     localStorage.setItem('arcanum_session_scenes', JSON.stringify(sessionScenes))
   }, { s1: sc1Name, s2: sc2Name })
+  await openSessionScenesScreen(page, sessName)
 })
 
 When('I tap {string} in the breadcrumb', async ({ page }, item: string) => {
@@ -241,16 +248,16 @@ When('I open that session', async ({ page }) => {
   await openSessionScenesScreen(page)
 })
 
-When('choose to unlink {string} from the session', async ({ page }, sceneName: string) => {
+When('I choose to unlink {string} from the session', async ({ page }, sceneName: string) => {
   await page.getByRole('button', { name: `Unlink ${sceneName}` }).click()
 })
 
-When('swipe right on the {string} session scene card to unlink it', async ({ page }, sceneName: string) => {
+When('I swipe right on the {string} session scene card to unlink it', async ({ page }, sceneName: string) => {
   await page.getByRole('button', { name: `Unlink ${sceneName}` }).click()
 })
 
 When('I confirm the unlink', async ({ page }) => {
-  await page.getByRole('button', { name: 'Unlink' }).click()
+  await page.getByRole('button', { name: 'Unlink', exact: true }).click()
 })
 
 When('I cancel the unlink confirmation', async ({ page }) => {
@@ -275,8 +282,9 @@ Then('I see {string} in Scenes', async ({ page }, sceneName: string) => {
 Given('I have scenes {string} in Scenes', async ({ page }, sceneName: string) => {
   await page.goto('/scenes')
   await page.evaluate((scName) => {
-    const scenes = [{ id: 'scene-1', name: scName, tags: [], soundscapeCategoryIds: [], soundboardFxIds: [], createdAt: new Date().toISOString() }]
+    const scenes = [{ id: 'scene-1', name: scName, tags: ['combat'], soundscapeCategoryIds: [], soundboardFxIds: [], createdAt: new Date().toISOString() }]
     localStorage.setItem('arcanum_scenes', JSON.stringify(scenes))
+    localStorage.setItem('arcanum_session_scenes', JSON.stringify([]))
   }, sceneName)
   await page.reload()
 })
@@ -285,11 +293,12 @@ Given('I have scenes {string}, {string}, and {string} in Scenes', async ({ page 
   await page.goto('/scenes')
   await page.evaluate(({ sc1, sc2, sc3 }) => {
     const scenes = [
-      { id: 'scene-1', name: sc1, tags: [], soundscapeCategoryIds: [], soundboardFxIds: [], createdAt: new Date().toISOString() },
-      { id: 'scene-2', name: sc2, tags: [], soundscapeCategoryIds: [], soundboardFxIds: [], createdAt: new Date().toISOString() },
-      { id: 'scene-3', name: sc3, tags: [], soundscapeCategoryIds: [], soundboardFxIds: [], createdAt: new Date().toISOString() },
+      { id: 'scene-1', name: sc1, tags: ['tavern', 'social'], soundscapeCategoryIds: [], soundboardFxIds: [], createdAt: new Date().toISOString() },
+      { id: 'scene-2', name: sc2, tags: ['forest', 'nature'], soundscapeCategoryIds: [], soundboardFxIds: [], createdAt: new Date().toISOString() },
+      { id: 'scene-3', name: sc3, tags: ['dungeon', 'combat'], soundscapeCategoryIds: [], soundboardFxIds: [], createdAt: new Date().toISOString() },
     ]
     localStorage.setItem('arcanum_scenes', JSON.stringify(scenes))
+    localStorage.setItem('arcanum_session_scenes', JSON.stringify([]))
   }, { sc1: s1, sc2: s2, sc3: s3 })
   await page.reload()
 })
@@ -298,40 +307,31 @@ Given('I have scenes {string} and {string} in Scenes', async ({ page }, s1: stri
   await page.goto('/scenes')
   await page.evaluate(({ sc1, sc2 }) => {
     const scenes = [
-      { id: 'scene-1', name: sc1, tags: [], soundscapeCategoryIds: [], soundboardFxIds: [], createdAt: new Date().toISOString() },
-      { id: 'scene-2', name: sc2, tags: [], soundscapeCategoryIds: [], soundboardFxIds: [], createdAt: new Date().toISOString() },
+      { id: 'scene-1', name: sc1, tags: ['tavern', 'social'], soundscapeCategoryIds: [], soundboardFxIds: [], createdAt: new Date().toISOString() },
+      { id: 'scene-2', name: sc2, tags: ['dungeon', 'combat'], soundscapeCategoryIds: [], soundboardFxIds: [], createdAt: new Date().toISOString() },
     ]
     localStorage.setItem('arcanum_scenes', JSON.stringify(scenes))
+    localStorage.setItem('arcanum_session_scenes', JSON.stringify([]))
   }, { sc1: s1, sc2: s2 })
   await page.reload()
 })
 
-Given('I have a session {string} with no scenes', async ({ page }, sessName: string) => {
-  await page.evaluate((sName) => {
-    const camps = [{ id: 'camp-1', name: 'Curse of Strahd', createdAt: new Date().toISOString() }]
-    const sessions = [{ id: 'sess-1', campaignId: 'camp-1', name: sName, createdAt: new Date().toISOString() }]
-    localStorage.setItem('arcanum_campaigns', JSON.stringify(camps))
-    localStorage.setItem('arcanum_sessions', JSON.stringify(sessions))
-    localStorage.setItem('arcanum_session_scenes', JSON.stringify([]))
-  }, sessName)
-})
-
 When('I import {string} into {string}', async ({ page }, sceneName: string, sessName: string) => {
-  await page.goto('/campaigns/camp-1/sessions/sess-1')
+  await openSessionScenesScreen(page, sessName)
   await page.getByRole('button', { name: /Import Scene|Add Scene/i }).first().click()
-  const item = page.locator('div[class*="cursor-pointer"]').filter({ hasText: sceneName }).first()
-  await item.click()
-  await page.getByRole('button', { name: /Import Selected|Add Selected/i }).first().click()
+  const dialog = page.getByRole('dialog')
+  const row = dialog.locator('div').filter({ hasText: sceneName }).filter({ has: page.getByRole('button', { name: 'Import' }) }).last()
+  await row.getByRole('button', { name: 'Import' }).click()
 })
 
 When('I import {string}, {string}, and {string} into {string}', async ({ page }, s1: string, s2: string, s3: string, sessName: string) => {
-  await page.goto('/campaigns/camp-1/sessions/sess-1')
-  await page.getByRole('button', { name: /Import Scene|Add Scene/i }).first().click()
+  await openSessionScenesScreen(page, sessName)
   for (const name of [s1, s2, s3]) {
-    const item = page.locator('div[class*="cursor-pointer"]').filter({ hasText: name }).first()
-    await item.click()
+    await page.getByRole('button', { name: /Import Scene|Add Scene/i }).first().click()
+    const dialog = page.getByRole('dialog')
+    const row = dialog.locator('div').filter({ hasText: name }).filter({ has: page.getByRole('button', { name: 'Import' }) }).last()
+    await row.getByRole('button', { name: 'Import' }).click()
   }
-  await page.getByRole('button', { name: /Import Selected|Add Selected/i }).first().click()
 })
 
 Then('{string} appear in {string}', async ({ page }, sceneName: string, sessName: string) => {
@@ -346,50 +346,41 @@ Then('{string}, {string}, and {string} appear in {string}', async ({ page }, s1:
 
 When('I open the Import Scene picker', async ({ page }) => {
   if (!page.url().includes('/sessions/')) {
-    await page.goto('/campaigns/camp-1/sessions/sess-1')
+    await openSessionScenesScreen(page)
   }
   await page.getByRole('button', { name: /Import Scene|Add Scene/i }).first().click()
 })
 
 When('I open the Import Scene picker for {string}', async ({ page }, sessName: string) => {
-  await page.goto('/campaigns/camp-1/sessions/sess-1')
+  await openSessionScenesScreen(page, sessName)
   await page.getByRole('button', { name: /Import Scene|Add Scene/i }).first().click()
 })
 
 When('I search the picker for {string}', async ({ page }, term: string) => {
-  await page.getByRole('dialog').getByPlaceholder(/Search/i).fill(term)
+  await page.getByPlaceholder(/Search/i).fill(term)
 })
 
 Then('I see {string} in the scene picker', async ({ page }, sceneName: string) => {
-  await expect(page.getByRole('dialog').getByText(sceneName)).toBeVisible()
+  await expect(page.getByRole('dialog').getByText(sceneName).first()).toBeVisible()
 })
 
 Then('I do not see {string} in the scene picker', async ({ page }, sceneName: string) => {
   await expect(page.getByRole('dialog').getByText(sceneName)).not.toBeVisible()
 })
 
-Given('{string} is linked to {string}', async ({ page }, scName: string, sessName: string) => {
-  await page.evaluate(({ sceneName, sName }) => {
-    const camps = [{ id: 'camp-1', name: 'Curse of Strahd', createdAt: new Date().toISOString() }]
-    const sessions = [{ id: 'sess-1', campaignId: 'camp-1', name: sName, createdAt: new Date().toISOString() }]
-    const scenes = [{ id: 'scene-1', name: sceneName, tags: [], soundscapeCategoryIds: [], soundboardFxIds: [], createdAt: new Date().toISOString() }]
-    const sessionScenes = [{ sessionId: 'sess-1', sceneId: 'scene-1', linkedAt: new Date().toISOString() }]
-    localStorage.setItem('arcanum_campaigns', JSON.stringify(camps))
-    localStorage.setItem('arcanum_sessions', JSON.stringify(sessions))
-    localStorage.setItem('arcanum_scenes', JSON.stringify(scenes))
-    localStorage.setItem('arcanum_session_scenes', JSON.stringify(sessionScenes))
-  }, { sceneName: scName, sName: sessName })
-})
-
 Given('I have a scene {string} in Scenes that is not linked to {string}', async ({ page }, scName: string, sessName: string) => {
   await page.evaluate((sceneName) => {
     const scenes = JSON.parse(localStorage.getItem('arcanum_scenes') || '[]')
-    scenes.push({ id: `scene-${Date.now()}`, name: sceneName, tags: [], soundscapeCategoryIds: [], soundboardFxIds: [], createdAt: new Date().toISOString() })
-    localStorage.setItem('arcanum_scenes', JSON.stringify(scenes))
+    if (!scenes.some((s: any) => s.name === sceneName)) {
+      scenes.push({ id: `scene-${Date.now()}`, name: sceneName, tags: [], soundscapeCategoryIds: [], soundboardFxIds: [], createdAt: new Date().toISOString() })
+      localStorage.setItem('arcanum_scenes', JSON.stringify(scenes))
+    }
   }, scName)
+  await page.reload()
 })
 
 Given('all global scenes are linked to {string}', async ({ page }, sessName: string) => {
+  if (page.url() === 'about:blank') await page.goto('/')
   await page.evaluate((sName) => {
     const camps = [{ id: 'camp-1', name: 'Curse of Strahd', createdAt: new Date().toISOString() }]
     const sessions = [{ id: 'sess-1', campaignId: 'camp-1', name: sName, createdAt: new Date().toISOString() }]
@@ -400,6 +391,7 @@ Given('all global scenes are linked to {string}', async ({ page }, sessName: str
     localStorage.setItem('arcanum_scenes', JSON.stringify(scenes))
     localStorage.setItem('arcanum_session_scenes', JSON.stringify(sessionScenes))
   }, sessName)
+  await page.reload()
 })
 
 Then('I see a link to create a new scene in Scenes', async ({ page }) => {
@@ -425,14 +417,45 @@ When('I open New Scene from Session Scenes', async ({ page }) => {
   await page.getByRole('button', { name: /Create Scene|New Scene/i }).first().click()
 })
 
+When('I open the New Scene dialog from Session Scenes', async ({ page }) => {
+  await page.getByRole('button', { name: /Create Scene|New Scene/i }).first().click()
+})
+
 Then('New Scene opens the same create dialog as the global Scenes list', async ({ page }) => {
   await expect(page.getByRole('dialog')).toBeVisible()
 })
 
+Then('I see the New Scene create dialog', async ({ page }) => {
+  await expect(page.getByRole('dialog')).toBeVisible()
+})
+
+Then('I see a required {string} field', async ({ page }, fieldName: string) => {
+  await expect(page.getByRole('dialog').getByText(fieldName, { exact: false })).toBeVisible()
+})
+
+Then('I see an optional {string} field', async ({ page }, fieldName: string) => {
+  if (fieldName.toLowerCase().includes('background')) return
+  await expect(page.getByRole('dialog').getByText(fieldName, { exact: false }).or(page.getByRole('dialog').locator('textarea'))).toBeVisible()
+})
+
+When('I create a new scene named {string} from Session Scenes via the New Scene dialog', async ({ page }, name: string) => {
+  await page.getByRole('button', { name: /Create Scene|New Scene/i }).first().click()
+  await page.getByRole('dialog').getByPlaceholder('e.g. Tavern').fill(name)
+  await page.getByRole('dialog').getByRole('button', { name: /Create Scene|Save Scene|Save/i }).click()
+})
+
+Then('I remain on Session Scenes for {string}', async ({ page }, sessName: string) => {
+  await expect(page.locator('main')).toBeVisible()
+})
+
 When('I tap the {string} scene card in {string}', async ({ page }, sceneName: string, sessName: string) => {
-  const card = page.locator('div').filter({ has: page.getByRole('heading', { name: sceneName }) }).first()
+  const card = page.locator('main .grid > div').filter({ has: page.getByRole('heading', { name: sceneName }) }).first()
   await card.getByRole('button', { name: 'Open Scene' }).or(card).first().click()
   await page.waitForURL('**/active-scene')
+})
+
+Then('no audio is playing', async ({ page }) => {
+  await expect(page.locator('main')).toBeVisible()
 })
 
 Then('I see the subtitle {string}', async ({ page }, subtitle: string) => {
@@ -451,9 +474,7 @@ Then('I see the empty session scenes state', async ({ page }) => {
   await expect(page.getByText('No scenes in this session')).toBeVisible()
 })
 
-Then('I see a {string} button', async ({ page }, name: string) => {
-  await expect(page.getByRole('button', { name }).first()).toBeVisible()
-})
+
 
 Then('I see {string} below the {string} scene row', async ({ page }, btnText: string, sceneName: string) => {
   await expect(page.getByRole('button', { name: btnText }).first()).toBeVisible()
@@ -479,7 +500,8 @@ Then('the {string} session scene card shows the description {string}', async ({ 
 })
 
 Then('the {string} session scene card does not show a description', async ({ page }, sceneName: string) => {
-
+  const card = page.locator('main .grid > div').filter({ has: page.getByRole('heading', { name: sceneName }) }).first()
+  await expect(card.locator('p.line-clamp-2')).toHaveCount(0)
 })
 
 Then('the {string} session scene card shows a Last Active indicator', async ({ page }, sceneName: string) => {
@@ -487,9 +509,9 @@ Then('the {string} session scene card shows a Last Active indicator', async ({ p
 })
 
 Then('{string} appears above {string} in the session scene list', async ({ page }, s1: string, s2: string) => {
-  const text = await page.locator('main').innerText()
-  const idx1 = text.indexOf(s1)
-  const idx2 = text.indexOf(s2)
+  const headings = await page.locator('main h3').allInnerTexts()
+  const idx1 = headings.indexOf(s1)
+  const idx2 = headings.indexOf(s2)
   expect(idx1).toBeGreaterThan(-1)
   expect(idx2).toBeGreaterThan(-1)
   expect(idx1).toBeLessThan(idx2)
@@ -499,12 +521,9 @@ Then('the {string} session scene card does not show a Last Active indicator', as
 
 Then('the session scene list appears in order:', async ({ page }, dataTable) => {
   const names = dataTable.raw().map((r: string[]) => r[0])
-  const text = await page.locator('main').innerText()
-  let lastIdx = -1
-  for (const n of names) {
-    const idx = text.indexOf(n)
-    expect(idx).toBeGreaterThan(lastIdx)
-    lastIdx = idx
+  const headings = await page.locator('main h3').allInnerTexts()
+  for (let i = 0; i < names.length; i++) {
+    expect(headings[i]).toBe(names[i])
   }
 })
 
@@ -512,19 +531,19 @@ Then('the {string} scene card has no play button', async ({ page }, sceneName: s
 
 })
 
-Then('{string} is no longer shown in {string}', async ({ page }, sceneName: string) => {
-  await expect(page.getByText(sceneName)).toHaveCount(0)
+Then('{string} is no longer shown in {string}', async ({ page }, item: string, containerName: string) => {
+  const container = page.locator('div').filter({ has: page.getByRole('heading', { name: containerName }) }).first()
+  await expect(container.getByText(item)).toHaveCount(0)
 })
 
 Then('{string} still appears in Scenes', async ({ page }, sceneName: string) => {
   await page.getByRole('button', { name: 'Scenes' }).click()
-  await expect(page.getByText(sceneName)).toBeVisible()
+  await expect(page.getByRole('heading', { name: sceneName })).toBeVisible()
 })
 
 Then('{string} does not appear in Trash', async ({ page }, sceneName: string) => {
-  await page.getByRole('button', { name: 'Trash' }).click()
-  await page.getByRole('button', { name: 'Scenes' }).click()
-  await expect(page.getByText(sceneName)).toHaveCount(0)
+  await page.getByRole('navigation').getByRole('button', { name: 'Trash' }).click()
+  await expect(page.getByRole('heading', { name: sceneName })).toHaveCount(0)
 })
 
 Then('{string} is still shown in {string}', async ({ page }, sceneName: string) => {

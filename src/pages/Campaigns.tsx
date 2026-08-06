@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Plus, Edit2, Trash2, BookOpen } from 'lucide-react'
 import type { Campaign, Session } from '../types'
 
@@ -29,6 +29,17 @@ export const Campaigns: React.FC<CampaignsProps> = ({
   const [name, setName] = useState(initialCamp?.name || '')
   const [description, setDescription] = useState(initialCamp?.description || '')
   const [validationError, setValidationError] = useState(false)
+
+  useEffect(() => {
+    if (initialEditingCampaignId) {
+      const target = campaigns.filter((c) => !c.deletedAt).find((c) => c.id === initialEditingCampaignId || c.name.toLowerCase() === initialEditingCampaignId.toLowerCase())
+      if (target) {
+        setEditingCampaign(target)
+        setName(target.name)
+        setDescription(target.description || '')
+      }
+    }
+  }, [initialEditingCampaignId, campaigns])
 
   const handleCreateSubmit = (e: React.FormEvent) => {
     e.preventDefault()

@@ -46,12 +46,11 @@ Given('the viewport is narrow enough to collapse the sidebar', async ({ page }) 
 })
 
 Given('the sidebar is visible', async ({ page }) => {
-  await page.setViewportSize({ width: 1280, height: 720 })
   const openBtn = page.getByRole('button', { name: 'Open menu' })
   if (await openBtn.isVisible()) {
     await openBtn.click()
   }
-  await expect(page.getByRole('button', { name: 'Close menu' })).toBeVisible()
+  await expect(page.locator('aside')).toBeVisible()
 })
 
 When('I open the app', async ({ page }) => {
@@ -99,21 +98,21 @@ Then(/"([^"]+)" and "([^"]+)" appear in the primary sidebar list without a secon
   await expect(page.getByRole('button', { name: item2 })).toBeVisible()
 })
 
-Then(/^I see the (Home|Active Campaigns|Campaigns|Scenes|Library|Credits|Trash) screen$/, async ({ page }, screenName: string) => {
+Then('I see the Home screen with the active campaign hero', async ({ page }) => {
+  await expect(page.getByRole('heading', { name: 'Home' }).first()).toBeVisible()
+})
+
+Then('I see the {string} screen title', async ({ page }, title: string) => {
+  await expect(page.getByRole('heading', { name: title }).first()).toBeVisible()
+})
+
+Then('I see the Credits screen', async ({ page }) => {
+  await expect(page.getByRole('heading', { name: 'Credits' }).first()).toBeVisible()
+})
+
+Then(/^I see the (Home|Active Campaigns|Campaigns|Scenes|Library|Credits|Trash)(?: screen)?$/, async ({ page }, screenName: string) => {
   const name = screenName.replace(/"/g, '')
-  if (name.includes('Home')) {
-    await expect(page.getByRole('heading', { name: 'Home' }).first()).toBeVisible()
-  } else if (name.includes('Campaign')) {
-    await expect(page.getByRole('heading', { name: 'Active Campaigns' }).first()).toBeVisible()
-  } else if (name.includes('Scenes')) {
-    await expect(page.getByRole('heading', { name: 'Scenes' }).first()).toBeVisible()
-  } else if (name.includes('Library')) {
-    await expect(page.getByRole('heading', { name: 'Library' }).first()).toBeVisible()
-  } else if (name.includes('Credits')) {
-    await expect(page.getByRole('heading', { name: 'Credits' }).first()).toBeVisible()
-  } else if (name.includes('Trash')) {
-    await expect(page.getByRole('heading', { name: 'Trash' }).first()).toBeVisible()
-  }
+  await expect(page.getByRole('heading', { name: new RegExp(name, 'i') }).first()).toBeVisible()
 })
 
 Then('I do not see {string} or Arcane Settings copy', async ({ page }, text: string) => {

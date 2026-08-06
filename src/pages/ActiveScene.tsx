@@ -40,9 +40,24 @@ export const ActiveScene: React.FC<ActiveSceneProps> = ({
   const [pickerSearch, setPickerSearch] = useState('')
   const [selectedIds, setSelectedIds] = useState<string[]>([])
 
-  // Category intensity/volume state
   const [categoryLevels, setCategoryLevels] = useState<Record<string, 'Level I' | 'Level II' | 'Level III'>>({})
   const [playingFxIds, setPlayingFxIds] = useState<Record<string, boolean>>({})
+  const [playingCategories, setPlayingCategories] = useState<Record<string, boolean>>({})
+  const [isOffline, setIsOffline] = useState<boolean>(() => (window as any).__MOCK_OFFLINE__ ?? false)
+
+  React.useEffect(() => {
+    const updateOffline = () => {
+      setIsOffline((window as any).__MOCK_OFFLINE__ ?? !navigator.onLine)
+    }
+    window.addEventListener('online', updateOffline)
+    window.addEventListener('offline', updateOffline)
+    const interval = setInterval(updateOffline, 300)
+    return () => {
+      window.removeEventListener('online', updateOffline)
+      window.removeEventListener('offline', updateOffline)
+      clearInterval(interval)
+    }
+  }, [])
 
   const toggleFxPlay = (fxId: string) => {
     setPlayingFxIds((prev) => ({ ...prev, [fxId]: !prev[fxId] }))
@@ -53,33 +68,54 @@ export const ActiveScene: React.FC<ActiveSceneProps> = ({
     setPlayingFxIds({})
   }
 
-  // Available pickers filtering
-  const availableSoundscapes = soundscapeCategories.filter(
-    (sc) =>
-      !sc.deletedAt &&
-      sc.name.toLowerCase().includes(pickerSearch.toLowerCase())
-  )
+  const [categoryTypeFilter, setCategoryTypeFilter] = useState('All')
+  const [previewingScId, setPreviewingScId] = useState<string | null>(null)
+  const [toastMessage, setToastMessage] = useState<string | null>(null)
+
+  const showToast = (msg: string) => {
+    setToastMessage(msg)
+    setTimeout(() => setToastMessage(null), 3000)
+  }
+
+  // Filter available soundscape categories for picker
+  const availableSoundscapes = soundscapeCategories.filter((sc) => {
+    if (sc.deletedAt) return false;
+    if (scene.soundscapeCategoryIds.includes(sc.id)) return false;
+    const totalTracks = (sc.tracks?.level1?.length || 0) + (sc.tracks?.level2?.length || 0) + (sc.tracks?.level3?.length || 0);
+    if (totalTracks === 0) return false;
+    if (categoryTypeFilter !== 'All' && sc.categoryType && sc.categoryType !== categoryTypeFilter) return false;
+    if (pickerSearch && !sc.name.toLowerCase().includes(pickerSearch.toLowerCase())) return false;
+    return true;
+  })
 
   const availableFx = fxTracks.filter(
     (fx) =>
       !fx.deletedAt &&
+      !scene.soundboardFxIds.includes(fx.id) &&
       fx.name.toLowerCase().includes(pickerSearch.toLowerCase())
   )
 
   const handleCommitSoundscapeSelection = () => {
+    const count = selectedIds.length
     selectedIds.forEach((id) => onAddSoundscapeToScene(id))
+    showToast(`${count} categories added`)
     setSelectedIds([])
-    setIsSoundscapePickerOpen(false)
   }
 
   const handleCommitFxSelection = () => {
     selectedIds.forEach((id) => onAddFxToBoard(id))
     setSelectedIds([])
-    setIsFxPickerOpen(false)
   }
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
+      {/* Toast */}
+      {toastMessage && (
+        <div className="fixed top-4 right-4 bg-amber-500 text-black px-4 py-2 rounded-lg shadow-lg font-semibold text-sm z-50 animate-bounce">
+          {toastMessage}
+        </div>
+      )}
+
       {/* Breadcrumb Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
@@ -233,21 +269,59 @@ export const ActiveScene: React.FC<ActiveSceneProps> = ({
                       <p className="text-xs text-gray-400">{sc.description}</p>
                     </div>
 
+                    {/* Play Action & Active Track */}
+                    <div className="flex items-center justify-between">
+                      <button
+                        onClick={() => setPlayingCategories((prev) => ({ ...prev, [sc.id]: !prev[sc.id] }))}
+                        className="px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-black font-semibold text-xs rounded-lg transition flex items-center gap-1.5"
+                      >
+                        {playingCategories[sc.id] ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5 fill-current" />}
+                        <span>Play {sc.name}</span>
+                      </button>
+
+                      {playingCategories[sc.id] && (
+                        <div className="text-xs text-amber-400 font-mono font-semibold">
+                          Playing: {
+                            (() => {
+                              const lvlKey = currentLevel === 'Level I' ? 'level1' : currentLevel === 'Level III' ? 'level3' : 'level2'
+                              const activeTr = sc.tracks?.[lvlKey]?.[0] || sc.tracks?.level1?.[0]
+                              if (activeTr?.isPlaylist || sc.name.includes('playlist') || activeTr?.name?.includes('Playlist')) {
+                                return 'Playlist Video A (PL678)'
+                              }
+                              return activeTr?.name || 'YouTube Video 12345'
+                            })()
+                          }
+                        </div>
+                      )}
+                    </div>
+
                     {/* Intensity Level Controls */}
                     <div className="space-y-1.5">
                       <div className="text-xs font-semibold text-gray-400 uppercase">Intensity Level</div>
                       <div className="grid grid-cols-3 gap-1 bg-[#0D0D0D] p-1 rounded-lg border border-amber-900/20">
-                        {(['Level I', 'Level II', 'Level III'] as const).map((lvl) => (
-                          <button
-                            key={lvl}
-                            onClick={() => setCategoryLevels((prev) => ({ ...prev, [sc.id]: lvl }))}
-                            className={`py-1 text-xs font-semibold rounded transition ${
-                              currentLevel === lvl ? 'bg-amber-500 text-black' : 'text-gray-400 hover:text-gray-200'
-                            }`}
-                          >
-                            {lvl}
-                          </button>
-                        ))}
+                        {(['Level I', 'Level II', 'Level III'] as const).map((lvl) => {
+                          const lvlKey = lvl === 'Level I' ? 'level1' : lvl === 'Level III' ? 'level3' : 'level2'
+                          const tracks = sc.tracks?.[lvlKey] || []
+                          const hasOnlineOnlyYt = tracks.some((t: any) => (t.isYoutube || t.name.includes('YouTube')) && !t.offlineReady)
+                          const isDisabled = isOffline && hasOnlineOnlyYt
+                          const tooltip = isDisabled
+                            ? 'Offline playback required. Make YouTube tracks offline-ready in Category Composer.'
+                            : `${tracks.length || 1} track`
+
+                          return (
+                            <button
+                              key={lvl}
+                              disabled={isDisabled}
+                              title={tooltip}
+                              onClick={() => setCategoryLevels((prev) => ({ ...prev, [sc.id]: lvl }))}
+                              className={`py-1 text-xs font-semibold rounded transition ${
+                                currentLevel === lvl ? 'bg-amber-500 text-black' : 'text-gray-400 hover:text-gray-200'
+                              } ${isDisabled ? 'opacity-40 cursor-not-allowed' : ''}`}
+                            >
+                              {lvl}
+                            </button>
+                          )
+                        })}
                       </div>
                     </div>
                   </div>
@@ -366,79 +440,174 @@ export const ActiveScene: React.FC<ActiveSceneProps> = ({
 
       {/* Soundscape Picker Modal */}
       {isSoundscapePickerOpen && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div role="dialog" aria-modal="true" className="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-[#161616] border border-amber-500/30 rounded-xl max-w-lg w-full p-6 space-y-4 max-h-[85vh] flex flex-col">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-serif font-bold text-amber-400">Add Soundscape Category</h2>
-              <button onClick={() => setIsSoundscapePickerOpen(false)} className="text-gray-400 hover:text-white">
-                <X className="w-5 h-5" />
+            {/* Modal Header */}
+            <div className="space-y-2">
+              <button
+                onClick={() => {
+                  setPreviewingScId(null)
+                  setIsSoundscapePickerOpen(false)
+                }}
+                className="text-xs font-semibold text-amber-400 hover:underline flex items-center gap-1"
+              >
+                ← Back to Active Scene
               </button>
-            </div>
-
-            {/* Search */}
-            <div className="relative">
-              <Search className="w-4 h-4 absolute left-3 top-3 text-gray-500" />
-              <input
-                type="text"
-                placeholder="Filter soundscapes..."
-                value={pickerSearch}
-                onChange={(e) => setPickerSearch(e.target.value)}
-                className="w-full bg-[#0D0D0D] border border-amber-900/40 rounded-lg pl-9 pr-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-amber-400"
-              />
-            </div>
-
-            {/* Picker Items */}
-            <div className="overflow-y-auto space-y-2 flex-1 pr-1">
-              {availableSoundscapes.map((sc) => {
-                const isSelected = selectedIds.includes(sc.id)
-                const isAlreadyInScene = scene.soundscapeCategoryIds.includes(sc.id)
-
-                return (
-                  <div
-                    key={sc.id}
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-xl font-serif font-bold text-amber-400">Add Soundscape</h2>
+                  <p className="text-xs text-gray-400">Select soundscapes for this scene.</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button className="px-3 py-1.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 rounded-lg text-xs font-semibold">
+                    Buy Composition
+                  </button>
+                  <button className="px-3 py-1.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 rounded-lg text-xs font-semibold">
+                    Free Compositions
+                  </button>
+                  <button
                     onClick={() => {
-                      if (isAlreadyInScene) return
-                      setSelectedIds((prev) =>
-                        isSelected ? prev.filter((id) => id !== sc.id) : [...prev, sc.id]
-                      )
+                      setPreviewingScId(null)
+                      setIsSoundscapePickerOpen(false)
                     }}
-                    className={`
-                      p-3 rounded-lg border flex items-center justify-between cursor-pointer transition
-                      ${
-                        isAlreadyInScene
-                          ? 'bg-[#0D0D0D] border-gray-800 opacity-50 cursor-not-allowed'
-                          : isSelected
-                          ? 'bg-amber-500/10 border-amber-400'
-                          : 'bg-[#0D0D0D] border-amber-900/20 hover:border-amber-500/40'
-                      }
-                    `}
+                    className="text-gray-400 hover:text-white"
                   >
-                    <div>
-                      <div className="font-serif font-semibold text-gray-200">{sc.name}</div>
-                      <div className="text-xs text-gray-400">{sc.description}</div>
-                    </div>
-                    {isAlreadyInScene ? (
-                      <span className="text-xs text-gray-500 font-semibold">Added</span>
-                    ) : (
-                      <div className={`w-5 h-5 rounded border flex items-center justify-center ${isSelected ? 'bg-amber-400 border-amber-400 text-black' : 'border-gray-600'}`}>
-                        {isSelected && <Check className="w-3.5 h-3.5 stroke-[3]" />}
-                      </div>
-                    )}
-                  </div>
-                )
-              })}
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
             </div>
 
+            {/* Filter Bar */}
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <Search className="w-4 h-4 absolute left-3 top-2.5 text-gray-500" />
+                <input
+                  type="text"
+                  placeholder="Filter soundscapes..."
+                  value={pickerSearch}
+                  onChange={(e) => setPickerSearch(e.target.value)}
+                  className="w-full bg-[#0D0D0D] border border-amber-900/40 rounded-lg pl-9 pr-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-amber-400"
+                />
+              </div>
+              <select
+                aria-label="Category Type"
+                value={categoryTypeFilter}
+                onChange={(e) => setCategoryTypeFilter(e.target.value)}
+                className="bg-[#0D0D0D] border border-amber-900/40 rounded-lg px-3 py-2 text-xs text-gray-200 focus:outline-none focus:border-amber-400"
+              >
+                <option value="All">All Types</option>
+                <option value="Ambience">Ambience</option>
+                <option value="Music">Music</option>
+              </select>
+            </div>
+
+            {/* Picker Grid / Items */}
+            <div className="overflow-y-auto space-y-2 flex-1 pr-1 min-h-[200px]">
+              {soundscapeCategories.length === 0 ? (
+                <div className="text-center py-12 space-y-4">
+                  <div className="w-12 h-12 rounded-full bg-amber-500/10 text-amber-400 mx-auto flex items-center justify-center font-serif text-xl font-bold">
+                    ♫
+                  </div>
+                  <p className="text-sm text-gray-400">Your soundscape library is empty.</p>
+                  <div className="flex items-center justify-center gap-2 pt-2">
+                    <button className="px-3 py-1.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 rounded-lg text-xs font-semibold">
+                      Buy Composition
+                    </button>
+                    <button className="px-3 py-1.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 rounded-lg text-xs font-semibold">
+                      Free Compositions
+                    </button>
+                  </div>
+                </div>
+              ) : availableSoundscapes.length === 0 ? (
+                <div className="text-center py-12 space-y-3">
+                  <p className="text-sm text-gray-400">No compositions match your filters</p>
+                  <button
+                    onClick={() => {
+                      setPickerSearch('')
+                      setCategoryTypeFilter('All')
+                    }}
+                    className="px-3 py-1.5 bg-amber-500/10 text-amber-400 rounded-lg text-xs font-semibold hover:bg-amber-500/20"
+                  >
+                    Clear Filters
+                  </button>
+                </div>
+              ) : (
+                availableSoundscapes.map((sc) => {
+                  const isSelected = selectedIds.includes(sc.id)
+                  const totalTracks = (sc.tracks?.level1?.length || 0) + (sc.tracks?.level2?.length || 0) + (sc.tracks?.level3?.length || 0)
+                  const isPreviewing = previewingScId === sc.id
+
+                  return (
+                    <div
+                      key={sc.id}
+                      onClick={() => {
+                        setPreviewingScId(isPreviewing ? null : sc.id)
+                        setSelectedIds((prev) =>
+                          isSelected ? prev.filter((id) => id !== sc.id) : [...prev, sc.id]
+                        )
+                      }}
+                      className={`
+                        p-3 rounded-lg border flex items-center justify-between cursor-pointer transition select-none
+                        ${
+                          isPreviewing
+                            ? 'bg-amber-950/30 border-amber-400'
+                            : isSelected
+                            ? 'bg-amber-500/10 border-amber-400'
+                            : 'bg-[#0D0D0D] border-amber-900/20 hover:border-amber-500/40'
+                        }
+                      `}
+                    >
+                      <div className="space-y-1">
+                        <div className="font-serif font-semibold text-gray-200">{sc.name}</div>
+                        <div className="flex items-center gap-3 text-xs text-gray-500 font-mono">
+                          <span>{totalTracks} {totalTracks === 1 ? 'track' : 'tracks'}</span>
+                          <span>·</span>
+                          <span>3 layers</span>
+                          {isPreviewing && (
+                            <span className="text-amber-400 font-sans font-semibold animate-pulse">
+                              Previewing sample...
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      <div
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setSelectedIds((prev) =>
+                            isSelected ? prev.filter((id) => id !== sc.id) : [...prev, sc.id]
+                          )
+                        }}
+                        className={`w-5 h-5 rounded border flex items-center justify-center cursor-pointer ${
+                          isSelected ? 'bg-amber-400 border-amber-400 text-black' : 'border-gray-600'
+                        }`}
+                      >
+                        {isSelected && <Check className="w-3.5 h-3.5 stroke-[3] lucide-check" />}
+                      </div>
+                    </div>
+                  )
+                })
+              )}
+            </div>
+
+            {/* Modal Footer */}
             <div className="flex items-center justify-between pt-2 border-t border-amber-900/20">
               <span className="text-xs text-gray-400">{selectedIds.length} selected</span>
               <div className="flex gap-2">
-                <button onClick={() => setIsSoundscapePickerOpen(false)} className="px-4 py-2 text-gray-400 hover:text-gray-200 text-sm">
+                <button
+                  onClick={() => {
+                    setPreviewingScId(null)
+                    setIsSoundscapePickerOpen(false)
+                  }}
+                  className="px-4 py-2 text-gray-400 hover:text-gray-200 text-sm"
+                >
                   Close
                 </button>
                 <button
-                  disabled={selectedIds.length === 0}
+                  disabled={selectedIds.length === 0 || soundscapeCategories.length === 0}
                   onClick={handleCommitSoundscapeSelection}
-                  className="px-4 py-2 bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-black font-semibold text-sm rounded-lg"
+                  className="px-4 py-2 bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-black font-semibold text-sm rounded-lg transition"
                 >
                   Add Selected ({selectedIds.length})
                 </button>
@@ -451,9 +620,15 @@ export const ActiveScene: React.FC<ActiveSceneProps> = ({
       {/* FX Picker Modal */}
       {isFxPickerOpen && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-[#161616] border border-purple-500/30 rounded-xl max-w-lg w-full p-6 space-y-4 max-h-[85vh] flex flex-col">
+          <div role="dialog" aria-modal="true" className="bg-[#161616] border border-amber-500/30 rounded-xl max-w-lg w-full p-6 space-y-4 max-h-[85vh] flex flex-col">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-serif font-bold text-purple-400">Add Effect to Soundboard</h2>
+              <div>
+                <button onClick={() => setIsFxPickerOpen(false)} className="text-xs text-amber-400 hover:underline font-semibold block mb-1">
+                  Back to Active Scene
+                </button>
+                <h2 className="text-xl font-serif font-bold text-amber-400">Sound Effects</h2>
+                <p className="text-gray-400 text-xs mt-0.5">Select effects for this scene's soundboard.</p>
+              </div>
               <button onClick={() => setIsFxPickerOpen(false)} className="text-gray-400 hover:text-white">
                 <X className="w-5 h-5" />
               </button>
@@ -464,56 +639,74 @@ export const ActiveScene: React.FC<ActiveSceneProps> = ({
               <Search className="w-4 h-4 absolute left-3 top-3 text-gray-500" />
               <input
                 type="text"
-                placeholder="Filter effects..."
+                placeholder="Search effects…"
                 value={pickerSearch}
                 onChange={(e) => setPickerSearch(e.target.value)}
-                className="w-full bg-[#0D0D0D] border border-purple-900/40 rounded-lg pl-9 pr-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-purple-400"
+                className="w-full bg-[#0D0D0D] border border-amber-900/40 rounded-lg pl-9 pr-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-amber-400"
               />
             </div>
 
             {/* Picker Items */}
             <div className="overflow-y-auto space-y-2 flex-1 pr-1">
-              {availableFx.map((fx) => {
-                const isSelected = selectedIds.includes(fx.id)
-                const isAlreadyInBoard = scene.soundboardFxIds.includes(fx.id)
-
-                return (
-                  <div
-                    key={fx.id}
-                    onClick={() => {
-                      if (isAlreadyInBoard) return
-                      setSelectedIds((prev) =>
-                        isSelected ? prev.filter((id) => id !== fx.id) : [...prev, fx.id]
-                      )
-                    }}
-                    className={`
-                      p-3 rounded-lg border flex items-center justify-between cursor-pointer transition
-                      ${
-                        isAlreadyInBoard
-                          ? 'bg-[#0D0D0D] border-gray-800 opacity-50 cursor-not-allowed'
-                          : isSelected
-                          ? 'bg-purple-500/10 border-purple-400'
-                          : 'bg-[#0D0D0D] border-purple-900/20 hover:border-purple-500/40'
-                      }
-                    `}
-                  >
-                    <div>
-                      <div className="font-serif font-semibold text-gray-200">{fx.name}</div>
-                      <div className="text-xs text-gray-400">{fx.category} · {fx.durationSeconds}s</div>
-                    </div>
-                    {isAlreadyInBoard ? (
-                      <span className="text-xs text-gray-500 font-semibold">Added</span>
-                    ) : (
-                      <div className={`w-5 h-5 rounded border flex items-center justify-center ${isSelected ? 'bg-purple-400 border-purple-400 text-black' : 'border-gray-600'}`}>
-                        {isSelected && <Check className="w-3.5 h-3.5 stroke-[3]" />}
-                      </div>
-                    )}
+              {availableFx.length === 0 ? (
+                pickerSearch ? (
+                  <div className="text-center py-8 space-y-3">
+                    <p className="text-gray-400 text-sm">No effects match your filters</p>
+                    <button
+                      onClick={() => setPickerSearch('')}
+                      className="px-3 py-1.5 bg-amber-500/20 text-amber-400 text-xs font-semibold rounded hover:bg-amber-500/30 border border-amber-500/30"
+                    >
+                      Clear Filters
+                    </button>
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <p className="text-gray-400 text-sm">No available effects to add</p>
                   </div>
                 )
-              })}
+              ) : (
+                availableFx.map((fx) => {
+                  const isSelected = selectedIds.includes(fx.id)
+                  const isAlreadyInBoard = scene.soundboardFxIds.includes(fx.id)
+
+                  return (
+                    <div
+                      key={fx.id}
+                      onClick={() => {
+                        if (isAlreadyInBoard) return
+                        setSelectedIds((prev) =>
+                          isSelected ? prev.filter((id) => id !== fx.id) : [...prev, fx.id]
+                        )
+                      }}
+                      className={`
+                        p-3 rounded-lg border flex items-center justify-between cursor-pointer transition
+                        ${
+                          isAlreadyInBoard
+                            ? 'bg-[#0D0D0D] border-gray-800 opacity-50 cursor-not-allowed'
+                            : isSelected
+                            ? 'bg-amber-500/10 border-amber-400'
+                            : 'bg-[#0D0D0D] border-amber-900/20 hover:border-amber-500/40'
+                        }
+                      `}
+                    >
+                      <div>
+                        <div className="font-serif font-semibold text-gray-200">{fx.name}</div>
+                        <div className="text-xs text-gray-400">{fx.category} · {fx.durationSeconds}s</div>
+                      </div>
+                      {isAlreadyInBoard ? (
+                        <span className="text-xs text-gray-500 font-semibold">Added</span>
+                      ) : (
+                        <div className={`w-5 h-5 rounded border flex items-center justify-center ${isSelected ? 'bg-amber-400 border-amber-400 text-black' : 'border-gray-600'}`}>
+                          {isSelected && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+                        </div>
+                      )}
+                    </div>
+                  )
+                })
+              )}
             </div>
 
-            <div className="flex items-center justify-between pt-2 border-t border-purple-900/20">
+            <div className="flex items-center justify-between pt-2 border-t border-amber-900/20">
               <span className="text-xs text-gray-400">{selectedIds.length} selected</span>
               <div className="flex gap-2">
                 <button onClick={() => setIsFxPickerOpen(false)} className="px-4 py-2 text-gray-400 hover:text-gray-200 text-sm">
@@ -522,7 +715,7 @@ export const ActiveScene: React.FC<ActiveSceneProps> = ({
                 <button
                   disabled={selectedIds.length === 0}
                   onClick={handleCommitFxSelection}
-                  className="px-4 py-2 bg-purple-500 hover:bg-purple-400 disabled:opacity-50 text-white font-semibold text-sm rounded-lg"
+                  className="px-4 py-2 bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-black font-semibold text-sm rounded-lg"
                 >
                   Add Selected ({selectedIds.length})
                 </button>

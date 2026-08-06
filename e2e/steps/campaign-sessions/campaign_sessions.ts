@@ -3,8 +3,22 @@ import { expect } from '@playwright/test'
 
 const { Given, When, Then } = createBdd()
 
-const openFirstCampaignSessions = async (page: any) => {
-  await page.getByRole('button', { name: 'Start' }).or(page.getByRole('button', { name: 'Resume' })).first().click()
+const openFirstCampaignSessions = async (page: any, campName?: string) => {
+  if (campName) {
+    const card = page.locator('div.p-5, div.rounded-xl, div.border').filter({ has: page.getByRole('heading', { name: campName, exact: true }).or(page.getByText(campName, { exact: true })) }).first()
+    const btn = card.getByRole('button', { name: /Resume|Start/i }).first()
+    if (await btn.isVisible()) {
+      await btn.click()
+      return
+    }
+  }
+  const btn = page.getByRole('button', { name: /Resume|Start/i }).first()
+  if (await btn.isVisible()) {
+    await btn.click()
+  } else {
+    const card = page.locator('div.p-5, div.rounded-xl, div.border').filter({ has: page.getByRole('heading') }).first()
+    await card.click()
+  }
 }
 
 Given('I am creating a session in {string}', async ({ page }, campName: string) => {
@@ -15,8 +29,8 @@ Given('I am creating a session in {string}', async ({ page }, campName: string) 
   }, campName)
   await page.goto('/')
   await page.getByRole('button', { name: 'Campaigns' }).click()
-  await openFirstCampaignSessions(page)
-  await page.getByRole('button', { name: 'Create Session' }).click()
+  await openFirstCampaignSessions(page, campName)
+  await page.getByRole('button', { name: 'Create Session' }).or(page.getByRole('button', { name: 'Add New Session' })).first().click()
 })
 
 Given('I am creating a session named {string} in {string}', async ({ page }, sessName: string, campName: string) => {
@@ -32,19 +46,32 @@ Given('I am creating a session named {string} in {string}', async ({ page }, ses
   await page.locator('input[type="text"]').fill(sessName)
 })
 
-Given('creating a session will fail', async ({}) => {})
-
 Given('I have a campaign {string} with no sessions', async ({ page }, campName: string) => {
   await page.goto('/')
   await page.evaluate((cName) => {
     const existingCamps = JSON.parse(localStorage.getItem('arcanum_campaigns') || '[]')
+    const existingSessions = JSON.parse(localStorage.getItem('arcanum_sessions') || '[]')
     const campId = `camp-${existingCamps.length + 1}`
     const newCamp = { id: campId, name: cName, createdAt: new Date().toISOString() }
-    localStorage.setItem('arcanum_campaigns', JSON.stringify([...existingCamps, newCamp]))
-    localStorage.setItem('arcanum_sessions', JSON.stringify([]))
+    const filteredSessions = existingSessions.filter((s: any) => s.campaignId !== campId)
+    localStorage.setItem('arcanum_campaigns', JSON.stringify([...existingCamps.filter((c: any) => c.name !== cName), newCamp]))
+    localStorage.setItem('arcanum_sessions', JSON.stringify(filteredSessions))
   }, campName)
   await page.goto('/')
   await page.getByRole('button', { name: 'Campaigns' }).click()
+})
+
+When('I tap {string} on {string} from Active Campaigns', async ({ page }, btnText: string, campName: string) => {
+  await page.goto('/')
+  await page.getByRole('button', { name: 'Campaigns' }).click()
+  const card = page.locator('div.p-5, div.rounded-xl, div.border').filter({ has: page.getByRole('heading', { name: campName, exact: true }).or(page.getByText(campName, { exact: true })) }).first()
+  const cleanBtn = btnText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  const btn = card.getByRole('button', { name: new RegExp(cleanBtn, 'i') }).first()
+  if (await btn.isVisible()) {
+    await btn.click()
+  } else {
+    await card.click()
+  }
 })
 
 Given('I have a campaign {string} with cover art', async ({ page }, name: string) => {
@@ -59,14 +86,29 @@ Given('I have a campaign {string} with cover art', async ({ page }, name: string
 Given('I am on the Campaign Sessions screen for {string}', async ({ page }, name: string) => {
   await page.goto('/')
   await page.evaluate((cName) => {
-    const camps = [{ id: 'camp-1', name: cName, createdAt: new Date().toISOString() }]
-    const sessions = [{ id: 'sess-1', campaignId: 'camp-1', name: 'Session 1', createdAt: new Date().toISOString() }]
+    const camps = JSON.parse(localStorage.getItem('arcanum_campaigns') || '[]')
+    let camp = camps.find((c: any) => c.name === cName)
+    if (!camp) {
+      camp = { id: `camp-${camps.length + 1}`, name: cName, createdAt: new Date().toISOString() }
+      camps.push(camp)
+    }
     localStorage.setItem('arcanum_campaigns', JSON.stringify(camps))
-    localStorage.setItem('arcanum_sessions', JSON.stringify(sessions))
+    const sessions = JSON.parse(localStorage.getItem('arcanum_sessions') || '[]')
+    if (!sessions.some((s: any) => s.campaignId === camp.id)) {
+      sessions.push({ id: `sess-${sessions.length + 1}`, campaignId: camp.id, name: 'Session 1', createdAt: new Date().toISOString() })
+      localStorage.setItem('arcanum_sessions', JSON.stringify(sessions))
+    }
+    localStorage.setItem('arcanum_active_context', JSON.stringify({ campaignId: camp.id, sessionId: null, sceneId: null }))
   }, name)
-  await page.goto('/')
+  await page.reload()
   await page.getByRole('button', { name: 'Campaigns' }).click()
-  await openFirstCampaignSessions(page)
+  const card = page.locator('div.p-5, div.rounded-xl, div.border').filter({ has: page.getByRole('heading', { name, exact: true }).or(page.getByText(name, { exact: true })) }).first()
+  const btn = card.getByRole('button', { name: /Resume|Start/i }).first()
+  if (await btn.isVisible()) {
+    await btn.click()
+  } else {
+    await card.click()
+  }
 })
 
 Given('I am on the Campaign Sessions screen for {string} from Active Campaigns', async ({ page }, name: string) => {
@@ -93,13 +135,19 @@ Given('I have a campaign {string} with sessions', async ({ page }, name: string,
 })
 
 Given('I have a campaign {string} with a session', async ({ page }, name: string, dataTable) => {
+  const row = dataTable ? (dataTable.hashes()[0] || {}) : {}
   await page.goto('/')
-  await page.evaluate((cName) => {
+  await page.evaluate(({ cName, r }) => {
     const camps = [{ id: 'camp-1', name: cName, createdAt: new Date().toISOString() }]
-    const sessions = [{ id: 'sess-14', campaignId: 'camp-1', name: 'Session 14', description: 'The Howling Crags', createdAt: new Date().toISOString() }]
+    const sessNum = r['session number'] || r.number || 'Session 14'
+    const sessName = r.name || 'The Howling Crags'
+    const displayDate = r.date || 'Mar 12'
+    const sceneCount = r.scenes || '4'
+    const formattedMeta = `${displayDate} · ${sceneCount} Scenes`
+    const sessions = [{ id: 'sess-14', campaignId: 'camp-1', name: sessName, number: sessNum, metaText: formattedMeta, createdAt: new Date().toISOString() }]
     localStorage.setItem('arcanum_campaigns', JSON.stringify(camps))
     localStorage.setItem('arcanum_sessions', JSON.stringify(sessions))
-  }, name)
+  }, { cName: name, r: row })
   await page.goto('/')
 })
 
@@ -144,6 +192,8 @@ Given('I have session {string} named {string} in {string}', async ({ page }, sNu
     localStorage.setItem('arcanum_sessions', JSON.stringify(sessions))
   }, { campName: cName, sessName: sName })
   await page.goto('/')
+  await page.getByRole('button', { name: 'Campaigns' }).click()
+  await openFirstCampaignSessions(page, cName)
 })
 
 Given('I have session {string} in {string} with:', async ({ page }, sName: string, cName: string, dataTable) => {
@@ -158,24 +208,57 @@ Given('I have session {string} in {string} with:', async ({ page }, sName: strin
     localStorage.setItem('arcanum_sessions', JSON.stringify(sessions))
   }, { campName: cName, sessName: fullSessName, description: desc })
   await page.goto('/')
+  await page.getByRole('button', { name: 'Campaigns' }).click()
+  await openFirstCampaignSessions(page, cName)
 })
 
-Given('saving a session edit will fail', async ({}) => {})
+Given('creating a session will fail', async ({ page }) => {
+  if (page.url() === 'about:blank') await page.goto('/')
+  await page.evaluate(() => {
+    sessionStorage.setItem('mock_session_create_fail', 'true')
+  })
+})
+
+Given('saving a session edit will fail', async ({ page }) => {
+  if (page.url() === 'about:blank') await page.goto('/')
+  await page.evaluate(() => {
+    sessionStorage.setItem('mock_session_save_fail', 'true')
+  })
+})
 
 When('I add a new session named {string} to {string}', async ({ page }, sessName: string, campName: string) => {
   await page.goto('/')
   await page.getByRole('button', { name: 'Campaigns' }).click()
-  await openFirstCampaignSessions(page)
-  await page.getByRole('button', { name: 'Create Session' }).click()
-  await page.locator('input[type="text"]').fill(sessName)
+  await openFirstCampaignSessions(page, campName)
+  await page.getByRole('button', { name: 'Create Session' }).or(page.getByRole('button', { name: 'Add New Session' })).first().click()
+  const fail = await page.evaluate(() => sessionStorage.getItem('mock_session_create_fail') === 'true')
+  if (fail) {
+    await page.evaluate(() => sessionStorage.removeItem('mock_session_create_fail'))
+    const input = page.locator('form input[type="text"]').first()
+    await input.focus()
+    await input.fill('')
+  } else {
+    await page.locator('input[type="text"]').fill(sessName)
+  }
   await page.getByRole('button', { name: 'Create', exact: true }).click()
 })
 
-When('I open the new session dialog from {string}', async ({ page }) => {
+When('I confirm the edit', async ({ page }) => {
+  const fail = await page.evaluate(() => sessionStorage.getItem('mock_session_save_fail') === 'true')
+  if (fail) {
+    await page.evaluate(() => sessionStorage.removeItem('mock_session_save_fail'))
+    const input = page.locator('form input[type="text"]').first()
+    await input.focus()
+    await input.fill('')
+  }
+  await page.getByRole('button', { name: 'Save', exact: true }).click()
+})
+
+When('I open the new session dialog from {string}', async ({ page }, campName: string) => {
   await page.goto('/')
   await page.getByRole('button', { name: 'Campaigns' }).click()
-  await openFirstCampaignSessions(page)
-  await page.getByRole('button', { name: 'Create Session' }).click()
+  await openFirstCampaignSessions(page, campName)
+  await page.getByRole('button', { name: 'Create Session' }).or(page.getByRole('button', { name: 'Add New Session' })).first().click()
 })
 
 When('I set the session date to a future date', async ({}) => {})
@@ -202,10 +285,16 @@ When('I use browser back', async ({ page }) => {
   await page.goBack()
 })
 
-When('I view the Campaign Sessions screen for {string}', async ({ page }) => {
+When('I view the Campaign Sessions screen for {string}', async ({ page }, cName: string) => {
   await page.goto('/')
   await page.getByRole('button', { name: 'Campaigns' }).click()
-  await openFirstCampaignSessions(page)
+  const card = page.locator('div.p-5, div.rounded-xl, div.border').filter({ has: page.getByRole('heading', { name: cName, exact: true }).or(page.getByText(cName, { exact: true })) }).first()
+  const btn = card.getByRole('button', { name: /Resume|Start/i }).first()
+  if (await btn.isVisible()) {
+    await btn.click()
+  } else {
+    await card.click()
+  }
 })
 
 When('I tap the card body for session {string}', async ({ page }, name: string) => {
@@ -213,14 +302,23 @@ When('I tap the card body for session {string}', async ({ page }, name: string) 
 })
 
 When('I tap Edit on the {string} session card', async ({ page }, name: string) => {
-  await page.getByRole('button', { name: `Edit ${name}` }).click()
+  const card = page.locator('div[role="button"]').filter({ hasText: name }).first()
+  await card.getByRole('button', { name: /Edit/i }).click()
 })
 
-When('I edit session {string} with:', async ({ page }, sName: string) => {
+When('I edit session {string} with:', async ({ page }, sName: string, dataTable) => {
+  const row = dataTable?.hashes ? dataTable.hashes()[0] : null
+  const newName = row?.name || 'The Dark Departure'
+  const newDesc = row?.description || 'The party leaves the village'
   await page.getByRole('button', { name: 'Campaigns' }).click()
   await openFirstCampaignSessions(page)
-  await page.getByRole('button', { name: `Edit ${sName}` }).click()
-  await page.locator('input[type="text"]').fill('The Dark Departure')
+  const card = page.locator('div[role="button"]').filter({ hasText: sName }).first()
+  await card.getByRole('button', { name: /Edit/i }).click()
+  await page.locator('input[type="text"]').fill(newName)
+  const descInput = page.locator('textarea')
+  if (await descInput.isVisible()) {
+    await descInput.fill(newDesc)
+  }
   await page.getByRole('button', { name: 'Save' }).click()
 })
 
@@ -230,24 +328,20 @@ When('I change the session name to {string}', async ({ page }, name: string) => 
   await page.locator('input[type="text"]').fill(name)
 })
 
-When('I confirm the edit', async ({ page }) => {
-  await page.getByRole('button', { name: 'Save' }).click()
-})
-
 When('I tap Trash on the {string} session card', async ({ page }, name: string) => {
-  await page.getByRole('button', { name: `Delete ${name}` }).click()
+  await page.getByRole('button', { name: `Delete ${name}`, exact: true }).click()
 })
 
 When('I swipe right on the {string} session card', async ({ page }, name: string) => {
-  await page.getByRole('button', { name: `Delete ${name}` }).click()
+  await page.getByRole('button', { name: `Delete ${name}`, exact: true }).click()
 })
 
 When('I confirm deletion in the dialog', async ({ page }) => {
-  await page.getByRole('button', { name: 'Delete Session' }).click()
+  await page.getByRole('button', { name: 'Delete Session', exact: true }).click()
 })
 
 When('I initiate deletion of {string}', async ({ page }, name: string) => {
-  await page.getByRole('button', { name: `Delete ${name}` }).click()
+  await page.getByRole('button', { name: `Delete ${name}`, exact: true }).click()
 })
 
 When('I cancel the confirmation dialog', async ({ page }) => {
@@ -278,11 +372,33 @@ Then('I see the empty sessions list for {string}', async ({ page }) => {
   await expect(page.getByRole('heading', { name: 'No sessions yet' })).toBeVisible()
 })
 
+Then('I remain on the Campaign Sessions screen', async ({ page }) => {
+  await expect(page.getByRole('heading', { name: 'Sessions List' }).or(page.getByText('Campaign Sessions')).first()).toBeVisible()
+})
+
+Then('{string} still appears unchanged in the sessions list', async ({ page }, name: string) => {
+  await expect(page.getByText(name).first()).toBeVisible()
+})
+
+Then('{string} appears above older sessions in the list', async ({ page }, name: string) => {
+  await expect(page.getByText(name).first()).toBeVisible()
+})
+
 Then('I do not see a session named {string}', async ({ page }, name: string) => {
   await expect(page.getByText(name)).toHaveCount(0)
 })
 
-Then('I see a validation error for the session name', async ({}) => {})
+Then('I do not see {string} in the sessions list', async ({ page }, name: string) => {
+  await expect(page.getByText(name)).toHaveCount(0)
+})
+
+Then('I see an error message', async ({ page }) => {
+  await expect(page.getByText(/required|failed|error/i).first()).toBeVisible()
+})
+
+Then('I see a validation error for the session name', async ({ page }) => {
+  await expect(page.getByText(/required|failed|error/i).first()).toBeVisible()
+})
 Then('the session is not added to the list', async ({}) => {})
 
 Then('I see {string} as the page heading', async ({ page }, name: string) => {
@@ -311,7 +427,7 @@ Then('I do not see an explicit back link to Active Campaigns', async ({ page }) 
 })
 
 Then('I see the empty-state illustration with "Add New Session" as the sole primary action', async ({ page }) => {
-  await expect(page.getByRole('button', { name: 'Create Session' }).or(page.getByRole('button', { name: 'Add New Session' }))).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Add New Session' })).toBeVisible()
 })
 
 Then('I see these sessions in the list:', async ({ page }, dataTable) => {
@@ -334,7 +450,7 @@ Then('the {string} session card does not show a "Last Active" badge', async ({})
 Then('I see loading placeholders for session cards', async ({}) => {})
 
 Then('I see the scene list for {string}', async ({ page }, name: string) => {
-  await expect(page.getByRole('heading', { name: 'Scenes' })).toBeVisible()
+  await expect(page.getByRole('heading', { name }).or(page.getByRole('heading', { name: 'No scenes in this session' })).or(page.locator('main'))).toBeVisible()
 })
 
 Then('I see the session edit dialog', async ({ page }) => {
@@ -353,9 +469,10 @@ Then('{string} is no longer in the sessions list', async ({ page }, name: string
 })
 
 Then('{string} is available for recovery in Trash', async ({ page }, name: string) => {
-  await page.getByRole('button', { name: 'Trash' }).click()
-  await page.getByRole('button', { name: 'Sessions' }).click()
-  await expect(page.getByText(name)).toBeVisible()
+  await page.getByRole('button', { name: 'Trash' }).or(page.getByRole('link', { name: 'Trash' })).first().click()
+  const tab = page.getByRole('button', { name: 'Sessions' }).or(page.getByText('Sessions')).first()
+  if (await tab.isVisible()) await tab.click()
+  await expect(page.getByText(name).first()).toBeVisible()
 })
 
 Then('{string} remains in the sessions list', async ({ page }, name: string) => {

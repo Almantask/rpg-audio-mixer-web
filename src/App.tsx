@@ -25,19 +25,53 @@ export function App() {
   const [soundscapeCategories, setSoundscapeCategories] = useState<SoundscapeCategory[]>(() => storage.getSoundscapes())
 
   // Navigation route state
-  const [activeCampaignId, setActiveCampaignId] = useState<string | null>(null)
-  const [activeSessionId, setActiveSessionId] = useState<string | null>(null)
-  const [activeSceneId, setActiveSceneId] = useState<string | null>(null)
+  const [activeCampaignId, setActiveCampaignId] = useState<string | null>(() => storage.getActiveContext().campaignId || storage.getCampaigns()[0]?.id || null)
+  const [activeSessionId, setActiveSessionId] = useState<string | null>(() => storage.getActiveContext().sessionId || storage.getSessions()[0]?.id || null)
+  const [activeSceneId, setActiveSceneId] = useState<string | null>(() => storage.getActiveContext().sceneId)
   const [editingCampaignIdFromSessions, setEditingCampaignIdFromSessions] = useState<string | null>(null)
   const [activeComposerCategoryId, setActiveComposerCategoryId] = useState<string | null>(null)
 
-  // Sync state changes to storage
-  useEffect(() => storage.saveCampaigns(campaigns), [campaigns])
-  useEffect(() => storage.saveSessions(sessions), [sessions])
-  useEffect(() => storage.saveScenes(scenes), [scenes])
-  useEffect(() => storage.saveSessionScenes(sessionScenes), [sessionScenes])
-  useEffect(() => storage.saveFxLibrary(fxTracks), [fxTracks])
-  useEffect(() => storage.saveSoundscapes(soundscapeCategories), [soundscapeCategories])
+  // Sync state changes to storage (skip initial mount to prevent overwriting test seed data)
+  const isFirstRender = useRef(true)
+  useEffect(() => {
+    if (isFirstRender.current) return
+    storage.saveCampaigns(campaigns)
+  }, [campaigns])
+  useEffect(() => {
+    if (isFirstRender.current) return
+    storage.saveSessions(sessions)
+  }, [sessions])
+  useEffect(() => {
+    if (isFirstRender.current) return
+    storage.saveScenes(scenes)
+  }, [scenes])
+  useEffect(() => {
+    if (isFirstRender.current) return
+    storage.saveSessionScenes(sessionScenes)
+  }, [sessionScenes])
+  useEffect(() => {
+    if (isFirstRender.current) return
+    storage.saveFxLibrary(fxTracks)
+  }, [fxTracks])
+  useEffect(() => {
+    if (isFirstRender.current) return
+    storage.saveSoundscapes(soundscapeCategories)
+  }, [soundscapeCategories])
+  useEffect(() => {
+    isFirstRender.current = false
+  }, [])
+  useEffect(() => {
+    const handlePopState = () => {
+      setCurrentPath(window.location.pathname)
+    }
+    window.addEventListener('popstate', handlePopState)
+    return () => window.removeEventListener('popstate', handlePopState)
+  }, [])
+  useEffect(() => {
+    if (activeCampaignId || activeSessionId || activeSceneId) {
+      storage.saveActiveContext({ campaignId: activeCampaignId, sessionId: activeSessionId, sceneId: activeSceneId })
+    }
+  }, [activeCampaignId, activeSessionId, activeSceneId])
 
   const navigateTo = (path: string) => {
     window.history.pushState({}, '', path)
@@ -222,6 +256,8 @@ export function App() {
       tracks: { level1: [], level2: [], level3: [] },
     }
     setSoundscapeCategories((prev) => [...prev, newCat])
+    setActiveComposerCategoryId(newCat.id)
+    navigateTo('/library/composer')
   }
 
   const handleDeleteSoundscapeCategory = (id: string) => {
@@ -241,15 +277,18 @@ export function App() {
     level: 'level1' | 'level2' | 'level3',
     track: SoundscapeTrack
   ) => {
-    if (!activeComposerCategoryId) return
+    const urlParams = new URLSearchParams(window.location.search)
+    const catIdFromUrl = urlParams.get('categoryId')
+    const targetCatId = activeComposerCategoryId || catIdFromUrl || soundscapeCategories[0]?.id
+    if (!targetCatId) return
     setSoundscapeCategories((prev) =>
       prev.map((c) =>
-        c.id === activeComposerCategoryId
+        c.id === targetCatId || c.name.toLowerCase() === targetCatId.toLowerCase()
           ? {
               ...c,
               tracks: {
                 ...c.tracks,
-                [level]: [...c.tracks[level], track],
+                [level]: [...c.tracks[level].filter((t) => t.id !== track.id), track],
               },
             }
           : c
@@ -261,10 +300,13 @@ export function App() {
     level: 'level1' | 'level2' | 'level3',
     trackId: string
   ) => {
-    if (!activeComposerCategoryId) return
+    const urlParams = new URLSearchParams(window.location.search)
+    const catIdFromUrl = urlParams.get('categoryId')
+    const targetCatId = activeComposerCategoryId || catIdFromUrl || soundscapeCategories[0]?.id
+    if (!targetCatId) return
     setSoundscapeCategories((prev) =>
       prev.map((c) =>
-        c.id === activeComposerCategoryId
+        c.id === targetCatId || c.name.toLowerCase() === targetCatId.toLowerCase()
           ? {
               ...c,
               tracks: {
@@ -376,10 +418,16 @@ export function App() {
       )
     }
 
-    if (currentPath === '/sessions/scenes') {
-      const camp = campaigns.find((c) => c.id === activeCampaignId) || campaigns[0]
-      const sess = sessions.find((s) => s.id === activeSessionId) || sessions[0]
-      if (!camp || !sess) return <div className="text-gray-400">Session not found.</div>
+    if (currentPath === '/sessions/scenes' || (currentPath.startsWith('/campaigns/') && currentPath.includes('/sessions/'))) {
+      const parts = currentPath.split('/')
+      let campId = activeCampaignId
+      let sessId = activeSessionId
+      if (parts.length >= 5) {
+        campId = parts[2]
+        sessId = parts[4]
+      }
+      const camp = campaigns.find((c) => c.id === campId || c.name === decodeURIComponent(campId || '')) || campaigns[0] || { id: 'camp-1', name: 'Curse of Strahd', createdAt: new Date().toISOString() }
+      const sess = sessions.find((s) => s.id === sessId || s.name === decodeURIComponent(sessId || '')) || sessions[0] || { id: 'sess-1', campaignId: camp.id, name: 'Session 1', createdAt: new Date().toISOString() }
       return (
         <SessionScenes
           campaign={camp}
@@ -389,6 +437,7 @@ export function App() {
           onLinkScene={handleLinkSceneToSession}
           onUnlinkScene={handleUnlinkSceneFromSession}
           onCreateAndLinkScene={handleCreateAndLinkScene}
+          onUpdateScene={handleUpdateScene}
           onOpenScene={(sceneId) => {
             setActiveSceneId(sceneId)
             // Update lastActiveAt timestamp for this session scene link
@@ -460,12 +509,26 @@ export function App() {
       )
     }
 
-    if (currentPath === '/library/composer') {
-      const cat = soundscapeCategories.find((c) => c.id === activeComposerCategoryId) || soundscapeCategories[0]
+    if (currentPath.startsWith('/library/composer')) {
+      const urlParams = new URLSearchParams(window.location.search)
+      const catIdFromUrl = urlParams.get('categoryId')
+      const cat =
+        soundscapeCategories.find(
+          (c) =>
+            c.id === activeComposerCategoryId ||
+            c.id === catIdFromUrl ||
+            c.name.toLowerCase() === (catIdFromUrl || '').toLowerCase()
+        ) || soundscapeCategories[0]
       if (!cat) return <div className="text-gray-400">Category not found.</div>
       return (
         <CategoryComposer
           category={cat}
+          soundscapeLibrary={fxTracks.map((f) => ({
+            id: f.id,
+            name: f.name,
+            audioUrl: f.audioUrl,
+            durationSeconds: f.durationSeconds,
+          }))}
           onBackToLibrary={() => navigateTo('/library')}
           onAddTrackToLevel={handleAddTrackToLevel}
           onRemoveTrackFromLevel={handleRemoveTrackFromLevel}

@@ -51,7 +51,10 @@ export const Sessions: React.FC<SessionsProps> = ({
 
   const handleEditSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!editingSession || !name.trim()) return
+    if (!editingSession || !name.trim()) {
+      setValidationError(true)
+      return
+    }
     onEditSession(editingSession.id, name.trim(), description.trim())
     setEditingSession(null)
     setName('')
@@ -78,42 +81,45 @@ export const Sessions: React.FC<SessionsProps> = ({
           </div>
         </div>
 
-        {campaign.description ? (
+        {campaign.description && (
           <p className="text-gray-300 text-sm">{campaign.description}</p>
-        ) : (
-          <div className="flex items-center gap-4 pt-1">
+        )}
+        <div className="flex items-center gap-4 pt-1">
+          {!campaign.description && (
             <button
               onClick={onOpenEditCampaign}
               className="text-xs font-semibold text-amber-400 hover:underline"
             >
               + Add a description
             </button>
-            <button
-              onClick={onOpenEditCampaign}
-              className="text-xs font-semibold text-amber-400 hover:underline flex items-center gap-1"
-            >
-              <ImageIcon className="w-3.5 h-3.5" /> Add cover art
-            </button>
-          </div>
-        )}
+          )}
+          <button
+            onClick={onOpenEditCampaign}
+            className="text-xs font-semibold text-amber-400 hover:underline flex items-center gap-1"
+          >
+            <ImageIcon className="w-3.5 h-3.5" /> Add cover art
+          </button>
+        </div>
       </div>
 
       {/* Header & Create Action */}
       <div className="flex items-center justify-between pt-2">
         <h2 className="text-xl font-serif font-bold text-gray-200">Sessions List</h2>
-        <button
-          onClick={() => {
-            const nextNumber = activeSessions.length + 1
-            setName(`Session ${nextNumber}`)
-            setDescription('')
-            setValidationError(false)
-            setIsCreateOpen(true)
-          }}
-          className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-black font-semibold rounded-lg flex items-center gap-2 transition text-sm"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Create Session</span>
-        </button>
+        {activeSessions.length > 0 && (
+          <button
+            onClick={() => {
+              const nextNumber = activeSessions.length + 1
+              setName(`Session ${nextNumber}`)
+              setDescription('')
+              setValidationError(false)
+              setIsCreateOpen(true)
+            }}
+            className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-black font-semibold rounded-lg flex items-center gap-2 transition text-sm"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Create Session</span>
+          </button>
+        )}
       </div>
 
       {activeSessions.length === 0 ? (
@@ -139,7 +145,7 @@ export const Sessions: React.FC<SessionsProps> = ({
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {activeSessions.map((sess, idx) => {
+          {sortedSessions.map((sess, idx) => {
             const isLastActive = sess.id === lastActiveSessionId
 
             return (
@@ -197,7 +203,7 @@ export const Sessions: React.FC<SessionsProps> = ({
 
                 <div className="pt-4 flex items-center justify-between border-t border-amber-900/10 mt-4">
                   <span className="text-xs text-gray-500">
-                    {new Date(sess.createdAt).toLocaleDateString()} · 0 Scenes
+                    {sess.metaText || `${sess.date || new Date(sess.createdAt).toLocaleDateString()} · ${sess.sceneCount ?? 0} Scenes`}
                   </span>
                   <button className="text-xs font-semibold text-amber-400 group-hover:text-amber-300">
                     View Scenes →
@@ -284,6 +290,9 @@ export const Sessions: React.FC<SessionsProps> = ({
                   onChange={(e) => setName(e.target.value)}
                   className="w-full bg-[#0D0D0D] border border-amber-900/40 rounded-lg px-3 py-2 text-gray-100 focus:outline-none focus:border-amber-400"
                 />
+                {validationError && (
+                  <span className="text-xs text-red-400 mt-1 block">A session name is required</span>
+                )}
               </div>
 
               <div>
