@@ -1,0 +1,27 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    background-color: #0d0d0d;
+    color: #e5e5e5;
+    font-family: 'Figtree', sans-serif;
+  }
+
+  h1, h2, h3, h4, .font-serif {
+    font-family: 'Cinzel', serif;
+  }
+}
+
+.gold-gradient-text {
+  background: linear-gradient(135deg, #fef08a 0%, #d4af37 50%, #ca8a04 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.card-gold-border {
+  border: 1px solid rgba(212, 175, 55, 0.2);
+}
+
+.card-gold-border:hover {
+  border-color: rgba(212, 175, 55, 0.5);
+}
