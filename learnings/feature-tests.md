@@ -33,6 +33,7 @@ A combination of the following is necessary for reliable tests:
 - Expose player state in the browser, evaluate it: getAudioState(page) runs page.evaluate(() => window.__ARCANUM_AUDIO_STATE__)
 - Track Assertion: isTrackPlaying(page, trackName) checks state.playingTracks to verify if a track node with trackName is active.
 - UI Element State: isCategoryLooping(page, categoryName) checks if the DOM element [data-soundscape-playback-state="${categoryName}"] has the attribute data-state="playing".
+- Verify real-time peak/RMS PCM signal levels
 
 #### Example state exposure
 
