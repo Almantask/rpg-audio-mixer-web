@@ -10,6 +10,7 @@ Feature: Preview FX track in library
     When I tap the "Thunder Crack" FX card body
     Then the mini player appears at the bottom of the main content area
     And "Thunder Crack" begins playing
+    And "Thunder Crack" is audible
     And the "Thunder Crack" FX card shows a playing preview state
 
   Scenario: Tapping an FX card thumbnail opens the mini player
@@ -17,28 +18,33 @@ Feature: Preview FX track in library
     When I tap the "Thunder Crack" FX card thumbnail
     Then the mini player appears at the bottom of the main content area
     And "Thunder Crack" begins playing
+    And "Thunder Crack" is audible
 
   Scenario: The mini player shows the previewing track name
     Given "Wolf Howl" is in the FX library
     When I preview "Wolf Howl" from its FX card
     Then the mini player displays "Wolf Howl" as the track name
+    And "Wolf Howl" is audible
 
   Scenario: Tapping pause in the mini player stops playback
     Given the mini player is showing and "Thunder Crack" is playing
     When I tap the pause button in the mini player
     Then "Thunder Crack" stops playing
+    And no sound is audible
     And the mini player remains visible
 
   Scenario: Tapping play in the mini player resumes preview
     Given the mini player is showing and "Thunder Crack" is paused
     When I tap the play button in the mini player
     Then "Thunder Crack" begins playing again
+    And "Thunder Crack" is audible
     And the "Thunder Crack" FX card shows a playing preview state
 
   Scenario: Tapping a playing FX card again stops preview
     Given the "Thunder Crack" FX card is previewing with a playing preview state
     When I tap the "Thunder Crack" FX card body again
     Then "Thunder Crack" stops playing
+    And no sound is audible
     And the "Thunder Crack" FX card no longer shows a playing preview state
 
   Scenario: The mini player is only visible on the Library screen
@@ -46,6 +52,7 @@ Feature: Preview FX track in library
     When I navigate to Scenes
     Then the mini player is no longer visible
     And "Thunder Crack" has stopped playing
+    And no sound is audible
 
   Scenario: Previewing a second track replaces the first in the mini player
     Given the mini player is showing "Thunder Crack"
@@ -53,6 +60,7 @@ Feature: Preview FX track in library
     When I preview "Wolf Howl" from its FX card while "Thunder Crack" is playing
     Then "Thunder Crack" stops
     And "Wolf Howl" begins playing
+    And "Wolf Howl" is audible
     And the mini player updates to show "Wolf Howl"
 
   Scenario: Switching from Sound Effects to Soundscapes tab hides the mini player
@@ -60,3 +68,4 @@ Feature: Preview FX track in library
     When I switch to the Soundscapes tab in the Library
     Then the mini player disappears
     And audio playback stops
+    And no sound is audible
