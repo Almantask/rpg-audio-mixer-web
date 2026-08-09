@@ -43,6 +43,11 @@ export interface ArcanumAudioVolumes {
   soundscapes?: Record<string, number>
 }
 
+export interface ArcanumAudioStateSignalLevels {
+  peak: number
+  rms: number
+}
+
 export interface ArcanumAudioState {
   isPlaying: boolean
   trackName?: string
@@ -50,6 +55,7 @@ export interface ArcanumAudioState {
   previewVolume?: number
   playingTracks?: PlayingTrackSnapshot[]
   volumes?: ArcanumAudioVolumes
+  signalLevels?: ArcanumAudioStateSignalLevels
 }
 
 export interface ExtendedE2EControls extends E2EControls {

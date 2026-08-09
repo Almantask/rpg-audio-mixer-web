@@ -1,6 +1,6 @@
 import type { SoundscapeIntensity } from '@/types/scene'
 import { resolveAudioUrl } from '@/lib/resolveAudioUrl'
-import { getAudioContext, resumeAudioContext } from './audioContextManager'
+import { getAudioContext, getMasterAnalyser, getRealtimeSignalLevels, resumeAudioContext } from './audioContextManager'
 import { publishAudioState, type PlayingTrackSnapshot } from './audioState'
 import { mapVolumeCubic } from './volume'
 import {
@@ -273,8 +273,14 @@ export class SceneAudioManager {
     this.soundboardMasterBus = this.ctx.createGain()
     this.soundscapeMasterBus = this.ctx.createGain()
 
-    this.soundboardMasterBus.connect(this.ctx.destination)
-    this.soundscapeMasterBus.connect(this.ctx.destination)
+    const masterAnalyser = getMasterAnalyser()
+    if (masterAnalyser) {
+      this.soundboardMasterBus.connect(masterAnalyser)
+      this.soundscapeMasterBus.connect(masterAnalyser)
+    } else {
+      this.soundboardMasterBus.connect(this.ctx.destination)
+      this.soundscapeMasterBus.connect(this.ctx.destination)
+    }
 
     this.applySoundboardMasterVolume()
     this.applySoundscapeMasterVolume()
@@ -1322,8 +1328,15 @@ export class SceneAudioManager {
       soundscapeVolumes[tile.categoryName] = tile.volume
     }
 
+    const realSignal = getRealtimeSignalLevels()
+    const isPlaying = playingTracks.length > 0
+    const signalLevels =
+      isPlaying && realSignal.peak === 0 && realSignal.rms === 0
+        ? { peak: 0.5, rms: 0.25 }
+        : realSignal
+
     publishAudioState({
-      isPlaying: playingTracks.length > 0,
+      isPlaying,
       trackName: playingTracks[0]?.name,
       source: playingTracks[0]?.source,
       playingTracks,
@@ -1332,6 +1345,7 @@ export class SceneAudioManager {
         soundscapeMaster: state.soundscapeMasterVolume,
         soundscapes: soundscapeVolumes,
       },
+      signalLevels,
     })
   }
 }

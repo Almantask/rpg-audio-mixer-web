@@ -14,6 +14,11 @@ interface ArcanumAudioVolumes {
   soundscapes?: Record<string, number>
 }
 
+interface ArcanumAudioStateSignalLevels {
+  peak: number
+  rms: number
+}
+
 interface ArcanumAudioState {
   isPlaying: boolean
   trackName?: string
@@ -21,6 +26,7 @@ interface ArcanumAudioState {
   previewVolume?: number
   playingTracks?: PlayingTrackSnapshot[]
   volumes?: ArcanumAudioVolumes
+  signalLevels?: ArcanumAudioStateSignalLevels
 }
 
 declare global {

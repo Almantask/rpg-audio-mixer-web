@@ -1,5 +1,6 @@
 import { publishAudioState } from '@/lib/audio/audioState'
 import { getSharedSceneAudioManager } from '@/lib/audio/sceneAudioManager'
+import { getRealtimeSignalLevels } from '@/lib/audio/audioContextManager'
 import { resolveAudioUrl } from '@/lib/resolveAudioUrl'
 
 export type HomePreviewKind = 'soundscape' | 'fx'
@@ -82,6 +83,14 @@ class HomePreviewManager {
     const state = this.getState()
     // Do not clobber Active Scene playback published on the shared audio state.
     if (!this.isBlocked()) {
+      const realSignal = getRealtimeSignalLevels()
+      const signalLevels =
+        state.playing && realSignal.peak === 0 && realSignal.rms === 0
+          ? { peak: 0.5, rms: 0.25 }
+          : state.playing
+            ? realSignal
+            : { peak: 0, rms: 0 }
+
       publishAudioState({
         isPlaying: state.playing,
         trackName: state.name ?? undefined,
@@ -89,6 +98,7 @@ class HomePreviewManager {
         playingTracks: state.playing && state.name && state.id
           ? [{ id: state.id, name: state.name, source: 'home' }]
           : [],
+        signalLevels,
       })
     }
     for (const listener of this.listeners) {

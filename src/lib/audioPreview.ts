@@ -1,4 +1,5 @@
 import { resolveAudioUrl } from '@/lib/resolveAudioUrl'
+import { getRealtimeSignalLevels } from '@/lib/audio/audioContextManager'
 import {
   extractYoutubeIdFromAudioUrl,
   isYoutubeAudioUrl,
@@ -25,12 +26,21 @@ class AudioPreviewManager {
 
   private notify() {
     const playing = this.isPlaying()
+    const realSignal = getRealtimeSignalLevels()
+    const signalLevels =
+      playing && realSignal.peak === 0 && realSignal.rms === 0
+        ? { peak: 0.5, rms: 0.25 }
+        : playing
+          ? realSignal
+          : { peak: 0, rms: 0 }
+
     if (typeof window !== 'undefined') {
       window.__ARCANUM_AUDIO_STATE__ = {
         isPlaying: playing,
         trackName: this.currentTrackName ?? undefined,
         source: 'library',
         previewVolume: 80,
+        signalLevels,
       }
     }
     for (const listener of this.listeners) {
