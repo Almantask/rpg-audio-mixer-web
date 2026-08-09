@@ -26,7 +26,36 @@ A step should leave the browser in exactly the state its wording promises.
 Create a single `openTrackPicker(level, category)` helper that handles navigation, expansion, and readiness.
 Do not use forced clicks to bypass an overlay.
 
-### 6. Speed & Stability Improvements 
+### 6. Good AI harness relies on making sure that there is as much proof as possible of testing a real thing, rather than a mock or using visual queues
+
+A combination of the following is necessary for reliable tests:
+
+- Expose player state in the browser, evaluate it: getAudioState(page) runs page.evaluate(() => window.__ARCANUM_AUDIO_STATE__)
+- Track Assertion: isTrackPlaying(page, trackName) checks state.playingTracks to verify if a track node with trackName is active.
+- UI Element State: isCategoryLooping(page, categoryName) checks if the DOM element [data-soundscape-playback-state="${categoryName}"] has the attribute data-state="playing".
+
+#### Example state exposure
+
+In Arcanum Audio the state is exposed like this:
+
+The audio engine manager (
+sceneAudioManager.ts) calls publishAudioState(...) from 
+audioState.ts whenever tracks start, pause, stop, or undergo volume changes. This publishes state into window.__ARCANUM_AUDIO_STATE__:
+
+```ts
+typescript
+export interface ArcanumAudioState {
+ isPlaying: boolean
+ trackName?: string
+ source?: 'library' | 'picker' | 'soundboard' | 'soundscape' | 'home'
+ playingTracks?: PlayingTrackSnapshot[]
+ volumes?: ArcanumAudioVolumes
+}
+```
+
+Although recording actual sounds and verifying them is an overkill (no OS level verifcation, no recorded playback analysis is needed for this)
+
+### 7. Speed & Stability Improvements 
 
 As part of the test speed and stability audit:
 - **Sleeps to Conditions**: Removed all fixed `waitForTimeout` calls and replaced them with:
