@@ -10,4 +10,4 @@ Feature: Open scene from session
     And I am viewing Session Scenes for "Session 1"
     When I tap the "Tavern" scene card in "Session 1"
     Then I see the Active Scene screen for "Tavern"
-    And no audio is playing
+    And no sound is audible

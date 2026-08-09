@@ -8,5 +8,5 @@ Feature: Import track in Category Composer picker
   Scenario: Import adds a new track to the picker selection set
     Given the Track Picker modal is open for "Level I" in "Weather"
     When I import the audio file "light_rain.mp3"
-    Then I see "light_rain.mp3" in the picker grid
-    And "light_rain.mp3" is checked in the picker
+    Then I see "Light Rain" in the picker grid
+    And "Light Rain" is checked in the picker

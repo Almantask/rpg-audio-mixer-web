@@ -1061,7 +1061,7 @@ Then('I see the Track Picker modal titled "Add track"', async ({ page }) => {
 })
 
 Then('I see an "Import" action', async ({ page }) => {
-  await expect(page.locator('button:has-text("Import")')).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Import', exact: true })).toBeVisible()
 })
 
 Then('I see a picker search bar', async ({ page }) => {
