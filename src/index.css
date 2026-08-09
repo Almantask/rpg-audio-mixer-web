@@ -1,0 +1,26 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --bg-main: #0d0d0d;
+    --bg-card: #141414;
+    --bg-sidebar: #111111;
+    --border-gold: #d4af37;
+    --text-gold: #eab308;
+    --text-muted: #a1a1aa;
+    --accent-fx: #a855f7;
+  }
+
+  body {
+    background-color: var(--bg-main);
+    color: #f4f4f5;
+    font-family: 'Figtree', system-ui, -apple-system, sans-serif;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+  }
+
+  h1, h2, h3, h4, .font-serif {
+    font-family: 'Cinzel', serif;
+  }
+}
