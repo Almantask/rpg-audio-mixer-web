@@ -34,6 +34,7 @@ A combination of the following is necessary for reliable tests:
 - Track Assertion: isTrackPlaying(page, trackName) checks state.playingTracks to verify if a track node with trackName is active.
 - UI Element State: isCategoryLooping(page, categoryName) checks if the DOM element [data-soundscape-playback-state="${categoryName}"] has the attribute data-state="playing".
 - Verify real-time peak/RMS PCM signal levels
+- Use real tracks from assets when testing. Don't generate them.
 
 #### Example state exposure
 
