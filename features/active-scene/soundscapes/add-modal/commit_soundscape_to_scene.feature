@@ -91,4 +91,4 @@ Feature: Commit soundscape selection to scene
     And I tap "Add Selected (1)"
     Then "Weather" is idle and not auto-playing
     And "Weather" has volume 100%
-    And "Weather" has intensity II
+    And "Weather" has intensity I

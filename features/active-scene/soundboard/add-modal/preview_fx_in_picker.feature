@@ -10,6 +10,7 @@ Feature: Preview FX in picker
     And the FX library has "Thunder Crack"
     When I tap the FX picker card body for "Thunder Crack"
     Then "Thunder Crack" begins previewing in the picker
+    And "Thunder Crack" is audible
     And the "Thunder Crack" FX picker card shows a playing state in the picker
 
   Scenario: Tapping a playing FX picker card body stops preview
@@ -17,6 +18,7 @@ Feature: Preview FX in picker
     And "Thunder Crack" is previewing in the picker
     When I tap the FX picker card body for "Thunder Crack"
     Then "Thunder Crack" stops previewing
+    And no sound is audible
     And the "Thunder Crack" FX picker card no longer shows a playing state in the picker
 
   Scenario: Only one preview plays at a time in the picker
@@ -26,6 +28,7 @@ Feature: Preview FX in picker
     When I tap the FX picker card body for "Wolf Howl"
     Then "Thunder Crack" stops previewing
     And "Wolf Howl" begins previewing in the picker
+    And "Wolf Howl" is audible
 
   Scenario: I can select tracks while another track is previewing
     Given the Sound Effects picker modal is open
@@ -34,9 +37,11 @@ Feature: Preview FX in picker
     When I check "Wolf Howl" in the picker
     Then the "Add Selected (1)" button is enabled
     And "Thunder Crack" is still previewing in the picker
+    And "Thunder Crack" is audible
 
   Scenario: FX preview plays at the track's saved default volume
     Given the Sound Effects picker modal is open
     And "Thunder Crack" is visible in the picker grid
     When I tap the FX picker card body for "Thunder Crack"
     Then "Thunder Crack" previews at its saved default volume
+    And sound for "Thunder Crack" is audible at default volume

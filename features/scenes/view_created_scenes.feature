@@ -39,7 +39,7 @@ Feature: View created scenes
     Given a scene named "Tavern" exists
     When I open the "Tavern" scene from Scenes
     Then I see the Active Scene screen for "Tavern"
-    And no audio playback has started
+    And no sound is audible
 
   Scenario: The New Scene control appears at the bottom of the list
     Given a scene named "Tavern" exists

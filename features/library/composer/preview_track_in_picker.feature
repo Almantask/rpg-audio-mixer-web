@@ -10,6 +10,7 @@ Feature: Preview track in Category Composer picker
     And the soundscape library has "Thunderous Downpour"
     When I tap the picker track card body for "Thunderous Downpour"
     Then "Thunderous Downpour" begins previewing in the picker
+    And "Thunderous Downpour" is audible in the picker
 
   Scenario: Only one track previews at a time in the Track Picker
     Given the Track Picker modal is open for "Level I" in "Weather"
@@ -18,3 +19,4 @@ Feature: Preview track in Category Composer picker
     When I tap the picker track card body for "Distant Rolling Thunder"
     Then "Thunderous Downpour" stops previewing
     And "Distant Rolling Thunder" begins previewing in the picker
+    And "Distant Rolling Thunder" is audible in the picker
