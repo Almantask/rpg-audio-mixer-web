@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react'
 import { Search, Upload, ShoppingCart, ExternalLink, Edit2, Play, Pause, Trash2, Check } from 'lucide-react'
 import { getData, setData } from '../services/store'
 import { audioEngine } from '../services/audioEngine'
-import { updateTrackState } from '../services/audioState'
 import type { FXTrack } from '../types'
 
 export const LibraryPage: React.FC = () => {
@@ -139,7 +138,7 @@ export const LibraryPage: React.FC = () => {
             onClick={() => {
               setActiveTab('soundscapes')
               if (previewTrack) {
-                updateTrackState(previewTrack.name, 'stopped', 'library')
+                audioEngine.stopFX(previewTrack.name, 'library')
                 setPreviewTrack(null)
                 setIsPlaying(false)
               }

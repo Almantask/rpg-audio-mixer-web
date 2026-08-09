@@ -1,13 +1,12 @@
 import { createBdd } from 'playwright-bdd'
 import { expect } from '@playwright/test'
+import { seedData, resetData } from './seedHelper'
 
 const { Given, When, Then } = createBdd()
 
 Given('I am on the Active Scene — Soundboard tab', async ({ page }) => {
-  await page.goto('/')
-  await page.evaluate(() => {
-    const sc = { id: 'scene-1', name: 'Tavern', tags: [], createdAt: new Date().toISOString() }
-    window.__ARCANUM_SEED_DATA__?.({ scenes: [sc] })
+  await seedData(page, {
+    scenes: [{ id: 'scene-1', name: 'Tavern', tags: [], createdAt: new Date().toISOString() }],
   })
   await page.goto('/scenes/scene-1')
   await page.getByRole('button', { name: /soundboard/i }).click()
@@ -34,15 +33,13 @@ Then('I can select effects for addition to the soundboard from the picker grid',
 })
 
 Given('the Sound Effects picker modal is open', async ({ page }) => {
-  await page.goto('/')
-  await page.evaluate(() => {
-    const sc = { id: 'scene-1', name: 'Tavern', tags: [], createdAt: new Date().toISOString() }
-    const fxTracks = [
+  await seedData(page, {
+    scenes: [{ id: 'scene-1', name: 'Tavern', tags: [], createdAt: new Date().toISOString() }],
+    fxTracks: [
       { id: 'fx-1', name: 'Thunder Crack', duration: '0:04', durationSeconds: 4, intensityLevel: 'II', tags: ['IMPACT'] },
       { id: 'fx-2', name: 'Wolf Howl', duration: '0:02', durationSeconds: 2, intensityLevel: 'I', tags: ['CREATURE'] },
       { id: 'fx-3', name: 'Sword Clash', duration: '0:03', durationSeconds: 3, intensityLevel: 'I', tags: ['COMBAT'] },
-    ]
-    window.__ARCANUM_SEED_DATA__?.({ scenes: [sc], fxTracks })
+    ],
   })
   await page.goto('/scenes/scene-1')
   await page.getByRole('button', { name: /soundboard/i }).click()
@@ -70,13 +67,12 @@ Then('I do not see a {string} control in the picker', async ({ page }, name: str
 })
 
 Given('the FX library has no tracks', async ({ page }) => {
-  await page.evaluate(() => window.__ARCANUM_RESET_DATA__?.())
+  await resetData(page)
 })
 
 When('I open the Sound Effects picker modal', async ({ page }) => {
-  await page.evaluate(() => {
-    const sc = { id: 'scene-1', name: 'Tavern', tags: [], createdAt: new Date().toISOString() }
-    window.__ARCANUM_SEED_DATA__?.({ scenes: [sc] })
+  await seedData(page, {
+    scenes: [{ id: 'scene-1', name: 'Tavern', tags: [], createdAt: new Date().toISOString() }],
   })
   await page.goto('/scenes/scene-1')
   await page.getByRole('button', { name: /soundboard/i }).click()
@@ -94,11 +90,10 @@ Then('the "Add Selected" button is not available', async ({ page }) => {
 Given(
   'every FX track in my library is already in the current scene\'s soundboard',
   async ({ page }) => {
-    await page.evaluate(() => {
-      const sc = { id: 'scene-1', name: 'Tavern', tags: [], createdAt: new Date().toISOString() }
-      const fxTracks = [{ id: 'fx-1', name: 'Thunder Crack', duration: '0:04', durationSeconds: 4, intensityLevel: 'II', tags: [] }]
-      const soundboardTiles = [{ id: 'tile-1', sceneId: 'scene-1', fxTrackId: 'fx-1', name: 'Thunder Crack', position: 0 }]
-      window.__ARCANUM_SEED_DATA__?.({ scenes: [sc], fxTracks, soundboardTiles })
+    await seedData(page, {
+      scenes: [{ id: 'scene-1', name: 'Tavern', tags: [], createdAt: new Date().toISOString() }],
+      fxTracks: [{ id: 'fx-1', name: 'Thunder Crack', duration: '0:04', durationSeconds: 4, intensityLevel: 'II', tags: [] }],
+      soundboardTiles: [{ id: 'tile-1', sceneId: 'scene-1', fxTrackId: 'fx-1', name: 'Thunder Crack', position: 0 }],
     })
   },
 )
@@ -127,15 +122,19 @@ Given(
 )
 
 Given('{string} is previewing in the picker', async ({ page }, fxName: string) => {
-  await page.getByText(fxName).click()
+  await page.locator('.bg-zinc-800\\/60').filter({ hasText: fxName }).click()
 })
 
 When('I tap the back link {string}', async ({ page }, label: string) => {
   await page.getByText(new RegExp(label, 'i')).click()
 })
 
-Then('{string} stops previewing', async ({ page }) => {
-  const isPlaying = await page.evaluate(() => window.__ARCANUM_AUDIO_STATE__?.isPlaying ?? false)
+Then('{string} stops previewing', async ({ page }, fxName: string) => {
+  const isPlaying = await page.evaluate((name) => {
+    const state = window.__ARCANUM_AUDIO_STATE__
+    if (!state?.isPlaying) return false
+    return state.playingTracks?.some((t) => t.trackName === name && t.state === 'playing') ?? false
+  }, fxName)
   expect(isPlaying).toBe(false)
 })
 
@@ -149,14 +148,13 @@ Then('both {string} and {string} appear as tiles in the soundboard grid', async 
 })
 
 Given('the FX library has {string} and {string}', async ({ page }, fx1: string, fx2: string) => {
-  await page.evaluate(({ name1, name2 }) => {
-    const sc = { id: 'scene-1', name: 'Tavern', tags: [], createdAt: new Date().toISOString() }
-    const fxTracks = [
-      { id: `fx-${name1}`, name: name1, duration: '0:04', durationSeconds: 4, intensityLevel: 'II', tags: [] },
-      { id: `fx-${name2}`, name: name2, duration: '0:02', durationSeconds: 2, intensityLevel: 'I', tags: [] },
-    ]
-    window.__ARCANUM_SEED_DATA__?.({ scenes: [sc], fxTracks })
-  }, { name1: fx1, name2: fx2 })
+  await seedData(page, {
+    scenes: [{ id: 'scene-1', name: 'Tavern', tags: [], createdAt: new Date().toISOString() }],
+    fxTracks: [
+      { id: `fx-${fx1}`, name: fx1, duration: '0:04', durationSeconds: 4, intensityLevel: 'II', tags: [] },
+      { id: `fx-${fx2}`, name: fx2, duration: '0:02', durationSeconds: 2, intensityLevel: 'I', tags: [] },
+    ],
+  })
 })
 
 When('I type {string} in the picker search bar', async ({ page }, query: string) => {
@@ -174,25 +172,23 @@ Then('I do not see {string} in the picker grid', async ({ page }, fxName: string
 Given(
   'the FX library has {string} tagged CREATURE and {string} tagged IMPACT',
   async ({ page }, fx1: string, fx2: string) => {
-    await page.evaluate(({ name1, name2 }) => {
-      const sc = { id: 'scene-1', name: 'Tavern', tags: [], createdAt: new Date().toISOString() }
-      const fxTracks = [
-        { id: `fx-${name1}`, name: name1, duration: '0:04', durationSeconds: 4, intensityLevel: 'II', tags: ['CREATURE'] },
-        { id: `fx-${name2}`, name: name2, duration: '0:02', durationSeconds: 2, intensityLevel: 'I', tags: ['IMPACT'] },
-      ]
-      window.__ARCANUM_SEED_DATA__?.({ scenes: [sc], fxTracks })
-    }, { name1: fx1, name2: fx2 })
+    await seedData(page, {
+      scenes: [{ id: 'scene-1', name: 'Tavern', tags: [], createdAt: new Date().toISOString() }],
+      fxTracks: [
+        { id: `fx-${fx1}`, name: fx1, duration: '0:04', durationSeconds: 4, intensityLevel: 'II', tags: ['CREATURE'] },
+        { id: `fx-${fx2}`, name: fx2, duration: '0:02', durationSeconds: 2, intensityLevel: 'I', tags: ['IMPACT'] },
+      ],
+    })
   },
 )
 
 Given('the FX library has {string}', async ({ page }, fxName: string) => {
-  await page.evaluate((name) => {
-    const sc = { id: 'scene-1', name: 'Tavern', tags: [], createdAt: new Date().toISOString() }
-    const fxTracks = [
-      { id: `fx-${name}`, name, duration: '0:04', durationSeconds: 4, intensityLevel: 'II', tags: [] },
-    ]
-    window.__ARCANUM_SEED_DATA__?.({ scenes: [sc], fxTracks })
-  }, fxName)
+  await seedData(page, {
+    scenes: [{ id: 'scene-1', name: 'Tavern', tags: [], createdAt: new Date().toISOString() }],
+    fxTracks: [
+      { id: `fx-${fxName}`, name: fxName, duration: '0:04', durationSeconds: 4, intensityLevel: 'II', tags: [] },
+    ],
+  })
 })
 
 Then('I see a clear-filters action', async ({ page }) => {
@@ -204,7 +200,7 @@ When('I use the clear-filters action in the picker', async ({ page }) => {
 })
 
 When('I tap the FX picker card body for {string}', async ({ page }, fxName: string) => {
-  await page.getByText(fxName).click()
+  await page.locator('.bg-zinc-800\\/60').filter({ hasText: fxName }).click()
 })
 
 Then('{string} begins previewing in the picker', async ({ page }) => {
@@ -294,12 +290,11 @@ Then('the {string} soundboard tile is idle', async ({ page }, fxName: string) =>
 Given(
   '{string} is already in the current scene\'s soundboard',
   async ({ page }, fxName: string) => {
-    await page.evaluate((name) => {
-      const sc = { id: 'scene-1', name: 'Tavern', tags: [], createdAt: new Date().toISOString() }
-      const fxTracks = [{ id: `fx-${name}`, name, duration: '0:04', durationSeconds: 4, intensityLevel: 'II', tags: [] }]
-      const soundboardTiles = [{ id: 'tile-1', sceneId: 'scene-1', fxTrackId: `fx-${name}`, name, position: 0 }]
-      window.__ARCANUM_SEED_DATA__?.({ scenes: [sc], fxTracks, soundboardTiles })
-    }, fxName)
+    await seedData(page, {
+      scenes: [{ id: 'scene-1', name: 'Tavern', tags: [], createdAt: new Date().toISOString() }],
+      fxTracks: [{ id: `fx-${fxName}`, name: fxName, duration: '0:04', durationSeconds: 4, intensityLevel: 'II', tags: [] }],
+      soundboardTiles: [{ id: 'tile-1', sceneId: 'scene-1', fxTrackId: `fx-${fxName}`, name: fxName, position: 0 }],
+    })
   },
 )
 
@@ -310,15 +305,14 @@ Then('but I see {string} in the picker grid', async ({ page }, fxName: string) =
 Given(
   'the FX library has {string}, {string}, and {string}',
   async ({ page }, f1: string, f2: string, f3: string) => {
-    await page.evaluate(({ n1, n2, n3 }) => {
-      const sc = { id: 'scene-1', name: 'Tavern', tags: [], createdAt: new Date().toISOString() }
-      const fxTracks = [
-        { id: `fx-${n1}`, name: n1, duration: '0:04', durationSeconds: 4, intensityLevel: 'II', tags: [] },
-        { id: `fx-${n2}`, name: n2, duration: '0:02', durationSeconds: 2, intensityLevel: 'I', tags: [] },
-        { id: `fx-${n3}`, name: n3, duration: '0:03', durationSeconds: 3, intensityLevel: 'I', tags: [] },
-      ]
-      window.__ARCANUM_SEED_DATA__?.({ scenes: [sc], fxTracks })
-    }, { n1: f1, n2: f2, n3: f3 })
+    await seedData(page, {
+      scenes: [{ id: 'scene-1', name: 'Tavern', tags: [], createdAt: new Date().toISOString() }],
+      fxTracks: [
+        { id: `fx-${f1}`, name: f1, duration: '0:04', durationSeconds: 4, intensityLevel: 'II', tags: [] },
+        { id: `fx-${f2}`, name: f2, duration: '0:02', durationSeconds: 2, intensityLevel: 'I', tags: [] },
+        { id: `fx-${f3}`, name: f3, duration: '0:03', durationSeconds: 3, intensityLevel: 'I', tags: [] },
+      ],
+    })
   },
 )
 
@@ -332,14 +326,14 @@ Then('all three effects appear as tiles in the active scene\'s soundboard', asyn
 Given(
   'the current scene\'s soundboard has {int} effect tiles with hotkeys Num 1 through Num 3',
   async ({ page }, count: number) => {
-    await page.evaluate((c) => {
-      const sc = { id: 'scene-1', name: 'Tavern', tags: [], createdAt: new Date().toISOString() }
-      const soundboardTiles = []
-      for (let i = 0; i < c; i++) {
-        soundboardTiles.push({ id: `tile-${i}`, sceneId: 'scene-1', fxTrackId: `fx-${i}`, name: `Effect ${i}`, hotkey: `Num ${i + 1}`, position: i })
-      }
-      window.__ARCANUM_SEED_DATA__?.({ scenes: [sc], soundboardTiles })
-    }, count)
+    const soundboardTiles = []
+    for (let i = 0; i < count; i++) {
+      soundboardTiles.push({ id: `tile-${i}`, sceneId: 'scene-1', fxTrackId: `fx-${i}`, name: `Effect ${i}`, hotkey: `Num ${i + 1}`, position: i })
+    }
+    await seedData(page, {
+      scenes: [{ id: 'scene-1', name: 'Tavern', tags: [], createdAt: new Date().toISOString() }],
+      soundboardTiles,
+    })
   },
 )
 

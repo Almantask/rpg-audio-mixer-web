@@ -3,6 +3,10 @@ import { expect } from '@playwright/test'
 
 const { When, Then } = createBdd()
 
+function escapeRegex(str: string): RegExp {
+  return new RegExp(str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i')
+}
+
 When('I open {string}', async ({ page }, targetName: string) => {
   await page.evaluate((name) => {
     const data = (window.__ARCANUM_STORE__ as any) || {}
@@ -28,11 +32,11 @@ When('I open {string}', async ({ page }, targetName: string) => {
 })
 
 Then('I see the page title {string}', async ({ page }, title: string) => {
-  await expect(page.getByRole('heading', { level: 1, name: new RegExp(title, 'i') })).toBeVisible()
+  await expect(page.getByRole('heading', { level: 1, name: escapeRegex(title) })).toBeVisible()
 })
 
 Then('I see the subtitle {string}', async ({ page }, subtitle: string) => {
-  await expect(page.getByText(new RegExp(subtitle, 'i'))).toBeVisible()
+  await expect(page.getByText(escapeRegex(subtitle))).toBeVisible()
 })
 
 Then('I do not see the subtitle {string}', async ({ page }, subtitle: string) => {
@@ -40,7 +44,7 @@ Then('I do not see the subtitle {string}', async ({ page }, subtitle: string) =>
 })
 
 Then('I see {string}', async ({ page }, text: string) => {
-  await expect(page.getByText(new RegExp(text, 'i'))).toBeVisible()
+  await expect(page.getByText(escapeRegex(text))).toBeVisible()
 })
 
 Then('I see {string} in {string}', async ({ page }, scName: string, _sNum: string) => {
@@ -52,11 +56,11 @@ Then('I do not see {string}', async ({ page }, text: string) => {
 })
 
 Then('I see a {string} button', async ({ page }, label: string) => {
-  await expect(page.getByRole('button', { name: new RegExp(label, 'i') })).toBeVisible()
+  await expect(page.getByRole('button', { name: escapeRegex(label) })).toBeVisible()
 })
 
 Then('I see an {string} button', async ({ page }, label: string) => {
-  await expect(page.getByRole('button', { name: new RegExp(label, 'i') })).toBeVisible()
+  await expect(page.getByRole('button', { name: escapeRegex(label) })).toBeVisible()
 })
 
 Then('no audio playback has started', async ({ page }) => {
@@ -70,13 +74,89 @@ Then('no audio is playing', async ({ page }) => {
 })
 
 Then('the {string} button is enabled', async ({ page }, label: string) => {
-  await expect(page.getByRole('button', { name: new RegExp(label, 'i') })).toBeEnabled()
+  await expect(page.getByRole('button', { name: escapeRegex(label) })).toBeEnabled()
 })
 
 Then('the {string} button is disabled', async ({ page }, label: string) => {
-  await expect(page.getByRole('button', { name: new RegExp(label, 'i') })).toBeDisabled()
+  await expect(page.getByRole('button', { name: escapeRegex(label) })).toBeDisabled()
 })
 
 When('I tap {string}', async ({ page }, label: string) => {
-  await page.getByRole('button', { name: new RegExp(label, 'i') }).click()
+  await page.getByRole('button', { name: escapeRegex(label) }).click()
 })
+
+Then('{string} is audible', async ({ page }, trackName: string) => {
+  const isAudible = await page.evaluate((name) => {
+    const state = window.__ARCANUM_AUDIO_STATE__
+    if (!state?.isPlaying) return false
+    return state.playingTracks?.some((t) => t.trackName === name && t.state === 'playing') ?? false
+  }, trackName)
+  expect(isAudible).toBe(true)
+
+  await expect.poll(async () => {
+    const probe = await page.evaluate(() => window.__ARCANUM_AUDIO_PROBE__?.())
+    return probe?.hasSignal ?? false
+  }, { timeout: 2000 }).toBe(true)
+})
+
+Then('{string} is audible in the picker', async ({ page }, trackName: string) => {
+  const isAudible = await page.evaluate((name) => {
+    const state = window.__ARCANUM_AUDIO_STATE__
+    if (!state?.isPlaying) return false
+    return (
+      state.playingTracks?.some((t) => t.trackName === name && t.state === 'playing' && t.source === 'picker') ?? false
+    )
+  }, trackName)
+  expect(isAudible).toBe(true)
+
+  await expect.poll(async () => {
+    const probe = await page.evaluate(() => window.__ARCANUM_AUDIO_PROBE__?.())
+    return probe?.hasSignal ?? false
+  }, { timeout: 2000 }).toBe(true)
+})
+
+Then('sound for {string} is audible at default volume', async ({ page }, trackName: string) => {
+  const isAudible = await page.evaluate((name) => {
+    const state = window.__ARCANUM_AUDIO_STATE__
+    if (!state?.isPlaying) return false
+    return state.playingTracks?.some((t) => t.trackName === name && t.state === 'playing') ?? false
+  }, trackName)
+  expect(isAudible).toBe(true)
+
+  await expect.poll(async () => {
+    const probe = await page.evaluate(() => window.__ARCANUM_AUDIO_PROBE__?.())
+    return probe?.hasSignal ?? false
+  }, { timeout: 2000 }).toBe(true)
+})
+
+Then('sound is audible', async ({ page }) => {
+  const isPlaying = await page.evaluate(() => window.__ARCANUM_AUDIO_STATE__?.isPlaying ?? false)
+  expect(isPlaying).toBe(true)
+
+  await expect.poll(async () => {
+    const probe = await page.evaluate(() => window.__ARCANUM_AUDIO_PROBE__?.())
+    return probe?.hasSignal ?? false
+  }, { timeout: 2000 }).toBe(true)
+})
+
+Then('no sound is audible', async ({ page }) => {
+  const isAudible = await page.evaluate(() => {
+    const state = window.__ARCANUM_AUDIO_STATE__
+    if (!state || !state.isPlaying) return false
+    return state.playingTracks?.some((t) => t.state === 'playing') ?? false
+  })
+  expect(isAudible).toBe(false)
+
+  await expect.poll(async () => {
+    const probe = await page.evaluate(() => window.__ARCANUM_AUDIO_PROBE__?.())
+    return probe?.hasSignal ?? false
+  }, { timeout: 2000 }).toBe(false)
+})
+
+Then('actual audio signal is detected', async ({ page }) => {
+  await expect.poll(async () => {
+    const probe = await page.evaluate(() => window.__ARCANUM_AUDIO_PROBE__?.())
+    return probe?.hasSignal ?? false
+  }, { timeout: 2000 }).toBe(true)
+})
+

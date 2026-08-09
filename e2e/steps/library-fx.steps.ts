@@ -30,12 +30,9 @@ Then('I see all three tracks as FX cards in the grid', async ({ page }) => {
 Given(
   '{string} is in the FX library with duration {string}',
   async ({ page }, fxName: string, dur: string) => {
-    await page.evaluate(({ name, d }) => {
-      const fxTracks = [
-        { id: `fx-${name}`, name, duration: d, durationSeconds: 4, intensityLevel: 'II', tags: ['IMPACT'] },
-      ]
-      window.__ARCANUM_SEED_DATA__?.({ fxTracks })
-    }, { name: fxName, d: dur })
+    await seedData(page, {
+      fxTracks: [{ id: `fx-${fxName}`, name: fxName, duration: dur, durationSeconds: 4, intensityLevel: 'II', tags: ['IMPACT'] }],
+    })
   },
 )
 
@@ -50,12 +47,9 @@ Then('the {string} FX card shows duration {string}', async ({ page }, _fxName: s
 Given(
   '{string} is in the FX library with tags {string} and {string}',
   async ({ page }, fxName: string, t1: string, t2: string) => {
-    await page.evaluate(({ name, tag1, tag2 }) => {
-      const fxTracks = [
-        { id: `fx-${name}`, name, duration: '0:04', durationSeconds: 4, intensityLevel: 'II', tags: [tag1, tag2] },
-      ]
-      window.__ARCANUM_SEED_DATA__?.({ fxTracks })
-    }, { name: fxName, tag1: t1, tag2: t2 })
+    await seedData(page, {
+      fxTracks: [{ id: `fx-${fxName}`, name: fxName, duration: '0:04', durationSeconds: 4, intensityLevel: 'II', tags: [t1, t2] }],
+    })
   },
 )
 
@@ -88,12 +82,9 @@ Then('I see copy directing me to import or download FX tracks', async ({ page })
 })
 
 Given('{string} is in the FX library', async ({ page }, fxName: string) => {
-  await page.evaluate((name) => {
-    const fxTracks = [
-      { id: `fx-${name}`, name, duration: '0:04', durationSeconds: 4, intensityLevel: 'II', tags: ['IMPACT'] },
-    ]
-    window.__ARCANUM_SEED_DATA__?.({ fxTracks })
-  }, fxName)
+  await seedData(page, {
+    fxTracks: [{ id: `fx-${fxName}`, name: fxName, duration: '0:04', durationSeconds: 4, intensityLevel: 'II', tags: ['IMPACT'] }],
+  })
 })
 
 Then('the {string} FX card has no checkbox', async () => {
@@ -333,7 +324,7 @@ Then('{string} still plays correctly from the app\'s local copy', async () => {
 When('I tap the {string} FX card body', async ({ page }, fxName: string) => {
   await page.goto('/library')
   await page.getByRole('button', { name: /sound effects/i }).click()
-  await page.getByText(fxName).click()
+  await page.locator('.bg-zinc-900').filter({ hasText: fxName }).first().click()
 })
 
 Then('the mini player appears at the bottom of the main content area', async ({ page }) => {
@@ -341,7 +332,7 @@ Then('the mini player appears at the bottom of the main content area', async ({ 
 })
 
 Then('{string} begins playing', async ({ page }, fxName: string) => {
-  await expect(page.getByRole('heading', { name: fxName })).toBeVisible()
+  await expect(page.locator('.fixed.bottom-4').getByText(fxName)).toBeVisible()
 })
 
 Then('the {string} FX card shows a playing preview state', async () => {
@@ -351,23 +342,26 @@ Then('the {string} FX card shows a playing preview state', async () => {
 When('I tap the {string} FX card thumbnail', async ({ page }, fxName: string) => {
   await page.goto('/library')
   await page.getByRole('button', { name: /sound effects/i }).click()
-  await page.getByText(fxName).click()
+  await page.locator('.bg-zinc-900').filter({ hasText: fxName }).first().click()
 })
 
 When('I preview {string} from its FX card', async ({ page }, fxName: string) => {
   await page.goto('/library')
   await page.getByRole('button', { name: /sound effects/i }).click()
-  await page.getByText(fxName).click()
+  await page.locator('.bg-zinc-900').filter({ hasText: fxName }).first().click()
 })
 
 Then('the mini player displays {string} as the track name', async ({ page }, name: string) => {
-  await expect(page.getByText(name)).toBeVisible()
+  await expect(page.locator('.fixed.bottom-4').getByText(name)).toBeVisible()
 })
 
 Given('the mini player is showing and {string} is playing', async ({ page }, fxName: string) => {
+  await seedData(page, {
+    fxTracks: [{ id: `fx-${fxName}`, name: fxName, duration: '0:04', durationSeconds: 4, intensityLevel: 'II', tags: ['IMPACT'] }],
+  })
   await page.goto('/library')
   await page.getByRole('button', { name: /sound effects/i }).click()
-  await page.getByText(fxName).click()
+  await page.locator('.bg-zinc-900').filter({ hasText: fxName }).first().click()
 })
 
 When('I tap the pause button in the mini player', async ({ page }) => {
@@ -383,9 +377,12 @@ Then('the mini player remains visible', async ({ page }) => {
 })
 
 Given('the mini player is showing and {string} is paused', async ({ page }, fxName: string) => {
+  await seedData(page, {
+    fxTracks: [{ id: `fx-${fxName}`, name: fxName, duration: '0:04', durationSeconds: 4, intensityLevel: 'II', tags: ['IMPACT'] }],
+  })
   await page.goto('/library')
   await page.getByRole('button', { name: /sound effects/i }).click()
-  await page.getByText(fxName).click()
+  await page.locator('.bg-zinc-900').filter({ hasText: fxName }).first().click()
   await page.locator('.fixed.bottom-4').getByRole('button').first().click()
 })
 
@@ -398,13 +395,16 @@ Then('{string} begins playing again', async () => {
 })
 
 Given('the {string} FX card is previewing with a playing preview state', async ({ page }, fxName: string) => {
+  await seedData(page, {
+    fxTracks: [{ id: `fx-${fxName}`, name: fxName, duration: '0:04', durationSeconds: 4, intensityLevel: 'II', tags: ['IMPACT'] }],
+  })
   await page.goto('/library')
   await page.getByRole('button', { name: /sound effects/i }).click()
-  await page.getByText(fxName).click()
+  await page.locator('.bg-zinc-900').filter({ hasText: fxName }).first().click()
 })
 
 When('I tap the {string} FX card body again', async ({ page }, fxName: string) => {
-  await page.getByText(fxName).click()
+  await page.locator('.bg-zinc-900').filter({ hasText: fxName }).first().click()
 })
 
 Then('the {string} FX card no longer shows a playing preview state', async () => {
@@ -412,9 +412,12 @@ Then('the {string} FX card no longer shows a playing preview state', async () =>
 })
 
 Given('the mini player is visible while previewing {string}', async ({ page }, fxName: string) => {
+  await seedData(page, {
+    fxTracks: [{ id: `fx-${fxName}`, name: fxName, duration: '0:04', durationSeconds: 4, intensityLevel: 'II', tags: ['IMPACT'] }],
+  })
   await page.goto('/library')
   await page.getByRole('button', { name: /sound effects/i }).click()
-  await page.getByText(fxName).click()
+  await page.locator('.bg-zinc-900').filter({ hasText: fxName }).first().click()
 })
 
 When('I navigate to Scenes', async ({ page }) => {
@@ -431,15 +434,18 @@ Then('{string} has stopped playing', async ({ page }) => {
 })
 
 Given('the mini player is showing {string}', async ({ page }, fxName: string) => {
+  await seedData(page, {
+    fxTracks: [{ id: `fx-${fxName}`, name: fxName, duration: '0:04', durationSeconds: 4, intensityLevel: 'II', tags: ['IMPACT'] }],
+  })
   await page.goto('/library')
   await page.getByRole('button', { name: /sound effects/i }).click()
-  await page.getByText(fxName).click()
+  await page.locator('.bg-zinc-900').filter({ hasText: fxName }).first().click()
 })
 
 When(
   'I preview {string} from its FX card while {string} is playing',
   async ({ page }, newFx: string, _oldFx: string) => {
-    await page.getByText(newFx).click()
+    await page.locator('.bg-zinc-900').filter({ hasText: newFx }).first().click()
   },
 )
 
@@ -448,13 +454,16 @@ Then(' {string} stops', async () => {
 })
 
 Then('the mini player updates to show {string}', async ({ page }, fxName: string) => {
-  await expect(page.getByText(fxName)).toBeVisible()
+  await expect(page.locator('.fixed.bottom-4').getByText(fxName)).toBeVisible()
 })
 
 Given('the mini player is visible while previewing an FX track', async ({ page }) => {
+  await seedData(page, {
+    fxTracks: [{ id: 'fx-1', name: 'Thunder Crack', duration: '0:04', durationSeconds: 4, intensityLevel: 'II', tags: ['IMPACT'] }],
+  })
   await page.goto('/library')
   await page.getByRole('button', { name: /sound effects/i }).click()
-  await page.getByText('Thunder Crack').click()
+  await page.locator('.bg-zinc-900').filter({ hasText: 'Thunder Crack' }).first().click()
 })
 
 When('I switch to the Soundscapes tab in the Library', async ({ page }) => {
@@ -472,12 +481,9 @@ Then('audio playback stops', async ({ page }) => {
 
 Given('{string} is in the FX library with duration {int}:{int}', async ({ page }, fxName: string, m: number, s: number) => {
   const dur = `${m}:${s.toString().padStart(2, '0')}`
-  await page.evaluate(({ name, d }) => {
-    const fxTracks = [
-      { id: `fx-${name}`, name, duration: d, durationSeconds: 4, intensityLevel: 'II', tags: ['IMPACT'] },
-    ]
-    window.__ARCANUM_SEED_DATA__?.({ fxTracks })
-  }, { name: fxName, d: dur })
+  await seedData(page, {
+    fxTracks: [{ id: `fx-${fxName}`, name: fxName, duration: dur, durationSeconds: 4, intensityLevel: 'II', tags: ['IMPACT'] }],
+  })
 })
 
 Then('{string} shows the {string} tag chip on its FX card', async ({ page }, _name: string, tag: string) => {
@@ -504,8 +510,12 @@ Then('I remain on the Library screen', async ({ page }) => {
   await expect(page.getByRole('heading', { level: 1, name: /^Library$/i })).toBeVisible()
 })
 
-Then('{string} stops', async ({ page }, _fxName: string) => {
-  const isPlaying = await page.evaluate(() => window.__ARCANUM_AUDIO_STATE__?.isPlaying ?? false)
+Then('{string} stops', async ({ page }, fxName: string) => {
+  const isPlaying = await page.evaluate((name) => {
+    const state = window.__ARCANUM_AUDIO_STATE__
+    if (!state?.isPlaying) return false
+    return state.playingTracks?.some((t) => t.trackName === name && t.state === 'playing') ?? false
+  }, fxName)
   expect(isPlaying).toBe(false)
 })
 

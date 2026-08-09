@@ -100,5 +100,6 @@ declare global {
     __ARCANUM_STORE__?: Record<string, unknown>
     __ARCANUM_RESET_DATA__?: () => void
     __ARCANUM_SEED_DATA__?: (data: unknown) => void
+    __ARCANUM_AUDIO_PROBE__?: () => { isPlaying: boolean; signalLevel: number; hasSignal: boolean }
   }
 }
