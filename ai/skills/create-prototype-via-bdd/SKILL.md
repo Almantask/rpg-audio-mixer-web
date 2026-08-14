@@ -37,6 +37,11 @@ Launch both tracks concurrently:
 
 *QA does not run acceptance tests until the FE implementation compiles and passes unit tests.*
 
+### Implementation Rules
+
+- **NEVER Look at Git**: When implementing, diagnosing, or verifying, NEVER use git commands (`git diff`, `git status`, `git log`, etc.) or git history to determine what changed or what needs to be done. Rely strictly on test executions, compiler/linter feedback, requirements (`plans/plan.md`), and feature specifications.
+- **Git Policy**: Do NOT commit changes. Leave all changes uncommitted for the user to review and commit manually.
+
 ### Phase 2 — Iteration Test Execution
 
 Run the iteration acceptance slice:

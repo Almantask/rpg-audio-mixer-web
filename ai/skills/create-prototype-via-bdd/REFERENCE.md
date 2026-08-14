@@ -117,6 +117,9 @@ From `learnings/feature-tests.md` and `ai/agents/qa-tester.agent.md`:
 7. **Speed & Stability / Zero Fixed Sleeps**:
    - **Zero `page.waitForTimeout`**: Rely on Playwright auto-waiting and `expect.poll`.
    - Use short audio seeds by default unless explicitly testing long audio duration overrides.
+8. **Zero Git Inspection (NEVER Look at Git)**:
+   - Never rely on git status or git diffs to verify step definitions, fixtures, or feature specs.
+   - Validate feature specs and steps strictly via `npx bddgen` and Playwright test executions.
 
 ---
 
@@ -136,6 +139,24 @@ From `ai/agents/fe-developer.agent.md` and `ai/skills/implement-frontend-with-td
    - Ensure all interactive elements include accessible labels and roles.
 4. **Quality Gates**:
    - Ensure `npm run typecheck`, `npm run lint`, and `npm run test` pass before handing off to acceptance testing.
+5. **Zero Git Inspection (NEVER Look at Git)**:
+   - Never run `git status`, `git diff`, `git log`, `git show`, or query git history to check what was modified, what was implemented, or what to do next.
+   - Discover state by reading code (`src/`), design specifications (`docs/designs/`), and plans (`plans/plan.md`).
+   - Assess progress and regressions exclusively through test runner outputs (`npm run test`, `npm run typecheck`, `npm run lint`).
+
+---
+
+## Git & State Discovery Rules (Strict Enforcement)
+
+1. **NEVER Inspect Git When Implementing or Diagnosing**:
+   - **Forbidden commands**: `git diff`, `git status`, `git log`, `git show`, `git blame`, or any git-based inspection of modified files/history.
+   - **Reason**: Implementations and test steps must be driven by specifications, design docs, and active test feedback—not by previous commit history or uncommitted git diffs.
+   - **What to do instead**:
+     - Read specifications: `plans/plan.md`, `features/`, `docs/designs/`.
+     - Inspect files directly using filesystem / workspace tools.
+     - Verify behavior and state using test executions (`npm run test`, `npm run typecheck`, `npm run lint`, `npx bddgen`, `npm run test:acceptance:feature`).
+2. **Git Commit Policy**:
+   - Do NOT commit changes. Leave all changes uncommitted for the user to review and commit manually.
 
 ---
 
