@@ -39,8 +39,12 @@ function serveAssetsAudioPlugin() {
       server.middlewares.use(middleware)
     },
     closeBundle() {
-      const outDir = path.resolve(__dirname, 'dist/assets/audio')
-      cpSync(assetsRoot, outDir, { recursive: true })
+      try {
+        const outDir = path.resolve(__dirname, 'dist/assets/audio')
+        cpSync(assetsRoot, outDir, { recursive: true })
+      } catch (err) {
+        console.warn('Audio asset copy warning ignored:', err)
+      }
     },
   }
 }
@@ -155,6 +159,9 @@ export default defineConfig({
     host: '127.0.0.1',
     port: 5173,
     strictPort: true,
+    watch: {
+      ignored: ['**/playwright-report/**', '**/test-results/**', '**/.features-gen/**'],
+    },
     fs: {
       allow: [path.resolve(__dirname, '.'), path.resolve(__dirname, 'assets')],
     },

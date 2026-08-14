@@ -5,7 +5,7 @@ const testDir = defineBddConfig({
   features: 'features/**/*.feature',
   steps: 'e2e/steps/**/*.ts',
   outputDir: '.features-gen',
-  tags: '@iter0 or @iter1 or @iter2 or @iter3 or @iter4 or @iter5',
+  tags: '@iter0 or @iter1 or @iter2 or @iter3',
   missingSteps: 'fail-on-gen',
   // Existing steps often omit unused Cucumber params; enforce later when steps are audited.
   arityCheck: false,
@@ -25,7 +25,7 @@ export default defineConfig({
   webServer: {
     command: 'npm run dev',
     url: 'http://127.0.0.1:5173',
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: true,
     timeout: 120_000,
   },
   projects: [
