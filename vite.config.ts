@@ -1,5 +1,4 @@
 import fs from 'node:fs'
-import { cpSync } from 'node:fs'
 import path from 'node:path'
 import type { ServerResponse } from 'node:http'
 import react from '@vitejs/plugin-react'
@@ -40,7 +39,20 @@ function serveAssetsAudioPlugin() {
     },
     closeBundle() {
       const outDir = path.resolve(__dirname, 'dist/assets/audio')
-      cpSync(assetsRoot, outDir, { recursive: true })
+      const copyRecursiveSync = (src: string, dest: string) => {
+        if (!fs.existsSync(src)) return
+        const stats = fs.statSync(src)
+        if (stats.isDirectory()) {
+          fs.mkdirSync(dest, { recursive: true })
+          for (const item of fs.readdirSync(src)) {
+            copyRecursiveSync(path.join(src, item), path.join(dest, item))
+          }
+        } else {
+          fs.mkdirSync(path.dirname(dest), { recursive: true })
+          fs.copyFileSync(src, dest)
+        }
+      }
+      copyRecursiveSync(assetsRoot, outDir)
     },
   }
 }

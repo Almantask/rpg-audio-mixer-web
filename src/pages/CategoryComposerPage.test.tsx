@@ -4,6 +4,8 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { CategoryComposerPage } from '@/pages/CategoryComposerPage'
 
+import type { SoundscapeCategory, SoundscapeTrack } from '@/types/library'
+
 type PreviewListener = (
   trackId: string | null,
   trackName: string | null,
@@ -26,8 +28,8 @@ const fixture = vi.hoisted(() => ({
     audioUrl: '/audio/forest-rain.mp3',
     createdAt: '2026-07-12T00:00:00.000Z',
   },
-  categoriesList: [] as any[],
-  tracksList: [] as any[],
+  categoriesList: [] as SoundscapeCategory[],
+  tracksList: [] as SoundscapeTrack[],
 }))
 
 const audioPreviewMock = vi.hoisted(() => {

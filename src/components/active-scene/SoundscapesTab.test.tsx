@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { SoundscapesTab } from '@/components/active-scene/SoundscapesTab'
 import type { ScenePlaybackState, SoundscapeTileState } from '@/lib/audio/sceneAudioManager'
+import type { SoundscapeTrack } from '@/types/library'
 
 const playScene = vi.fn(async () => undefined)
 const stopAll = vi.fn()
@@ -51,7 +52,7 @@ vi.mock('@/context/SceneAudioContext', () => ({
   }),
 }))
 
-const mockSoundscapeTracks: any[] = []
+const mockSoundscapeTracks: SoundscapeTrack[] = []
 
 vi.mock('@/context/CampaignDataContext', () => ({
   useCampaignData: () => ({

@@ -549,8 +549,8 @@ export class SceneAudioManager {
         const track = slot.config.tracksById[trackId]
         return (
           track &&
-          ((track as any).type === 'youtube' || (track as any).type === 'youtube-playlist') &&
-          !(track as any).isOfflineReady
+          (track.type === 'youtube' || track.type === 'youtube-playlist') &&
+          !track.isOfflineReady
         )
       })
       if (hasOnlineOnly) {
@@ -578,8 +578,8 @@ export class SceneAudioManager {
       const track = slot.config.tracksById[loadedTrackId]
       const isOnlineOnly =
         track &&
-        ((track as any).type === 'youtube' || (track as any).type === 'youtube-playlist') &&
-        !(track as any).isOfflineReady
+        (track.type === 'youtube' || track.type === 'youtube-playlist') &&
+        !track.isOfflineReady
       if (isOnlineOnly) {
         return false
       }
