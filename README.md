@@ -35,7 +35,10 @@
 ├── public/              # Static web assets
 ├── plans/               # Iteration / implementation plans
 ├── ai/                  # Shared agent and skill definitions
-├── .agents/             # Agent/skill copies used by IDE assistants
+├── .agents/             # Agent/skill mirrors used by IDE assistants (Antigravity)
+├── .claude/             # Agent/skill mirrors used by IDE assistants (Claude Code)
+├── .cursor/             # Agent/skill mirrors used by IDE assistants (Cursor)
+├── .opencode/           # Agent/skill mirrors used by IDE assistants (opencode)
 └── .github/workflows/   # CI, acceptance tests, Pages deploy
 ```
 
@@ -103,10 +106,10 @@ See the [implementation plan](plans/plan.md) — the next non-completed iteratio
 
 ### Agentic development workflow
 
-Arcanum uses specialized AI agents and skills for product, design, implementation, QA, and review. Definitions live under:
+Arcanum uses specialized AI agents and skills for product, design, implementation, QA, and review. Definitions live under `ai/` and are mirrored via symlinks for each assistant — edit only under `ai/`:
 
-- `.cursor/agents/` / `.agents/agents/` — specialist agents
-- `.agents/skills/` / `ai/skills/` — orchestration and domain skills
+- `ai/agents/` — specialist agents, mirrored at `.cursor/agents/`, `.claude/agents/`, `.opencode/agents/`, `.agents/agents/`
+- `ai/skills/` — orchestration and domain skills, mirrored at `.cursor/skills/`, `.claude/skills/`, `.opencode/skills/`, `.agents/skills/`
 
 #### Specialist roles
 
@@ -138,7 +141,7 @@ Examples:
 /new-feature Implement the Master Volume mute toggle from the plan
 ```
 
-Consult `ai/skills/<skill>/SKILL.md` (or `.agents/skills/`) for phase details and subagent delegation.
+Consult `ai/skills/<skill>/SKILL.md` (or any mirror, e.g. `.claude/skills/`) for phase details and subagent delegation.
 
 ---
 

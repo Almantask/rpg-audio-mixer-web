@@ -5,6 +5,10 @@
 !/.opencode/agents
 .opencode/skills/**
 !/.opencode/skills
+.claude/agents/**
+!/.claude/agents
+.claude/skills/**
+!/.claude/skills
 
 # Local AI tool mirrors (not versioned; edit under ai/ instead)
 .agents/agents/**

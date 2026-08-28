@@ -3,7 +3,7 @@
 
 blocked=0
 
-for path in .cursor .opencode/agents .opencode/skills; do
+for path in .cursor .opencode/agents .opencode/skills .claude/agents .claude/skills; do
   mode=$(git ls-files -s -- "$path" | awk '{print $1}')
   if [ -n "$mode" ] && [ "$mode" != "120000" ]; then
     echo "pre-commit: $path must be a git symlink (mode 120000), not regular files." >&2
@@ -11,10 +11,10 @@ for path in .cursor .opencode/agents .opencode/skills; do
   fi
 done
 
-if git diff --cached --name-status | grep -Eq '^A[[:space:]](\.cursor/|\.opencode/agents/|\.opencode/skills/)'; then
-  git diff --cached --name-status | grep -E '^A[[:space:]](\.cursor/|\.opencode/agents/|\.opencode/skills/)' >&2
+if git diff --cached --name-status | grep -Eq '^A[[:space:]](\.cursor/|\.opencode/agents/|\.opencode/skills/|\.claude/agents/|\.claude/skills/)'; then
+  git diff --cached --name-status | grep -E '^A[[:space:]](\.cursor/|\.opencode/agents/|\.opencode/skills/|\.claude/agents/|\.claude/skills/)' >&2
   echo "pre-commit: refuse to commit expanded mirror files under ai/ mirrors." >&2
-  echo "pre-commit: run scripts/fix-ai-git-symlinks.ps1 and edit files only under ai/." >&2
+  echo "pre-commit: recreate the mirror as a real symlink (see .opencode/agents) and edit files only under ai/." >&2
   blocked=1
 fi
 
