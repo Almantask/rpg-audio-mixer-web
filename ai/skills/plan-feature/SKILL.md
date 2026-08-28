@@ -41,9 +41,9 @@ Principal QA may record questions in `/feedback/feature [name].md`.
 
 ## Phase 4 — Implementation strategy
 
-**First:** `fe-developer` — draft `/plans/summary.md` and `/plans/iteration-x.md`. Every plan must link `.feature` files, scene design docs, and HTML prototypes.
+**First:** `fe-developer` — draft `/plans/summary.md` and `/plans/iteration-x.md`. Every plan must link `.feature` files, design docs, and HTML prototypes.
 
-**Then parallel:** `fe-reviewer` (`review-frontend-production-code`) · `principal-engineer` (technical feasibility) · `audio-specialist` (`engineer-audio-playback`) *(skip if no audio logic)*
+**Then parallel:** `fe-reviewer` (`review-frontend-production-code`) · `principal-engineer` (technical feasibility)
 
 Build/CI blocked → `devops-engineer` (`manage-build-pipeline`), then retry.
 
@@ -59,7 +59,7 @@ Stop and notify the human when `/feedback/` has open questions. Do not advance u
 
 ## Phase 7 — Post-feedback fixes
 
-Launch `fe-developer` (+ `audio-specialist` if applicable) to update plans and linked artifacts per `/feedback/` decisions.
+Launch `fe-developer` to update plans and linked artifacts per `/feedback/` decisions.
 
 ## Reporting
 

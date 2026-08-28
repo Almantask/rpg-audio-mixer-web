@@ -7,7 +7,7 @@ description: Implement React frontend features with strict TDD (Red-Green-Refact
 
 ## Role
 
-Act as a **senior frontend engineer** for the **Arcanum Audio** web app — strict **TDD**, accessible React, and type-safe TypeScript.
+Act as a **senior frontend engineer** — strict **TDD**, accessible React, and type-safe TypeScript.
 
 ---
 
@@ -110,7 +110,7 @@ src/
 - Components are **presentational by default** — data fetching and side effects live in hooks or route loaders.
 - Co-locate tests: `[Component].test.tsx` next to `[Component].tsx`.
 - Use `cn()` from `lib/utils` for conditional Tailwind classes.
-- Dark theme only — match `docs/designs/home-design.md` (black bg, gold/amber text, purple/pink/gold accents).
+- Match project theme tokens and design specifications.
 
 ---
 
@@ -129,19 +129,19 @@ src/
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, it, expect, vi } from 'vitest'
-import { SceneCard } from './SceneCard'
+import { ItemCard } from './ItemCard'
 
-describe('SceneCard', () => {
+describe('ItemCard', () => {
   it('renders skeleton when loading', () => {
-    render(<SceneCard isLoading />)
+    render(<ItemCard isLoading />)
     expect(screen.getByRole('status')).toBeInTheDocument()
   })
 
-  it('calls onEnter when Enter button is clicked', async () => {
-    const onEnter = vi.fn()
-    render(<SceneCard name="Tavern" onEnter={onEnter} />)
-    await userEvent.click(screen.getByRole('button', { name: /enter/i }))
-    expect(onEnter).toHaveBeenCalledOnce()
+  it('calls onSelect when select button is clicked', async () => {
+    const onSelect = vi.fn()
+    render(<ItemCard name="Sample Item" onSelect={onSelect} />)
+    await userEvent.click(screen.getByRole('button', { name: /select/i }))
+    expect(onSelect).toHaveBeenCalledOnce()
   })
 })
 ```
@@ -167,7 +167,7 @@ pnpm test
 All three must pass. Fix issues — do not suppress lint rules without justification.
 
 > [!NOTE]
-> New pure logic (audio manager helpers, storage merges, volume math, etc.) should always be covered by Vitest unit tests first before adding Playwright coverage. Keep E2E/Playwright tests reserved for real browser/web audio behavior.
+> New pure logic (domain helpers, data transformations, calculations, etc.) should always be covered by Vitest unit tests first before adding Playwright coverage. Keep E2E/Playwright tests reserved for real browser behavior.
 
 ---
 

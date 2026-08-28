@@ -16,28 +16,20 @@ Build:      RED (unit) + RED (steps)  →  GREEN (code)  →  GREEN (E2E)  →  
 
 ## Feature ↔ design mapping
 
-| Feature domain | Design doc |
-|----------------|------------|
-| `features/home/` | `home-design.md` |
-| `features/campaigns/` | `campaigns-design.md` |
-| `features/campaign-sessions/` | `campaign-sessions-design.md` |
-| `features/scenes/` | `scenes-list-design.md` |
-| `features/session-scenes/` | `session-scenes-design.md` |
-| `features/active-scene/soundscapes/` | `active-scene-soundscapes-design.md` |
-| `features/active-scene/soundboard/` | `active-scene-soundboard-design.md` |
-| `features/library/` | `audio-library-design.md` |
-| `features/library/composer/` | `soundscape-category-composer-design.md` |
-| `features/trash/` | `trash-design.md` |
-| `features/credits/` | `credits-design.md` |
-| `features/platform/` | `platform-design.md` |
+Map each feature domain to its corresponding design specification (e.g. `features/<domain>/` → `<domain>-design.md`).
 
-Add-modals and pickers: also read `add-fx-or-soundscape-to-scene-design.md` and modal-specific `*-modal-design.md` files.
+| Feature domain (examples) | Design doc |
+|---|---|
+| `features/home/` | `home-design.md` |
+| `features/dashboard/` | `dashboard-design.md` |
+| `features/settings/` | `settings-design.md` |
+| `features/profile/` | `profile-design.md` |
 
 ## Conflict resolution
 
 | Topic | Wins |
-|-------|------|
-| User flows, business rules, audio behavior | `.feature` files |
+|---|---|
+| User flows, business rules, application behavior | `.feature` files |
 | Layout, typography, colors, copy, empty/loading/error UI | `*-design.md` + HTML |
 | Contradiction (e.g. feature says X, design shows Y) | Stop — `/feedback/` — do not implement |
 
@@ -50,7 +42,6 @@ Add-modals and pickers: also read `add-fx-or-soundscape-to-scene-design.md` and 
 - Existing code: src/... (extend | new)
 - States: empty | loading | success | error
 - Step defs: exist | missing
-- Audio: yes | no
 ```
 
 ## When to escalate

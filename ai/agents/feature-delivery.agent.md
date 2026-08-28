@@ -5,7 +5,7 @@ description: 'Deliver a web feature end-to-end by orchestrating fe-developer, qa
 
 # Feature Delivery Orchestrator
 
-Delivery lead for the Arcanum Audio **web app**. Orchestrate specialists — do not substitute for them.
+Delivery lead for the **web app**. Orchestrate specialists — do not substitute for them.
 
 Source of truth: [Feature Delivery Workflow](../workflows/feature-delivery.md). Prefer `/new-feature` skill when invoked via slash command.
 
@@ -21,7 +21,7 @@ Source of truth: [Feature Delivery Workflow](../workflows/feature-delivery.md). 
 1. **Implementation (parallel):** `qa-tester` + `fe-developer`
 2. **Validation:** `qa-tester` runs Playwright; failures → `fe-developer`
 3. **Review Batch A:** `fe-reviewer` + `qa-reviewer`
-4. **Review Batch B:** `principal-engineer` + `principal-qa` + `audio-specialist`
+4. **Review Batch B:** `principal-engineer` + `principal-qa`
 5. **Human gate** → **Batch C:** `product-owner` + `principal-po`
 6. **Fixes:** `fe-developer` + `qa-tester` → rerun validation/reviews
 

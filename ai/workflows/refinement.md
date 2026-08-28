@@ -16,7 +16,7 @@ description: Refine existing web feature specs, designs, and plans.
 ## Phase 4: Plan update
 
 - **First:** `@fe-developer` — update plans with links to changed artifacts
-- **Then parallel:** `@fe-reviewer` · `@principal-engineer` · `@audio-specialist` *(if audio)*
+- **Then parallel:** `@fe-reviewer` · `@principal-engineer`
 - CI blocked → `@devops-engineer`
 
 ## Phase 5–7: Principal review, human gate, fixes (`@fe-developer`)

@@ -1,5 +1,5 @@
 ---
-description: End-to-end feature delivery for the Arcanum Audio web app — implementation, validation, review, and fixes.
+description: End-to-end feature delivery for the web app — implementation, validation, review, and fixes.
 ---
 
 # Feature Delivery Workflow
@@ -21,9 +21,9 @@ Both `@qa-tester` and `@fe-developer` work in parallel:
 
 ## Phase 3: Review Council (parallel batches)
 
-**Batch A:** `@fe-reviewer` (production React/audio) · `@qa-reviewer` (BDD artifacts)
+**Batch A:** `@fe-reviewer` (production React) · `@qa-reviewer` (BDD artifacts)
 
-**Batch B:** `@principal-engineer` · `@principal-qa` · `@audio-specialist` *(if media logic)*
+**Batch B:** `@principal-engineer` · `@principal-qa`
 
 **Human gate:** Pause if principals raised `/feedback/` questions.
 

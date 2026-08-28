@@ -55,7 +55,7 @@ gh workflow run acceptance-tests.yml --ref <branch> -f cucumber_tags="@iterN" -f
 
 | Area | Rule |
 |---|---|
-| Gherkin | `features/<screen>/`; explicit `Given` for smallest complete state; domain nouns in steps (`soundscape card`, not generic `card`) |
+| Gherkin | `features/<screen>/`; explicit `Given` for smallest complete state; domain nouns in steps (`item card`, not generic `card`) |
 | Steps | `e2e/steps/`; `getByRole` / `getByLabel`; scope to `main` or `dialog`; no `.first()` band-aids |
 | Fixtures | Shared builders and consistent ID graph; update all seed paths when `AppData` changes — see [REFERENCE.md](REFERENCE.md#e2e-fixture-integrity) |
 | Design | Compare failures to approved design; fix production, do not weaken tests |

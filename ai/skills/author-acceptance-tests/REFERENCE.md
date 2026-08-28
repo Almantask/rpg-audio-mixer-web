@@ -36,7 +36,6 @@ Classify every failure before changing anything:
 ## Gherkin conventions
 
 - Place files under `features/<screen>/` — one folder per screen.
-- Scene add modals: `features/active-scene/soundboard/add-modal/` and `features/active-scene/soundscapes/add-modal/`.
 - One distinct functionality per file; split when a feature covers multiple concerns.
 - Use Given/When/Then; re-use existing feature files when modifying a domain.
 
@@ -45,7 +44,7 @@ Classify every failure before changing anything:
 Every scenario declares the **smallest complete business state** in `Given` steps:
 
 - No implicit data from earlier scenarios or hidden setup in `When`/`Then`.
-- Empty-state, no-match, and loading-state scenarios need **distinct fixtures** — an empty library is not a no-match search.
+- Empty-state, no-match, and loading-state scenarios need **distinct fixtures** — an empty list is not a no-match search.
 - Vacuous assertions are invalid (e.g. disabled button when nothing could be selected).
 
 ### Domain-specific steps
@@ -53,8 +52,8 @@ Every scenario declares the **smallest complete business state** in `Given` step
 Include the domain noun in cross-cutting actions:
 
 ```
-I swipe right on the "Weather" soundscape card   ✓
-I swipe right on the "Weather" card              ✗  (collides with scene/campaign/session)
+I swipe right on the "Weather" item card   ✓
+I swipe right on the "Weather" card        ✗  (collides with scene/profile/session)
 ```
 
 - Keep shared steps only for truly identical behavior across domains.
@@ -83,7 +82,7 @@ A step leaves the browser in exactly the state its wording promises:
 - Expand collapsed sections before nested interactions.
 - Close modals when the user should be back on the underlying screen.
 - Do not force-click through overlays — fix the preceding transition.
-- Prefer one helper (e.g. `openTrackPicker(level, category)`) for navigation, expansion, and readiness.
+- Prefer one helper (e.g. `openItemPicker(category)`) for navigation, expansion, and readiness.
 
 ### Input modality
 
@@ -98,12 +97,12 @@ Match the component's event family:
 import { expect } from '@playwright/test'
 import { When, Then } from '@cucumber/cucumber'
 
-When('I start playback', async function () {
-  await this.page.getByRole('button', { name: /play/i }).click()
+When('I select the item', async function () {
+  await this.page.getByRole('button', { name: /select/i }).click()
 })
 
-Then('I see the scene is playing', async function () {
-  await expect(this.page.getByRole('status')).toContainText(/playing/i)
+Then('I see the item is active', async function () {
+  await expect(this.page.getByRole('status')).toContainText(/active/i)
 })
 ```
 
@@ -126,10 +125,10 @@ Run typecheck — it catches missing seed fields immediately.
 
 ### Fixture graph rules
 
-- Use shared builders (`buildSoundscapeTrack`, `buildSoundscapeCategory`, ID helpers) — no hand-authored IDs in steps.
-- Treat IDs, level references, and records as one consistent graph.
-- Centralize known-good audio assets; validate paths exist.
-- Assert observable UI state (play/pause) — do not fake global playback flags.
+- Use shared builders (`buildItem`, `buildCategory`, ID helpers) — no hand-authored IDs in steps.
+- Treat IDs and records as one consistent graph.
+- Centralize known-good mock assets and fixtures; validate paths exist.
+- Assert observable UI state — do not fake global state flags.
 
 ---
 

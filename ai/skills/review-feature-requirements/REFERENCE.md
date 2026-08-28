@@ -20,26 +20,25 @@ Principles: *Escaping the Build Trap* (Perri), *Continuous Discovery Habits* (To
 Principles: shadcn/ui patterns, progressive disclosure, state-driven design.
 
 - For each user action, are **empty**, **loading**, **success**, and **error** states addressed or explicitly out of scope?
-- If a scenario references a screen, what happens with zero soundscapes, zero FX, or partial data?
-- Are destructive or irreversible actions (delete, global stop, session lock) specified clearly?
-- Is navigation consistent with route and layout conventions in `docs/designs/home-design.md`?
+- If a scenario references a screen, what happens with zero items, empty lists, or partial data?
+- Are destructive or irreversible actions (delete, batch removal, reset) specified clearly?
+- Is navigation consistent with route and layout conventions?
 - Are disabled controls explained — condition and recovery?
-- Are timing-sensitive interactions (fades, crossfades) defined enough for consistent UX?
+- Are timing-sensitive interactions (debounce, animations, transitions) defined enough for consistent UX?
 
 **Gap signals:** `When` without observable `Then`; success-only paths; controls named in one scenario but undefined elsewhere.
 
-## Audio semantics (`@audio-specialist`)
+## Technical feasibility (`@principal-engineer`)
 
-Principles: Web Audio API, perceptual mixing, low-latency feedback for live GM use, browser autoplay policy.
+Principles: State consistency, async operations, data integrity, error resilience.
 
-- Are perceptual outcomes stated in testable terms? ("smoothly", "seamlessly", "no dip")
-- What happens when the tab loses focus or `AudioContext` is suspended during crossfade or FX?
-- Concurrent triggers, overlapping loops, mid-FX scene switches?
-- Bluetooth / system mute / browser autoplay block behaviors aligned with system audio scenarios?
-- Are fade/duck durations requirements or implementation defaults?
-- Missing or corrupt asset behavior specified?
+- Are asynchronous interactions and loading boundaries clearly specified?
+- What happens when network requests fail, timeout, or return validation errors?
+- How are concurrent edits, optimistic updates, or conflict resolutions handled?
+- Are offline/cache policies and storage requirements aligned with application constraints?
+- Are edge cases (rate limits, payload size limits) addressed?
 
-**Gap signals:** playback without pause/resume policy; intensity changes during ducking; master stop during crossfade.
+**Gap signals:** untracked asynchronous operations; missing error recovery flows; ambiguous state persistence policies.
 
 ## Behavioral completeness (`@principal-qa`)
 

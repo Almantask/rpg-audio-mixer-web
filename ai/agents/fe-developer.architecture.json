@@ -7,8 +7,7 @@
       "language": "TypeScript",
       "styling": "Tailwind CSS + shadcn/ui",
       "unit_tests": "Vitest + Testing Library",
-      "e2e_tests": "Playwright + Cucumber",
-      "audio": "Web Audio API"
+      "e2e_tests": "Playwright + Cucumber"
     },
     "orchestration_skills": [
       {
@@ -34,7 +33,6 @@
       "qa-reviewer",
       "product-owner",
       "product-designer",
-      "audio-specialist",
       "devops-engineer",
       "principal-engineer",
       "principal-po",

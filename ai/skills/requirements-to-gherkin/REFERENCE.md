@@ -31,23 +31,23 @@ When sources conflict, apply in order:
 **Good — decided slice to focused features**
 
 ```text
-docs/requirements/library-imported-tracks.md
-+ feedback (LIT-00 = browse+trash, LIT-09 = user imports only, …)
-→ features/library/browse_imported_tracks.feature
-→ features/library/delete_imported_track.feature
+docs/requirements/user-profile.md
++ feedback (UP-00 = browse+archive, UP-09 = user updates only, …)
+→ features/profile/browse_profile_settings.feature
+→ features/profile/update_user_preferences.feature
 ```
 
 **Bad — guessing undecided product rules**
 
 ```text
-# feedback LIT-03 unchecked → inventing "detach on trash" scenarios
-→ delete_imported_track.feature with detach+restore rules   ✗ stop at gate
+# feedback UP-03 unchecked → inventing "detach on archive" scenarios
+→ update_user_preferences.feature with detach+restore rules   ✗ stop at gate
 ```
 
 **Bad — design as requirements**
 
 ```text
-docs/designs/audio-library-design.md → rewrite library features
+docs/designs/user-settings-design.md → rewrite profile features
 # Wrong skill. Use design-to-gherkin.
 ```
 
@@ -56,4 +56,4 @@ docs/designs/audio-library-design.md → rewrite library features
 - Step definitions, fixtures, Playwright runs (`author-acceptance-tests` after Gherkin exists)
 - Design specs / HTML prototypes (`design-to-gherkin`)
 - Product coverage audit as primary goal (`review-feature-requirements`)
-- Production UI/audio code
+- Production UI/application code

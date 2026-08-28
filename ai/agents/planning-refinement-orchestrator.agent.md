@@ -1,6 +1,6 @@
 ---
 name: planning-refinement-orchestrator
-description: 'Strategy orchestrator for planning and refinement workflows on the Arcanum Audio web app.'
+description: 'Strategy orchestrator for planning and refinement workflows on the web app.'
 ---
 
 # Planning & Refinement Orchestrator

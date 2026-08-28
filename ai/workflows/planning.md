@@ -19,8 +19,8 @@ description: Plan a new web feature from requirements to designs, Gherkin specs,
 
 ## Phase 4: Implementation strategy
 
-- **First:** `@fe-developer` — `/plans/summary.md`, `/plans/iteration-x.md` (link features, scenes, HTML)
-- **Then parallel:** `@fe-reviewer` · `@principal-engineer` · `@audio-specialist` *(if audio)*
+- **First:** `@fe-developer` — `/plans/summary.md`, `/plans/iteration-x.md` (link features, designs, HTML)
+- **Then parallel:** `@fe-reviewer` · `@principal-engineer`
 - CI blocked → `@devops-engineer`
 
 ## Phase 5: Principal review (parallel)

@@ -35,9 +35,9 @@ Launch `product-designer` (`design-ux-prototypes`):
 
 ## Phase 4 — Plan update
 
-**First:** `fe-developer` — update `/plans/summary.md` and relevant `/plans/iteration-x.md`. Reference all changed feature files, scenes, and HTML prototypes.
+**First:** `fe-developer` — update `/plans/summary.md` and relevant `/plans/iteration-x.md`. Reference all changed feature files, designs, and HTML prototypes.
 
-**Then parallel:** `fe-reviewer` (`review-frontend-production-code`) · `principal-engineer` (architectural review) · `audio-specialist` (`engineer-audio-playback`) *(skip if no audio logic)*
+**Then parallel:** `fe-reviewer` (`review-frontend-production-code`) · `principal-engineer` (architectural review)
 
 Build/CI blocked → `devops-engineer` (`manage-build-pipeline`), then retry.
 
@@ -53,7 +53,7 @@ Stop and notify the human when `/feedback/` has open questions. Do not advance u
 
 ## Phase 7 — Post-feedback fixes
 
-Launch `fe-developer` (+ `audio-specialist` if applicable) to align designs, `.feature` files, and plans with `/feedback/` decisions.
+Launch `fe-developer` to align designs, `.feature` files, and plans with `/feedback/` decisions.
 
 ## Reporting
 

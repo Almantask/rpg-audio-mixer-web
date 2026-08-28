@@ -16,9 +16,9 @@ Orchestrate requirements → Gherkin only. Delegate via Task subagents; do not s
 5. Summarize coverage and BDD improvements applied.
 
 ```text
-docs/requirements/library-imported-tracks.md
-+ feedback/feature library-imported-tracks.md   (checked options)
-→ features/library/browse_imported_tracks.feature
+docs/requirements/profile-settings.md
++ feedback/feature profile-settings.md   (checked options)
+→ features/profile/browse_profile_settings.feature
 ```
 
 ## Inputs

@@ -1,15 +1,15 @@
 ---
 name: review-frontend-production-code
-description: Review React and TypeScript production code for quality. Use when reviewing PRs, building the project, or flagging warnings, deprecations, bugs, security issues, audio performance, and architectural code smells.
+description: Review React and TypeScript production code for quality. Use when reviewing PRs, building the project, or flagging warnings, deprecations, bugs, security issues, performance issues, and architectural code smells.
 ---
 
 # Review Frontend Production Code
 
 ## Role
 
-Act as a **Senior Frontend Code Reviewer** for this **Arcanum Audio** web app. Correctness, latency, accessibility, and audio fidelity are first-class concerns alongside standard React quality.
+Act as a **Senior Frontend Code Reviewer**. Correctness, responsiveness, accessibility, and performance are first-class concerns alongside standard React quality.
 
-Review production code (components, hooks, routes, audio modules, state) and deliver a severity-ranked report.
+Review production code (components, hooks, routes, state) and deliver a severity-ranked report.
 
 ## Workflow
 
@@ -33,23 +33,22 @@ Review production code (components, hooks, routes, audio modules, state) and del
 
 ## Evaluation Categories
 
-### Performance & Latency
+### Performance & Responsiveness
 - Unnecessary re-renders, missing `useMemo`/`useCallback` on hot paths
 - Large bundle imports (import whole libraries instead of tree-shaken paths)
-- Web Audio buffer scheduling, main-thread audio decode
 - Layout thrashing, missing suspense boundaries on route transitions
+- Inefficient DOM operations or heavy synchronous work on the main thread
 
-### Audio Quality (Web)
-- Web Audio API graph correctness (`AudioContext`, `GainNode`, buffer lifecycle)
-- Autoplay policy handling (user gesture before first play)
-- Sample-rate mismatches, clipping from gain stacking
-- Page Visibility / tab blur pause-resume behavior
-
-### Potential Bugs
+### State & Asynchronous Lifecycle
 - Stale closures in hooks, missing effect cleanup
 - Race conditions in async state updates
 - Incorrect dependency arrays in `useEffect`
 - Unhandled promise rejections in client loaders
+
+### Potential Bugs
+- Unhandled null/undefined values or missing runtime boundary checks
+- Missing error boundary coverage
+- Stale cached state or synchronization issues
 
 ### Code Smells
 - Business logic inside presentational components
@@ -72,13 +71,13 @@ Review production code (components, hooks, routes, audio modules, state) and del
 
 ### Security
 - Hardcoded secrets, XSS via `dangerouslySetInnerHTML`
-- Missing CSP considerations for user-uploaded audio metadata
+- Missing validation or sanitization for user-uploaded metadata
 
 ## Severity Guide
 
 | Level | Meaning |
 |-------|---------|
-| `CRITICAL` | Production crash, data loss, or unacceptable audio latency/regression. |
+| `CRITICAL` | Production crash, data loss, or severe performance regression. |
 | `HIGH` | Correctness risk, architecture violation, or missing error handling on a critical path. |
 | `MEDIUM` | Maintainability, readability, or non-critical deprecation. |
 | `LOW` | Cosmetic or minor style improvement. |

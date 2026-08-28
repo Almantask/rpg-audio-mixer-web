@@ -39,7 +39,7 @@ Launch `qa-tester` to run:
 
 **Batch A** (parallel): `fe-reviewer` · `qa-reviewer`
 
-**Batch B** (parallel, after A): `principal-engineer` · `principal-qa` · `audio-specialist` *(skip audio if feature has no media logic)*
+**Batch B** (parallel, after A): `principal-engineer` · `principal-qa`
 
 **Human gate:** Principal reviewers may record questions in `/feedback/`. Stop and notify the human. Do not start Batch C until decisions exist.
 

@@ -29,7 +29,7 @@ Tag the primary lens per finding; note when multiple lenses apply.
 |------|-------------|-------|
 | **Value & scope** | Product Owner | User problem fit, minimum viable behavior, deferral candidates, iteration scope |
 | **Experience** | Product Designer | UI states, interaction clarity, empty/loading/error/recovery coverage |
-| **Audio semantics** | Audio Specialist | Audio cases (if applicable) |
+| **Technical feasibility** | Principal Engineer | Performance, data flow, state consistency, constraints |
 | **Quality of tests** | Principal QA | Focused on the quality of test cases, whether they can be simplified or missing, etc |
 
 Detailed question banks per lens: [REFERENCE.md](REFERENCE.md).

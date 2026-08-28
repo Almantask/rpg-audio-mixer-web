@@ -57,7 +57,6 @@ Launch `fe-developer` (`implement-frontend-with-tdd`):
 - **RED** → failing Vitest/RTL test for observable behavior from the scenario.
 - **GREEN** → minimum React/TypeScript to pass; match design spec for layout and states.
 - **REFACTOR** → clean without breaking tests.
-- Audio logic → also follow `engineer-audio-playback`.
 
 Behavior from **features**; visuals from **designs**. Do not invent scenarios or UI not in artifacts.
 

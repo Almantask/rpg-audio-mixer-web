@@ -5,27 +5,18 @@ description: Design UX flows and HTML prototypes with shadcn/ui and Tailwind. Us
 
 # Design UX Prototypes
 
-## App Context
+## Design Context
 
-**Arcanum Audio** is a **web application** (React, Tailwind CSS, shadcn/ui) for **Game Masters (GMs)** running tabletop RPG sessions — usable on desktop and tablet browsers.
+Web applications built with React, Tailwind CSS, and shadcn/ui — responsive across desktop, tablet, and mobile browsers.
 
-### Primary persona — The Game Master
+### User Centric Design
 
 | Attribute | Detail |
 |---|---|
-| Goal | Set the right audio atmosphere to immerse players in each scene |
-| Context of use | Seated at a table, often mid-session; one hand busy; glancing at screen |
-| Key pain points | Slow to configure; hard to switch scenes mid-session; tab/browser distractions |
-| Mental model | Thinks in "scenes" (e.g., Tavern, Battle, Forest); wants presets + customisation |
-
-### Core feature areas
-
-| Area | What it covers |
-|---|---|
-| **Scenes** | Create, clone, delete, view list; each scene has **Ambience** (loopable tracks) + **Soundboard** (one-shot sounds) tabs |
-| **Playback** | Play/pause loops, trigger one-shot sounds, mix volumes, set intensity levels, visualise loop progress |
-| **Sound library** | Browse by category, search, buy sounds, import custom audio |
-| **Profile** | Setup UI preferences (soundboard buttons, loop options) so the app adapts to the GM's play style |
+| Goal | Complete core user tasks efficiently with minimal friction |
+| Context of use | Clear, glanceable interface with responsive layout |
+| Key considerations | Fast interaction, intuitive navigation, minimal distractions |
+| Mental model | Organized into intuitive screens, dashboards, and workflows |
 
 ---
 
@@ -83,20 +74,18 @@ Acceptance criteria as Gherkin compatible with **Playwright + Cucumber**.
 
 | Pattern | Preferred component | Notes |
 |---|---|---|
-| Primary action | `Button` (default or destructive variant) | Use `size="lg"` for session-critical controls |
-| Scene / sound list | `Card` + list rows | Skeleton while loading |
-| Tabbed content (Ambience / Soundboard) | `Tabs` | Sync with URL hash or query when useful |
-| Volume / intensity | `Slider` | Show value label for accessibility |
+| Primary action | `Button` (default or destructive variant) | Use `size="lg"` for key primary actions |
+| Item / record list | `Card` + list rows | Skeleton while loading |
+| Tabbed content | `Tabs` | Sync with URL hash or query when useful |
+| Range / value adjust | `Slider` | Show value label for accessibility |
 | Confirmation (delete) | `AlertDialog` | Destructive variant on confirm |
 | Settings form | `Label` + `Switch` / `Select` rows | Group with section headings |
 | Search | Input with search icon or `Command` palette | Debounced filter |
-| Playback progress | `Progress` | Indeterminate while buffering |
-| App navigation | Sidebar or top `NavigationMenu` | Match `docs/designs/home-design.md` |
+| Loading / progress | `Progress` | Indeterminate while loading |
+| App navigation | Sidebar or top `NavigationMenu` | Consistent across pages |
 | Contextual actions | `DropdownMenu` | Keyboard accessible |
 | Toast feedback | `Sonner` / `Toast` | Prefer over `alert()` |
 | Import / upload | `Dialog` + file input | Drag-drop zone optional |
-
-**Theme:** Dark-first — black background, gold/amber text, purple/pink/gold accents per `docs/designs/home-design.md`.
 
 ---
 
@@ -113,13 +102,13 @@ Acceptance criteria as Gherkin compatible with **Playwright + Cucumber**.
 
 ---
 
-## UX Principles for This App
+## UX Principles
 
-1. **Session-safe** — Destructive actions require confirmation; support undo where possible.
-2. **Low-glance** — Primary playback controls visible without scrolling on common viewports.
-3. **Predictable** — Same control patterns across all scenes.
-4. **Offline-capable** — Purchased/imported assets available without network (PWA / cached assets as applicable).
-5. **Browser-respectful** — Handle autoplay blocks and tab visibility without silent failure.
+1. **Safe interactions** — Destructive actions require confirmation; support undo where possible.
+2. **Glanceable & clear** — Primary controls visible without excessive scrolling on common viewports.
+3. **Predictable** — Consistent control patterns across all screens.
+4. **Resilient** — Handle network delays and errors with clear user feedback.
+5. **Accessible** — Fully operable via keyboard, screen readers, and touch.
 
 ---
 
