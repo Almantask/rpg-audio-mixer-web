@@ -5,14 +5,78 @@
 
 **Arcanum Audio** is a web RPG ambience and sound-mixing app for Dungeon Masters and tabletop storytellers. Layer loopable soundscapes with a low-latency soundboard, organize work into campaigns and sessions, and mix live from the Active Scene desk.
 
-## Core Features
+![Home dashboard with Demo Adventure, top soundscape, and top FX](docs/screenshots/home.png)
 
-- **Campaigns & sessions** — Organize prep into campaigns, sessions, and scenes; soft-delete and recover items from Trash.
-- **Home dashboard** — Resume the active campaign, preview top soundscapes and FX, and jump into recent work.
-- **Scenes** — Build reusable scenes, attach them to sessions, and open them in the Active Scene mixer.
-- **Library** — Browse and manage soundscape categories (with intensity levels I–III) and FX tracks; compose categories and import audio.
-- **Active Scene mixer** — Mix layered soundscapes with per-category volume, intensity crossfades, master controls, and an overlapping soundboard.
-- **Web Audio engine** — Browser playback via the Web Audio API with cubic volume curves and ~2s soundscape crossfades.
+## Current features
+
+A first launch seeds a **Demo Adventure** campaign with bundled forest, combat, and rain soundscapes plus a soundboard of one-shot FX, so the mixer is ready to try immediately.
+
+### Home dashboard
+
+Resume the campaign you last played, preview the most-used soundscape category and FX, and jump back into the session desk without hunting through lists.
+
+### Campaigns and sessions
+
+Organize prep into campaigns and dated sessions. Resume a campaign, add cover art, and keep a last-active session marked so the next table is one click away.
+
+| Campaigns | Sessions |
+| --- | --- |
+| ![Active Campaigns list](docs/screenshots/campaigns.png) | ![Campaign sessions for Demo Adventure](docs/screenshots/sessions.png) |
+
+Session scene lists attach reusable scenes to a sitting, with tags, clone, import, and last-active badges.
+
+![Session scenes for The Ancient Gate](docs/screenshots/session-scenes.png)
+
+### Scenes
+
+Build a global scene catalog, search by name or tag, and open any scene in the live mixer. Demo scenes ship with forest, combat, mystery, bonfire, and rain tags already wired.
+
+![Scenes catalog](docs/screenshots/scenes.png)
+
+### Active Scene mixer
+
+The mixing desk has two tabs:
+
+- **Soundscapes** — layered loopable categories with per-slot volume, intensity I–III (calm / tension / climax), master volume, mute, and Play Scene
+- **Soundboard** — overlapping one-shot FX tiles with hotkeys, master volume, and Stop All
+
+| Soundscapes | Soundboard |
+| --- | --- |
+| ![Active Scene soundscapes mixer](docs/screenshots/active-scene-soundscapes.png) | ![Active Scene soundboard](docs/screenshots/active-scene-soundboard.png) |
+
+Playback uses the **Web Audio API** with cubic perceived-loudness curves and ~2s soundscape crossfades.
+
+### Library
+
+Browse and manage three libraries:
+
+- **Soundscapes** — categories with intensity-level preview (I–III), free compositions, and a category composer
+- **Sound Effects** — tagged FX with search, import, and audition
+- **Tracks** — local audio plus YouTube / playlist import for looping beds
+
+| Soundscapes | Sound Effects |
+| --- | --- |
+| ![Library soundscape categories](docs/screenshots/library-soundscapes.png) | ![Library FX grid](docs/screenshots/library-fx.png) |
+
+![Library tracks](docs/screenshots/library-tracks.png)
+
+The **Category Composer** assigns tracks to intensity levels I–III for a soundscape category (for example Forest: calm beds on I, denser beds on II).
+
+![Forest category composer](docs/screenshots/category-composer.png)
+
+Supported import formats include `.mp3`, `.wav`, `.ogg`, and `.flac`, plus YouTube URLs with metadata lookup.
+
+### Trash and recovery
+
+Soft-delete campaigns, sessions, scenes, soundscapes, tracks, and FX. Restore or permanently purge within 7 days; bulk restore and empty-trash actions are available from the same screen.
+
+![Trash with a recoverable campaign](docs/screenshots/trash.png)
+
+### Credits and legal
+
+Support development, leave a review, and open Terms, Privacy, and audio/open-source attributions from Credits.
+
+![Credits screen](docs/screenshots/credits.png)
 
 ## Stack
 
@@ -31,6 +95,7 @@
 ├── features/            # Gherkin acceptance specs by domain
 ├── e2e/steps/           # Playwright BDD step definitions
 ├── docs/designs/        # Scene design docs and HTML prototypes
+├── docs/screenshots/    # README product screenshots
 ├── assets/audio/        # Bundled soundscapes and soundboard FX
 ├── public/              # Static web assets
 ├── plans/               # Iteration / implementation plans
@@ -72,6 +137,9 @@ npm run bddgen
 npm run test:e2e      # bddgen + playwright test
 # alias:
 npm run test:acceptance
+
+# README screenshots (dev server must already be running)
+npm run screenshots:readme
 ```
 
 ### SonarCloud Quality Gate (CI)

@@ -19,7 +19,8 @@
     "test:e2e": "bddgen && playwright test",
     "test:acceptance": "bddgen && playwright test",
     "test:acceptance:feature": "playwright test",
-    "test:acceptance:iter": "playwright test --grep"
+    "test:acceptance:iter": "playwright test --grep",
+    "screenshots:readme": "node scripts/capture-readme-screenshots.mjs"
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.3.0",
