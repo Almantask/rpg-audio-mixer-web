@@ -1,7 +1,6 @@
 # Arcanum Audio
 
 [![CI](https://github.com/Almantask/rpg-audio-mixer-web/actions/workflows/ci.yml/badge.svg)](https://github.com/Almantask/rpg-audio-mixer-web/actions/workflows/ci.yml)
-[![Acceptance Tests](https://github.com/Almantask/rpg-audio-mixer-web/actions/workflows/acceptance-tests.yml/badge.svg)](https://github.com/Almantask/rpg-audio-mixer-web/actions/workflows/acceptance-tests.yml)
 
 **Arcanum Audio** is a web RPG ambience and sound-mixing app for Dungeon Masters and tabletop storytellers. Layer loopable soundscapes with a low-latency soundboard, organize work into campaigns and sessions, and mix live from the Active Scene desk.
 
