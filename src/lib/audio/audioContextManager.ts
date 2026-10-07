@@ -21,7 +21,8 @@ export function getMasterAnalyser(): AnalyserNode | null {
 }
 
 export function getRealtimeSignalLevels(): { peak: number; rms: number } {
-  const analyser = getMasterAnalyser()
+  // Reading levels must not create a context: nothing is routed through it yet.
+  const analyser = masterAnalyserNode
   if (!analyser || !audioContext || audioContext.state !== 'running') {
     return { peak: 0, rms: 0 }
   }
